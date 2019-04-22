@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet;
 
+import com.ytfs.service.ServerConfig;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
@@ -26,8 +27,11 @@ public class SuperReqestHandler {
      */
     static SaveObjectMetaResp saveObjectMetaCall(SaveObjectMetaReq req) throws ServiceException {
         SuperNode node = SuperNodeList.getBlockSuperNodeByUserId(req.getUserID());
-        SaveObjectMetaResp resp = (SaveObjectMetaResp) P2PUtils.requestBP(req, node);
-        return resp;
+        if (node.getId() == ServerConfig.superNodeID) {
+            return saveObjectMeta(req);
+        } else {
+            return (SaveObjectMetaResp) P2PUtils.requestBP(req, node);
+        }
     }
 
     /**

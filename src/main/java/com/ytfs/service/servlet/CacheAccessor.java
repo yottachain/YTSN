@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet;
 
+import com.ytfs.service.ServerConfig;
 import static com.ytfs.service.ServerConfig.REDIS_BLOCK_EXPIRE;
 import static com.ytfs.service.ServerConfig.REDIS_EXPIRE;
 import com.ytfs.service.dao.RedisSource;
@@ -172,7 +173,12 @@ public class CacheAccessor {
             req.setUserID(userid);
             req.setVNU(VNU);
             SuperNode node = SuperNodeList.getBlockSuperNodeByUserId(userid);
-            QueryObjectMetaResp resp = (QueryObjectMetaResp) P2PUtils.requestBP(req, node);
+            QueryObjectMetaResp resp;
+            if (node.getId() == ServerConfig.superNodeID) {
+                resp = SuperReqestHandler.queryObjectMeta(req);
+            } else {
+                resp = (QueryObjectMetaResp) P2PUtils.requestBP(req, node);
+            }
             cache = new UploadObjectCache();
             cache.setFilesize(resp.getLength());
             cache.setUserid(userid);
