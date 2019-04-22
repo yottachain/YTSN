@@ -27,13 +27,13 @@ do
     elif [[ $var == 'wrapper.java.additional.4' ]]
     then
         java_opts="$java_opts ${val:0:${#val}-1}"
-    elif [[ $var == 'wrapper.java.classpath.1' ]]
+    elif [[ $var == 'wrapper.java.classpath.2' ]]
     then
         classpath=${val:0:${#val}-1}
     fi 
 done < ../ytfs.conf
  
-mainclass="com.ytfs.service.UploadTest"
+mainclass="com.ytfs.client.UploadTest"
 
 cmd="$java_cmd $java_opts -classpath $classpath $mainclass"
 echo "cmd: $cmd"

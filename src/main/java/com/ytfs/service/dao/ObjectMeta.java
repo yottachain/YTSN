@@ -58,7 +58,11 @@ public class ObjectMeta {
         doc.append("length", this.length);
         doc.append("VNU", VNU);
         doc.append("NLINK", NLINK);
-        doc.append("blocks", new Binary(blocks));
+        if (blocks == null) {
+            doc.append("blocks", new Binary(new byte[0]));
+        } else {
+            doc.append("blocks", new Binary(blocks));
+        }
         return doc;
     }
 
