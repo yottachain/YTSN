@@ -92,9 +92,9 @@ public class CacheAccessor {
     static void putUploadBlockCache(UploadBlockCache cache, long VBI) {
         BasicCommands jedis = RedisSource.getJedis();
         if (jedis instanceof BinaryJedis) {
-            ((BinaryJedis) jedis).setex(long2bytes(VBI), REDIS_BLOCK_EXPIRE, SerializationUtil.serialize(cache));
+            ((BinaryJedis) jedis).setex(long2bytes(VBI), REDIS_BLOCK_EXPIRE, SerializationUtil.serializeNoId(cache));
         } else {
-            ((BinaryJedisCluster) jedis).setex(long2bytes(VBI), REDIS_BLOCK_EXPIRE, SerializationUtil.serialize(cache));
+            ((BinaryJedisCluster) jedis).setex(long2bytes(VBI), REDIS_BLOCK_EXPIRE, SerializationUtil.serializeNoId(cache));
         }
     }
 
@@ -107,10 +107,10 @@ public class CacheAccessor {
     static void setUploadBlockCache(UploadBlockCache cache, long VBI) {
         BasicCommands jedis = RedisSource.getJedis();
         if (jedis instanceof BinaryJedis) {
-            ((BinaryJedis) jedis).setex(long2bytes(VBI), REDIS_BLOCK_EXPIRE, SerializationUtil.serialize(cache));
+            ((BinaryJedis) jedis).setex(long2bytes(VBI), REDIS_BLOCK_EXPIRE, SerializationUtil.serializeNoId(cache));
             ((BinaryJedis) jedis).setex(UploadBlockCache.getCacheKey1(VBI), REDIS_BLOCK_EXPIRE, new byte[0]);
         } else {
-            ((BinaryJedisCluster) jedis).setex(long2bytes(VBI), REDIS_BLOCK_EXPIRE, SerializationUtil.serialize(cache));
+            ((BinaryJedisCluster) jedis).setex(long2bytes(VBI), REDIS_BLOCK_EXPIRE, SerializationUtil.serializeNoId(cache));
             ((BinaryJedisCluster) jedis).setex(UploadBlockCache.getCacheKey1(VBI), REDIS_BLOCK_EXPIRE, new byte[0]);
         }
     }
@@ -130,7 +130,7 @@ public class CacheAccessor {
         if (bs == null) {
             throw new ServiceException(INVALID_UPLOAD_ID);
         }
-        return (UploadBlockCache) SerializationUtil.deserialize(bs);
+        return (UploadBlockCache) SerializationUtil.deserializeNoId(bs, UploadBlockCache.class);
     }
 
     /**
@@ -183,13 +183,13 @@ public class CacheAccessor {
             cache.setFilesize(resp.getLength());
             cache.setUserid(userid);
             if (jedis instanceof BinaryJedis) {
-                ((BinaryJedis) jedis).setex(VNU.toByteArray(), REDIS_EXPIRE, SerializationUtil.serialize(cache));
+                ((BinaryJedis) jedis).setex(VNU.toByteArray(), REDIS_EXPIRE, SerializationUtil.serializeNoId(cache));
             } else {
-                ((BinaryJedisCluster) jedis).setex(VNU.toByteArray(), REDIS_EXPIRE, SerializationUtil.serialize(cache));
+                ((BinaryJedisCluster) jedis).setex(VNU.toByteArray(), REDIS_EXPIRE, SerializationUtil.serializeNoId(cache));
             }
             cache.setBlockNums(VNU, resp.getBlocknums());
         } else {
-            cache = (UploadObjectCache) SerializationUtil.deserialize(bs);
+            cache = (UploadObjectCache) SerializationUtil.deserializeNoId(bs, UploadObjectCache.class);
             if (cache.getUserid() != userid) {
                 throw new ServiceException(INVALID_UPLOAD_ID);
             }

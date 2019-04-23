@@ -31,6 +31,7 @@ public class DownloadHandler {
         ObjectMeta meta = ObjectAccessor.getObject(userid, req.getVHW());
         DownloadObjectInitResp resp = new DownloadObjectInitResp();
         resp.setRefers(meta.getBlocks());
+        resp.setLength(meta.getLength());
         return resp;
     }
 

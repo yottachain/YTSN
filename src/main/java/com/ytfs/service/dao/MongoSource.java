@@ -33,6 +33,14 @@ public class MongoSource {
     //分片元数据
     public static final String SHARD_TABLE_NAME = "shards";
 
+    //bucket
+    public static final String BUCKET_TABLE_NAME = "buckets";
+    private static final String BUCKET_INDEX_NAME = "UID_NAME";//唯一
+
+    //file
+    public static final String FILE_TABLE_NAME = "files";
+    private static final String FILE_INDEX_NAME = "BID_NAME";//唯一
+
     private static MongoSource source = null;
 
     /**
@@ -97,6 +105,16 @@ public class MongoSource {
         return source.shard_collection;
     }
 
+    static MongoCollection<Document> getBucketCollection() {
+        newInstance();
+        return source.bucket_collection;
+    }
+
+    static MongoCollection<Document> getFileCollection() {
+        newInstance();
+        return source.file_collection;
+    }
+
     public static void terminate() {
         synchronized (MongoSource.class) {
             if (source != null) {
@@ -116,6 +134,9 @@ public class MongoSource {
     private MongoCollection<Document> block_collection = null;
     private MongoCollection<Document> block_dat_collection = null;
     private MongoCollection<Document> shard_collection = null;
+    private MongoCollection<Document> bucket_collection = null;
+    private MongoCollection<Document> file_collection = null;
+
     private List<ServerAddress> serverAddress;
 
     private MongoSource() throws MongoException {
@@ -128,6 +149,8 @@ public class MongoSource {
             init_user_collection();
             init_object_collection();
             init_block_collection();
+            init_bucket_collection();
+            init_file_collection();
         } catch (Exception e) {
             if (client != null) {
                 client.close();
@@ -277,4 +300,39 @@ public class MongoSource {
         LOG.info("创建数据块META表!");
     }
 
+    private void init_bucket_collection() {
+        bucket_collection = database.getCollection(BUCKET_TABLE_NAME);
+        boolean indexCreated = false;
+        ListIndexesIterable<Document> indexs = bucket_collection.listIndexes();
+        for (Document index : indexs) {
+            if (index.get("name").equals(BUCKET_INDEX_NAME)) {
+                indexCreated = true;
+                break;
+            }
+        }
+        if (!indexCreated) {
+            IndexOptions indexOptions = new IndexOptions().unique(true);
+            indexOptions = indexOptions.name(BUCKET_INDEX_NAME);
+            bucket_collection.createIndex(Indexes.ascending("userId", "bucketName"), indexOptions);
+        }
+        LOG.info("创建用户BUCKET表!");
+    }
+
+    private void init_file_collection() {
+        file_collection = database.getCollection(FILE_TABLE_NAME);
+        boolean indexCreated = false;
+        ListIndexesIterable<Document> indexs = file_collection.listIndexes();
+        for (Document index : indexs) {
+            if (index.get("name").equals(FILE_INDEX_NAME)) {
+                indexCreated = true;
+                break;
+            }
+        }
+        if (!indexCreated) {
+            IndexOptions indexOptions = new IndexOptions().unique(true);
+            indexOptions = indexOptions.name(FILE_INDEX_NAME);
+            file_collection.createIndex(Indexes.ascending("bucketId", "fileName"), indexOptions);
+        }
+        LOG.info("创建用户文件表!");
+    }
 }

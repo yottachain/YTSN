@@ -6,6 +6,7 @@ import com.ytfs.service.dao.UserCache;
 import com.ytfs.service.node.NodeManager;
 import com.ytfs.service.packet.DownloadObjectInitReq;
 import com.ytfs.service.packet.DownloadBlockInitReq;
+import com.ytfs.service.packet.DownloadFileReq;
 import com.ytfs.service.packet.ListSuperNodeReq;
 import com.ytfs.service.packet.ListSuperNodeResp;
 import com.ytfs.service.packet.SerializationUtil;
@@ -16,6 +17,7 @@ import com.ytfs.service.packet.UploadBlockDupReq;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadBlockInitReq;
 import com.ytfs.service.packet.UploadBlockSubReq;
+import com.ytfs.service.packet.UploadFileReq;
 import com.ytfs.service.packet.UploadObjectEndReq;
 import com.ytfs.service.packet.UploadObjectInitReq;
 import io.yottachain.p2phost.interfaces.UserCallback;
@@ -59,6 +61,10 @@ public class FromUserMsgDispatcher implements UserCallback {
                 response = DownloadHandler.init((DownloadObjectInitReq) message, user);
             } else if (message instanceof DownloadBlockInitReq) {
                 response = DownloadHandler.getBlockMeta((DownloadBlockInitReq) message, user);
+            } else if (message instanceof UploadFileReq) {
+                response = FileMetaHandler.writeFileMeta((UploadFileReq) message, user);
+            } else if (message instanceof DownloadFileReq) {
+                response = FileMetaHandler.readFileMeta((DownloadFileReq) message, user);
             }
             return SerializationUtil.serialize(response);
         } catch (ServiceException s) {

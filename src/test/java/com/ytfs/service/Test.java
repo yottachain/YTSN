@@ -1,5 +1,6 @@
 package com.ytfs.service;
 
+import com.ytfs.service.servlet.UploadObjectCache;
 import io.jafka.jeos.EosApi;
 import io.jafka.jeos.EosApiFactory;
 import io.jafka.jeos.LocalApi;
@@ -19,6 +20,8 @@ import java.util.List;
 public class Test {
 
     public static void main(String[] args) throws Exception {
+
+
         // --- get the current state of blockchain
         EosApi eosApi = EosApiFactory.create("http://152.136.11.202:8888/");
         SignArg arg = eosApi.getSignArg(120);
@@ -26,7 +29,6 @@ public class Test {
 
         // --- sign the transation of token tansfer
         //String privateKey = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3";//replace the real private key
-
         String privateKey = "5JUB5GKXU68YyXERgEPoRJ9xWCNqL8xhUzhyK12GsdZpzQdozGa";//replace the real private key
         String from = "hddpool12345";
         LocalApi localApi = EosApiFactory.createLocalApi();
