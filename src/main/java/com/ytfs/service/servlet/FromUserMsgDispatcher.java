@@ -1,6 +1,5 @@
 package com.ytfs.service.servlet;
 
-import com.ytfs.service.codec.Base58;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache;
 import com.ytfs.service.node.NodeManager;
@@ -20,6 +19,7 @@ import com.ytfs.service.packet.UploadBlockSubReq;
 import com.ytfs.service.packet.UploadFileReq;
 import com.ytfs.service.packet.UploadObjectEndReq;
 import com.ytfs.service.packet.UploadObjectInitReq;
+import io.jafka.jeos.util.Base58;
 import io.yottachain.p2phost.interfaces.UserCallback;
 import org.apache.log4j.Logger;
 

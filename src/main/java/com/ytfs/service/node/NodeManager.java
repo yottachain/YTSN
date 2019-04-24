@@ -1,8 +1,8 @@
 package com.ytfs.service.node;
 
 import com.mongodb.ServerAddress;
-import com.ytfs.service.codec.Base58;
 import com.ytfs.service.dao.MongoSource;
+import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;

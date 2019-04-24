@@ -25,6 +25,7 @@ public class UploadShardHandler {
         if (resp.getSHARDID() >= maxshardCount) {
             throw new ServiceException(TOO_MANY_SHARDS);
         }//使用用户公钥验签
+        /*
         Key pkey = KeyStoreCoder.rsaPublicKey(key);
         java.security.Signature signetcheck = java.security.Signature.getInstance("DSA");
         signetcheck.initVerify((PublicKey) pkey);
@@ -34,7 +35,7 @@ public class UploadShardHandler {
         signetcheck.update(Function.long2bytes(resp.getVBI()));
         if (!signetcheck.verify(resp.getUSERSIGN())) {
             throw new ServiceException(INVALID_SIGNATURE);
-        }
+        }*/
     }
 
     /**
@@ -47,30 +48,33 @@ public class UploadShardHandler {
      * @throws Throwable
      */
     static VoidResp uploadShardResp(UploadShardResp resp, int nodeid) throws ServiceException, Throwable {
-        UploadBlockCache cache = CacheAccessor.getUploadBlockCache(resp.getVBI());
-        User user = UserCache.getUser(cache.getUserKey());
-        if (user == null) {
-            throw new ServiceException(ServiceErrorCode.INVALID_USER_ID);
-        }
-        verify(resp, user.getKUEp(), cache.getShardcount(), nodeid);
-        if (cache.getNodes()[resp.getSHARDID()] != nodeid) {
-            throw new ServiceException(ServiceErrorCode.INVALID_NODE_ID);
-        }
-        if (resp.getRES() == RES_BAD_REQUEST) {
-            long failtimes = CacheAccessor.getUploadBlockINC(resp.getVBI());
-            if (failtimes >= ServerConfig.PNF) {
-                UploadObjectCache objcache = CacheAccessor.getUploadObjectCache(nodeid, cache.getVNU());
-                EOSClient eos = new EOSClient(user.getEosID());
-                eos.punishHDD(objcache.getFilesize());
-                CacheAccessor.clearCache(cache.getVNU(), resp.getVBI());//清除缓存
-                return new VoidResp();
+        try {
+            UploadBlockCache cache = CacheAccessor.getUploadBlockCache(resp.getVBI());
+            User user = UserCache.getUser(cache.getUserKey());
+            if (user == null) {
+                throw new ServiceException(ServiceErrorCode.INVALID_USER_ID);
             }
+            verify(resp, user.getKUEp(), cache.getShardcount(), nodeid);
+            if (cache.getNodes()[resp.getSHARDID()] != nodeid) {
+                throw new ServiceException(ServiceErrorCode.INVALID_NODE_ID);
+            }
+            if (resp.getRES() == RES_BAD_REQUEST) {
+                long failtimes = CacheAccessor.getUploadBlockINC(resp.getVBI());
+                if (failtimes >= ServerConfig.PNF) {
+                    UploadObjectCache objcache = CacheAccessor.getUploadObjectCache(nodeid, cache.getVNU());
+                    EOSClient eos = new EOSClient(user.getEosID());
+                    eos.punishHDD(objcache.getFilesize());
+                    CacheAccessor.clearCache(cache.getVNU(), resp.getVBI());//清除缓存
+                    return new VoidResp();
+                }
+            }
+            UploadShardCache shardCache = new UploadShardCache();
+            shardCache.setNodeid(nodeid);
+            shardCache.setRes(resp.getRES());
+            shardCache.setVHF(resp.getVHF());
+            CacheAccessor.addUploadShardCache(shardCache, resp.getVBI());
+        } catch (Exception e) {
         }
-        UploadShardCache shardCache = new UploadShardCache();
-        shardCache.setNodeid(nodeid);
-        shardCache.setRes(resp.getRES());
-        shardCache.setVHF(resp.getVHF());
-        CacheAccessor.addUploadShardCache(shardCache, resp.getVBI());
         return new VoidResp();
     }
 

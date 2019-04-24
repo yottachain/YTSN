@@ -1,9 +1,14 @@
 package com.ytfs.service.dao;
 
- 
+import com.mongodb.client.model.Filters;
 import static com.ytfs.service.ServerConfig.REDIS_BLOCK_EXPIRE;
 import com.ytfs.service.utils.LogConfigurator;
 import io.jafka.jeos.util.Base58;
+import java.security.MessageDigest;
+import org.apache.commons.codec.binary.Hex;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import redis.clients.jedis.BasicCommands;
 import redis.clients.jedis.BinaryJedis;
@@ -13,9 +18,17 @@ public class Test {
 
     public static void main(String[] a) throws Exception {
         LogConfigurator.configPath();
+
+        try {
+            MessageDigest sha = MessageDigest.getInstance("SHA-256");
+            byte[] bs = sha.digest("abc".getBytes());
+            System.out.println(Hex.encodeHex(bs));
+        } catch (Exception r) {
+            throw new IllegalArgumentException(r.getMessage());
+        }
         //testRedis();
         //testSeq();     
-        testUser();
+        //testUser();
         //testObject();
     }
 
@@ -65,8 +78,8 @@ public class Test {
 
     private static void testUser() throws Exception {
         User usr = new User(Sequence.generateUserID());
-        byte[] kuep=Base58.decode("GZsJqUv51pw4c5HnBHiStK3jwJKXZjdtxVwkEShR9Ljb7ZUN1T");//公钥
-        byte[] kusp=Base58.decode("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");//si钥           
+        byte[] kuep = Base58.decode("GZsJqUv51pw4c5HnBHiStK3jwJKXZjdtxVwkEShR9Ljb7ZUN1T");//公钥
+        byte[] kusp = Base58.decode("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");//si钥           
         usr.setKUEp(kuep);
         usr.setKUSp(kusp);
         usr.setSecretKey("sbbb".getBytes());

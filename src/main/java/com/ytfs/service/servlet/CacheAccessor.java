@@ -55,7 +55,7 @@ public class CacheAccessor {
                 ? ((BinaryJedis) jedis).get(UploadBlockCache.getCacheKey1(VBI))
                 : ((BinaryJedisCluster) jedis).get(UploadBlockCache.getCacheKey1(VBI));
         if (data == null || data.length == 0) {
-            return null;
+            return new HashMap();
         }
         ByteBuffer buf = ByteBuffer.wrap(data);
         int len = data.length / 44;

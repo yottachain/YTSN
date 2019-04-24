@@ -29,7 +29,8 @@ public class ObjectAccessor {
     
     public static void getObjectAndUpdateNLINK(ObjectMeta meta) {
         Bson filter = Filters.eq("_id", new Binary(meta.getId()));
-        Document update = new Document("NLINK", 1);
+        Document data = new Document("NLINK", 1);
+        Document update = new Document("$set",data);
         Document doc = MongoSource.getObjectCollection().findOneAndUpdate(filter, update);
         if (doc != null) {
             meta.setNLINK(doc.getInteger("NLINK"));
@@ -65,7 +66,8 @@ public class ObjectAccessor {
     
     public static void updateObject(ObjectId VNU, byte[] blocks) {
         Bson filter = Filters.eq("VNU", VNU);
-        Document update = new Document("blocks", new Binary(blocks));
+        Document data = new Document("blocks", new Binary(blocks));
+        Document update = new Document("$set",data);
         MongoSource.getObjectCollection().updateOne(filter, update);
     }
     

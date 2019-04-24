@@ -1,9 +1,13 @@
 package com.ytfs.service.codec;
 
+import io.jafka.jeos.util.Base58;
+import io.jafka.jeos.util.KeyUtil;
 import java.security.Key;
 import java.security.KeyFactory;
+import java.security.MessageDigest;
 import java.security.spec.PKCS8EncodedKeySpec;
 import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
 import javax.crypto.spec.SecretKeySpec;
 
 public class KeyStoreCoder {
@@ -60,7 +64,7 @@ public class KeyStoreCoder {
         }
     }
 
-    public static Key rsaPrivateKey(byte[] prikey) {
+    public static Key rsaPrivateKey1(byte[] prikey) {
         try {
             PKCS8EncodedKeySpec pkcs8KeySpec = new PKCS8EncodedKeySpec(prikey);
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -70,7 +74,7 @@ public class KeyStoreCoder {
         }
     }
 
-    public static Key rsaPublicKey(byte[] pubkey) {
+    public static Key rsaPublicKey1(byte[] pubkey) {
         try {
             PKCS8EncodedKeySpec pkcs8KeySpec = new PKCS8EncodedKeySpec(pubkey);
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -82,16 +86,43 @@ public class KeyStoreCoder {
 
     public static byte[] rsaEncryped(byte[] data, byte[] pubkey) {
         try {
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            byte[] key = sha256.digest(pubkey);
+            SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
+            return cipher.doFinal(data);
+        } catch (Exception r) {
+            throw new IllegalArgumentException(r.getMessage());
+        }
+
+        /*
+        try {
             Key publicKey = rsaPublicKey(pubkey);
             Cipher cipher = Cipher.getInstance(publicKey.getAlgorithm());
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
             return cipher.doFinal(data);
         } catch (Exception r) {
             throw new IllegalArgumentException(r.getMessage());
-        }
+        }*/
     }
 
     public static byte[] rsaDecryped(byte[] data, byte[] prikey) {
+        try {
+            String s = Base58.encode(prikey);
+            String p = KeyUtil.toPublicKey(s);
+            byte[] bs = Base58.decode(p.substring(3));
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            byte[] key = sha256.digest(bs);
+            SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, skeySpec);
+            return cipher.doFinal(data);
+        } catch (Exception r) {
+            throw new IllegalArgumentException(r.getMessage());
+        }
+
+        /*
         try {
             Key privateK = rsaPrivateKey(prikey);
             Cipher cipher = Cipher.getInstance(privateK.getAlgorithm());
@@ -99,7 +130,7 @@ public class KeyStoreCoder {
             return cipher.doFinal(data);
         } catch (Exception r) {
             throw new IllegalArgumentException(r.getMessage());
-        }
+        }*/
     }
-    
+
 }

@@ -25,7 +25,7 @@ public class BlockAccessor {
 
     public static byte[] readBlockData(long vbi) {
         Bson filter = Filters.eq("_id", vbi);
-        Document doc = MongoSource.getBlockCollection().find(filter).first();
+        Document doc = MongoSource.getBlockDatCollection().find(filter).first();
         if (doc == null) {
             return null;
         } else {

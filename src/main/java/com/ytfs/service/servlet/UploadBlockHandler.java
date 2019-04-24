@@ -380,16 +380,18 @@ public class UploadBlockHandler {
     private static void setNodes(UploadBlockInitResp resp, Node[] ns, long VBI) throws NodeMgmtException {
         resp.setVBI(VBI);
         byte[] key = NodeManager.getSuperNodePrivateKey(ServerConfig.superNodeID);
-        PrivateKey privateKey = (PrivateKey) KeyStoreCoder.rsaPrivateKey(key);
+        // PrivateKey privateKey = (PrivateKey) KeyStoreCoder.rsaPrivateKey(key);
         ShardNode[] nodes = new ShardNode[ns.length];
         resp.setNodes(nodes);
         for (int ii = 0; ii < ns.length; ii++) {
             nodes[ii] = new ShardNode(ii, ns[ii]);
-            sign(privateKey, nodes[ii], VBI);
+            sign(null, nodes[ii], VBI);
         }
     }
 
     private static void sign(PrivateKey privateKey, ShardNode sn, long VBI) {
+        sn.setSign(new byte[0]);
+        /*
         try {    //对id和VNU签名
             Signature signet = java.security.Signature.getInstance("DSA");
             signet.initSign(privateKey);
@@ -399,18 +401,18 @@ public class UploadBlockHandler {
             sn.setSign(signed);
         } catch (Exception r) {
             throw new IllegalArgumentException(r.getMessage());
-        }
+        }*/
     }
 
     private static void setNodes(UploadBlockSubResp resp, Node[] ns, List<UploadShardRes> fails, long VBI, UploadBlockCache cache) throws NodeMgmtException {
         byte[] key = NodeManager.getSuperNodePrivateKey(ServerConfig.superNodeID);
-        PrivateKey privateKey = (PrivateKey) KeyStoreCoder.rsaPrivateKey(key);
+        // PrivateKey privateKey = (PrivateKey) KeyStoreCoder.rsaPrivateKey(key);
         ShardNode[] nodes = new ShardNode[ns.length];
         resp.setNodes(nodes);
         for (int ii = 0; ii < ns.length; ii++) {
             nodes[ii] = new ShardNode(ns[ii]);
             nodes[ii].setShardid(fails.get(ii).getSHARDID());
-            sign(privateKey, nodes[ii], VBI);
+            sign(null, nodes[ii], VBI);
             cache.getNodes()[fails.get(ii).getSHARDID()] = nodes[ii].getNodeId();//更新缓存
         }
     }
