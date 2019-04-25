@@ -3,9 +3,11 @@ package com.ytfs.service.servlet;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache;
 import com.ytfs.service.node.NodeManager;
+import com.ytfs.service.packet.CreateBucketReq;
 import com.ytfs.service.packet.DownloadObjectInitReq;
 import com.ytfs.service.packet.DownloadBlockInitReq;
 import com.ytfs.service.packet.DownloadFileReq;
+import com.ytfs.service.packet.ListBucketReq;
 import com.ytfs.service.packet.ListSuperNodeReq;
 import com.ytfs.service.packet.ListSuperNodeResp;
 import com.ytfs.service.packet.SerializationUtil;
@@ -65,6 +67,10 @@ public class FromUserMsgDispatcher implements UserCallback {
                 response = FileMetaHandler.writeFileMeta((UploadFileReq) message, user);
             } else if (message instanceof DownloadFileReq) {
                 response = FileMetaHandler.readFileMeta((DownloadFileReq) message, user);
+            } else if (message instanceof CreateBucketReq) {
+                response = FileMetaHandler.createBucket((CreateBucketReq) message, user);
+            } else if (message instanceof ListBucketReq) {
+                response = FileMetaHandler.listBucket((ListBucketReq) message, user);
             }
             return SerializationUtil.serialize(response);
         } catch (ServiceException s) {

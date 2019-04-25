@@ -88,6 +88,7 @@ public class UploadObjectHandler {
         if (!exists) {
             meta.setVNU(new ObjectId());
             meta.setNLINK(0);
+            meta.setLength(ud.getLength());
             ObjectAccessor.addObject(meta);
         }
         eos.frozenHDD(ud.getLength());

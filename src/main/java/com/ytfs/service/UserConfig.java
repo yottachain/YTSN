@@ -38,9 +38,6 @@ public class UserConfig {
     //用户对应的超级节点
     public static SuperNode superNode;
 
-    //用户S3密钥
-    public static byte[] secretKey;
-
     //用户加密公钥
     public static byte[] KUEp;
 

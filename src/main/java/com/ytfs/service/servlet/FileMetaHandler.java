@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet;
 
+import com.ytfs.service.dao.BucketAccessor;
 import com.ytfs.service.dao.BucketCache;
 import com.ytfs.service.dao.BucketMeta;
 import com.ytfs.service.dao.FileAccessor;
@@ -10,11 +11,14 @@ import com.ytfs.service.dao.User;
 import com.ytfs.service.packet.CreateBucketReq;
 import com.ytfs.service.packet.DownloadFileReq;
 import com.ytfs.service.packet.DownloadObjectInitResp;
+import com.ytfs.service.packet.ListBucketReq;
+import com.ytfs.service.packet.ListBucketResp;
 import static com.ytfs.service.packet.ServiceErrorCode.INVALID_BUCKET_NAME;
 import static com.ytfs.service.packet.ServiceErrorCode.INVALID_OBJECT_NAME;
 import com.ytfs.service.packet.ServiceException;
 import com.ytfs.service.packet.UploadFileReq;
 import com.ytfs.service.packet.VoidResp;
+import org.bson.types.ObjectId;
 
 public class FileMetaHandler {
 
@@ -48,8 +52,20 @@ public class FileMetaHandler {
     }
 
     static VoidResp createBucket(CreateBucketReq req, User user) throws ServiceException, Throwable {
+        String name = req.getBucketName();
+        name = name == null ? "" : name.trim();
+        if (name.isEmpty() || name.length() > 20) {
+            throw new ServiceException(INVALID_BUCKET_NAME);
+        }
+        BucketMeta meta = new BucketMeta(user.getUserID(), new ObjectId(), name);
+        BucketAccessor.saveBucketMeta(meta);
+        return new VoidResp();
+    }
 
-        return null;
-
+    static ListBucketResp listBucket(ListBucketReq req, User user) throws ServiceException, Throwable {
+        String[] names = BucketAccessor.listBucket(user.getUserID());
+        ListBucketResp resp = new ListBucketResp();
+        resp.setNames(names);
+        return resp;
     }
 }

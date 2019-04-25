@@ -9,6 +9,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.SecretKeySpec;
+import org.apache.commons.codec.binary.Hex;
 
 public class KeyStoreCoder {
 
@@ -86,8 +87,9 @@ public class KeyStoreCoder {
 
     public static byte[] rsaEncryped(byte[] data, byte[] pubkey) {
         try {
+            String ss="1234567890";
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-            byte[] key = sha256.digest(pubkey);
+            byte[] key = sha256.digest(ss.getBytes());    
             SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
@@ -109,11 +111,9 @@ public class KeyStoreCoder {
 
     public static byte[] rsaDecryped(byte[] data, byte[] prikey) {
         try {
-            String s = Base58.encode(prikey);
-            String p = KeyUtil.toPublicKey(s);
-            byte[] bs = Base58.decode(p.substring(3));
+            String ss="1234567890";
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-            byte[] key = sha256.digest(bs);
+            byte[] key = sha256.digest(ss.getBytes());
             SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, skeySpec);

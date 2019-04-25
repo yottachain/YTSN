@@ -23,19 +23,29 @@ import sun.security.ec.ECPublicKeyImpl;
 public class Test {
 
     public static void main(String[] args) throws Exception {
-        byte[] data = "sdsdsdgfvs".getBytes();
+                byte[] kuep = Base58.decode("GZsJqUv51pw4c5HnBHiStK3jwJKXZjdtxVwkEShR9Ljb7ZUN1T");//公钥
+        byte[] kusp = Base58.decode("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");//si钥       
+        
+        //EOS85t8zCVUuui5D4yzM72hUg2YWs6Qkf5pnXX6jw8qP7PrDQPbwj
+        String KUEp = "85t8zCVUuui5D4yzM72hUg2YWs6Qkf5pnXX6jw8qP7PrDQPbwj";
+        String KUSp = "5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ";
+        
+        String p = KeyUtil.toPublicKey(KUSp);
+        System.out.println(p);
+        p = KeyUtil.toPublicKey(KUSp);
+        System.out.println(p);
 
-        String s=KeyUtil.toPublicKey("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");
-        byte[] k1 = Base58.decode(s.substring(3));
-        byte[] bs1 = KeyStoreCoder.rsaEncryped(data, k1);
+        if (false) {
+            return;
+        }
+        byte[] ks = "sdsdsdgfvs".getBytes();
+        byte[] bs1 = KeyStoreCoder.rsaEncryped(ks, Base58.decode(KUEp));
 
-        byte[] k2 = Base58.decode("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");
-        byte[] bs2 = KeyStoreCoder.rsaDecryped(bs1, k2);
+        byte[] bs2 = KeyStoreCoder.rsaDecryped(bs1, Base58.decode(KUSp));
 
         System.out.println(new String(bs2));
         if (true) {
             return;
-
         }
 
         BigInteger bi = privateKey("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");
@@ -62,15 +72,15 @@ public class Test {
         //ECPublicKeySpec ecPublicKeySpec = new ECPublicKeySpec(pubKey.getW(),
         //        pubKey.getParams());
         Cipher cipher = new NullCipher();
-        cipher.doFinal(data);
+        // cipher.doFinal(data);
         cipher.init(Cipher.ENCRYPT_MODE, pubKey, pubKey.getParams());
-        byte[] bs = cipher.doFinal(data);
+        //byte[] bs = cipher.doFinal(data);
         //   ECPrivateKeySpec ecPrivateKeySpec = new ECPrivateKeySpec(priKey.getS(),
         //     priKey.getParams());
         Cipher cipher2 = new NullCipher();
         cipher2.init(Cipher.DECRYPT_MODE, priKey, priKey.getParams());
         //byte[] bs2 = cipher.doFinal(data);
-       // System.out.println(new String(bs2));
+        // System.out.println(new String(bs2));
         //KeyUtil.signHash(ss, data);
     }
 

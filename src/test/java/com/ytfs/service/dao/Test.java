@@ -19,16 +19,10 @@ public class Test {
     public static void main(String[] a) throws Exception {
         LogConfigurator.configPath();
 
-        try {
-            MessageDigest sha = MessageDigest.getInstance("SHA-256");
-            byte[] bs = sha.digest("abc".getBytes());
-            System.out.println(Hex.encodeHex(bs));
-        } catch (Exception r) {
-            throw new IllegalArgumentException(r.getMessage());
-        }
+
         //testRedis();
         //testSeq();     
-        //testUser();
+        testUser();
         //testObject();
     }
 

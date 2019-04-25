@@ -2,21 +2,16 @@ package com.ytfs.service.servlet;
 
 import com.ytfs.service.ServerConfig;
 import static com.ytfs.service.packet.UploadShardRes.RES_BAD_REQUEST;
-import com.ytfs.service.codec.KeyStoreCoder;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache;
 import com.ytfs.service.eos.EOSClient;
 import com.ytfs.service.packet.ServiceErrorCode;
-import static com.ytfs.service.packet.ServiceErrorCode.INVALID_SIGNATURE;
 import static com.ytfs.service.packet.ServiceErrorCode.TOO_MANY_SHARDS;
 import com.ytfs.service.packet.ServiceException;
 import com.ytfs.service.packet.UploadShardResp;
 import com.ytfs.service.packet.VoidResp;
-import com.ytfs.service.utils.Function;
 import java.security.InvalidKeyException;
-import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.security.SignatureException;
 
 public class UploadShardHandler {
