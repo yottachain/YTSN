@@ -15,6 +15,7 @@ import com.ytfs.service.packet.ListBucketReq;
 import com.ytfs.service.packet.ListBucketResp;
 import static com.ytfs.service.packet.ServiceErrorCode.INVALID_BUCKET_NAME;
 import static com.ytfs.service.packet.ServiceErrorCode.INVALID_OBJECT_NAME;
+import static com.ytfs.service.packet.ServiceErrorCode.INVALID_UPLOAD_ID;
 import com.ytfs.service.packet.ServiceException;
 import com.ytfs.service.packet.UploadFileReq;
 import com.ytfs.service.packet.VoidResp;
@@ -26,6 +27,9 @@ public class FileMetaHandler {
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), req.getBucketname());
         if (meta == null) {
             throw new ServiceException(INVALID_BUCKET_NAME);
+        }
+        if(req.getVNU()==null){
+            throw new ServiceException(INVALID_UPLOAD_ID);
         }
         FileMeta filemeta = new FileMeta();
         filemeta.setBucketId(meta.getBucketId());

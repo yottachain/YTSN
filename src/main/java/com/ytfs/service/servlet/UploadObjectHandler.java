@@ -65,8 +65,9 @@ public class UploadObjectHandler {
         }
         ObjectMeta meta = new ObjectMeta(userid, ud.getVHW());
         boolean exists = ObjectAccessor.isObjectExists(meta);
-        UploadObjectInitResp resp = new UploadObjectInitResp(false, meta.getVNU());
+        UploadObjectInitResp resp = new UploadObjectInitResp(false);
         if (exists) {
+            resp.setVNU(meta.getVNU());
             int nlink = meta.getNLINK();
             if (nlink == 0) {//正在上传               
                 List<ObjectRefer> refers = ObjectRefer.parse(meta.getBlocks());
@@ -77,7 +78,8 @@ public class UploadObjectHandler {
                 resp.setBlocks(blocks);
             } else {
                 ObjectAccessor.incObjectNLINK(meta);
-                return new UploadObjectInitResp(true);
+                resp.setRepeat(true);
+                return resp;
             }
         }
         EOSClient eos = new EOSClient(user.getEosID());
@@ -90,8 +92,9 @@ public class UploadObjectHandler {
             meta.setNLINK(0);
             meta.setLength(ud.getLength());
             ObjectAccessor.addObject(meta);
+            resp.setVNU(meta.getVNU());
         }
         eos.frozenHDD(ud.getLength());
-        return new UploadObjectInitResp(false, meta.getVNU());
+        return resp;
     }
 }

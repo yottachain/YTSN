@@ -8,12 +8,12 @@ public class TestShardCoder {
     private static final byte[] key = KeyStoreCoder.generateRandomKey();
 
     public static void main(String[] args) throws IOException {
-       // middleBlock();
-        smallBlock();
+        middleBlock();
+        //smallBlock();
     }
 
     private static void middleBlock() throws IOException {
-        Block block = new Block("d:\\P2PSearcher_DWJ.rar");
+        Block block = new Block("d:\\YottaChain架构文档.docx");
         block.load();
         
         BlockAESEncryptor aes = new BlockAESEncryptor(block, key);
@@ -35,7 +35,7 @@ public class TestShardCoder {
         aesdecoder.decrypt();
 
         block = new Block(aesdecoder.getSrcData());
-        block.save("d:\\312.rar");
+        block.save("d:\\YottaChain.docx");
 
     }
  

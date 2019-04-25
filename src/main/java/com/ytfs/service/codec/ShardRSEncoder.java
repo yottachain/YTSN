@@ -32,7 +32,6 @@ public class ShardRSEncoder {
             System.arraycopy(encryptedBlock.getData(), 0, bs, 1, remainSize);
             Arrays.fill(bs, remainSize + 1, bs.length - 1, (byte) 0x00);
             Shard shard = new Shard(bs, sha(bs));
-            getShardList().add(shard);
             for (int ii = 0; ii < Default_PND; ii++) {
                 getShardList().add(shard);
             }
