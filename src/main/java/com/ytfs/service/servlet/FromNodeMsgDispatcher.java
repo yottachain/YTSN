@@ -15,12 +15,11 @@ public class FromNodeMsgDispatcher implements NodeCallback {
 
     @Override
     public byte[] onMessageFromNode(byte[] data, String nodekey) {
-
         Object response = null;
         try {
-            int nodeId = NodeCache.getNodeId(nodekey);
             Object message = SerializationUtil.deserialize(data);
             LOG.info("request:" + message.getClass().getSimpleName());
+            int nodeId = NodeCache.getNodeId(nodekey);
             if (message instanceof UploadShardResp) {
                 response = UploadShardHandler.uploadShardResp((UploadShardResp) message, nodeId);
             }

@@ -1,15 +1,11 @@
 package com.ytfs.service.codec;
 
-import io.jafka.jeos.util.Base58;
-import io.jafka.jeos.util.KeyUtil;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.spec.PKCS8EncodedKeySpec;
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
 import javax.crypto.spec.SecretKeySpec;
-import org.apache.commons.codec.binary.Hex;
 
 public class KeyStoreCoder {
 

@@ -87,7 +87,7 @@ public class UploadBlockHandler {
             List<Document> ls = new ArrayList();
             for (int ii = 0; ii < shardCount; ii++) {
                 UploadShardCache cache = caches.get(ii);
-                if (cache == null || cache.getRes() != UploadShardRes.RES_OK) {
+                if (cache == null || !(cache.getRes() == UploadShardRes.RES_OK || cache.getRes() == UploadShardRes.RES_VNF_EXISTS)) {
                     throw new ServiceException(INVALID_SHARD);
                 }
                 if (req.isRsShard()) {

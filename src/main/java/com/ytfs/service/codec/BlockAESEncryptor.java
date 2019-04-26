@@ -1,12 +1,11 @@
 package com.ytfs.service.codec;
 
+import static com.ytfs.service.codec.AESIVParameter.IVParameter;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class BlockAESEncryptor {
@@ -25,9 +24,10 @@ public class BlockAESEncryptor {
     private void init(byte[] key) {
         try {//AES/ECB/PKCS5Padding    //ECB/CBC/CTR/CFB/OFB
             SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
-            cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException r) {
+            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            IvParameterSpec iv = new IvParameterSpec(IVParameter);
+            cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+        } catch (Exception r) {
             throw new IllegalArgumentException(r.getMessage());
         }
     }
@@ -36,13 +36,7 @@ public class BlockAESEncryptor {
         block.load();
         try {
             byte[] bs = cipher.doFinal(block.getData());
-            if (block.getRealSize() % 16 == 0) {
-                byte[] newdata = new byte[bs.length - 16];
-                System.arraycopy(bs, 0, newdata, 0, newdata.length);
-                getBlockEncrypted().setData(newdata);
-            } else {
-                getBlockEncrypted().setData(bs);
-            }
+            getBlockEncrypted().setData(bs);
         } catch (BadPaddingException | IllegalBlockSizeException r) {
             throw new IllegalArgumentException(r.getMessage());
         }

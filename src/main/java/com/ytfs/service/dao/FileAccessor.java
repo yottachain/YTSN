@@ -1,14 +1,23 @@
 package com.ytfs.service.dao;
 
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.model.Filters;
+import static com.ytfs.service.packet.ServiceErrorCode.OBJECT_ALREADY_EXISTS;
+import com.ytfs.service.packet.ServiceException;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 public class FileAccessor {
 
-    public static void saveFileMeta(FileMeta meta) {
-        MongoSource.getFileCollection().insertOne(meta.toDocument());
+    public static void saveFileMeta(FileMeta meta) throws ServiceException {
+        try {
+            MongoSource.getFileCollection().insertOne(meta.toDocument());
+        } catch (MongoWriteException e) {
+            if (e.getMessage().contains("dup key")) {
+                throw new ServiceException(OBJECT_ALREADY_EXISTS);
+            }
+        }
     }
 
     public static FileMeta getFileMeta(ObjectId bucketid, String filename) {

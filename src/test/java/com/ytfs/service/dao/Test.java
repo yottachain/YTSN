@@ -4,6 +4,7 @@ import com.mongodb.client.model.Filters;
 import static com.ytfs.service.ServerConfig.REDIS_BLOCK_EXPIRE;
 import com.ytfs.service.utils.LogConfigurator;
 import io.jafka.jeos.util.Base58;
+import io.jafka.jeos.util.KeyUtil;
 import java.security.MessageDigest;
 import org.apache.commons.codec.binary.Hex;
 import org.bson.Document;
@@ -72,8 +73,16 @@ public class Test {
 
     private static void testUser() throws Exception {
         User usr = new User(Sequence.generateUserID());
+        //Invalid public key:25nsgBoxHrhgZ3xk7eQLqgU36SPomd92dgxeYxXUXndWV
+        //25nsgBoxHrhgZ3xk7eQLqgU36SPomd92dgxeYxXUXndWV
         byte[] kuep = Base58.decode("GZsJqUv51pw4c5HnBHiStK3jwJKXZjdtxVwkEShR9Ljb7ZUN1T");//公钥
-        byte[] kusp = Base58.decode("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");//si钥           
+        byte[] kusp = Base58.decode("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");//si钥    
+        String ss=KeyUtil.toPublicKey("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");
+        
+        System.out.println(ss);
+        kuep=Base58.decode(ss.substring(3));
+        
+        
         usr.setKUEp(kuep);
         usr.setKUSp(kusp);
         usr.setSecretKey("sbbb".getBytes());
@@ -88,6 +97,7 @@ public class Test {
         System.out.println(new String(usr.getSecretKey()));
         System.out.println(usr.getTotalBaseCost());
         System.out.println(usr.getUsedSpace());
+
     }
 
     private static void testObject() throws Exception {

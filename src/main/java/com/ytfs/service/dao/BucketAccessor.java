@@ -3,7 +3,7 @@ package com.ytfs.service.dao;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
-import static com.ytfs.service.packet.ServiceErrorCode.INVALID_BUCKET_NAME;
+import static com.ytfs.service.packet.ServiceErrorCode.BUCKET_ALREADY_EXISTS;
 import static com.ytfs.service.packet.ServiceErrorCode.TOO_MANY_BUCKETS;
 import com.ytfs.service.packet.ServiceException;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class BucketAccessor {
             MongoSource.getBucketCollection().insertOne(meta.toDocument());
         } catch (MongoWriteException e) {
             if (e.getMessage().contains("dup key")) {
-                throw new ServiceException(INVALID_BUCKET_NAME);
+                throw new ServiceException(BUCKET_ALREADY_EXISTS);
             }
         }
     }

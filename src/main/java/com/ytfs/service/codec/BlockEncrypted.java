@@ -21,7 +21,7 @@ public class BlockEncrypted {
         this.blocksize = blocksize;
         int remain = blocksize % 16;
         if (remain == 0) {
-            encryptedBlockSize = blocksize;
+            encryptedBlockSize = blocksize + 16;
         } else {
             encryptedBlockSize = blocksize + (16 - remain);
         }
