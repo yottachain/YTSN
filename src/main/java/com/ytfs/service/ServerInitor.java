@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import org.apache.log4j.Logger;
+import org.tanukisoftware.wrapper.WrapperManager;
 
 public class ServerInitor {
 
@@ -25,7 +26,6 @@ public class ServerInitor {
     public static void stop() {
         P2PUtils.stop();
         MongoSource.terminate();
-        //RedisSource.terminate();
         GlobleThreadPool.shutdown();
     }
 
@@ -34,7 +34,8 @@ public class ServerInitor {
             String path = System.getProperty("logger.path", "log");
             File dir = new File(path);
             dir.mkdirs();
-            LogConfigurator.configPath(new File(dir, "log"), "INFO");
+            String level = WrapperManager.getProperties().getProperty("log4j.loglevel", "INFO");
+            LogConfigurator.configPath(new File(dir, "log"), level);
             load();
         } catch (IOException e) {
             LOG.error("Init err.", e);
@@ -101,7 +102,7 @@ public class ServerInitor {
         contractAccount = p.getProperty("contractAccount");
         if (contractAccount == null || contractAccount.trim().isEmpty()) {
             throw new IOException("The 'contractAccount' parameter is not configured.");
-        }  
-        
+        }
+
     }
 }

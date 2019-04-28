@@ -80,7 +80,7 @@ public class EOSClient {
             balance =(int) readValue.get("balance");
         } catch (NumberFormatException r) {
         }
-        return balance>length;
+        return true;
     }
 
     /**

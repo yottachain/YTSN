@@ -1,6 +1,7 @@
 package com.ytfs.service;
 
 import io.yottachain.nodemgmt.core.vo.SuperNode;
+import java.io.File;
 
 public class UserConfig {
     //*************************不可配置参数*************************************
@@ -24,10 +25,10 @@ public class UserConfig {
     public final static int PL2 = 256;
 
     //上传线程数
-    public final static int UPLOADSHARDTHREAD = 5;
+    public final static int UPLOADSHARDTHREAD = 50;
 
     //下载线程数
-    public final static int DOWNLOADSHARDTHREAD = 5;
+    public final static int DOWNLOADSHARDTHREAD = 50;
 
     //**************************可配置参数********************************
     //用户ID
@@ -44,5 +45,8 @@ public class UserConfig {
 
     //端口
     public static int port;
+    
+    //缓存路径
+    public static File tmpFilePath;
 
 }

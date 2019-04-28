@@ -38,11 +38,11 @@ public class FromUserMsgDispatcher implements UserCallback {
             return SerializationUtil.serialize(se);
         }
         Object message = SerializationUtil.deserialize(data);
-        LOG.info("request:" + message.getClass().getSimpleName() + ",UserID:" + user.getUserID());
         Object response = null;
         try {
             if (message instanceof ListSuperNodeReq) {
                 ListSuperNodeResp resp = new ListSuperNodeResp();
+                LOG.info("List super node...");
                 resp.setSuperList(NodeManager.getSuperNode());
                 response = resp;
             } else if (message instanceof UploadObjectInitReq) {

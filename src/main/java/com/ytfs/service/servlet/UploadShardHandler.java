@@ -16,9 +16,9 @@ import java.security.SignatureException;
 import org.apache.log4j.Logger;
 
 public class UploadShardHandler {
-    
+
     private static final Logger LOG = Logger.getLogger(UploadShardHandler.class);
-    
+
     static void verify(UploadShardResp resp, byte[] key, int maxshardCount, int nodeid) throws ServiceException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         if (resp.getSHARDID() >= maxshardCount) {
             throw new ServiceException(TOO_MANY_SHARDS);
@@ -47,6 +47,7 @@ public class UploadShardHandler {
      */
     static VoidResp uploadShardResp(UploadShardResp resp, int nodeid) throws ServiceException, Throwable {
         try {
+            LOG.debug("Upload shard " + resp.getVBI() + "/" + resp.getSHARDID() + "/" + resp.getRES());
             UploadBlockCache cache = CacheAccessor.getUploadBlockCache(resp.getVBI());
             User user = UserCache.getUser(cache.getUserKey());
             if (user == null) {
@@ -71,11 +72,11 @@ public class UploadShardHandler {
             shardCache.setRes(resp.getRES());
             shardCache.setVHF(resp.getVHF());
             shardCache.setShardid(resp.getSHARDID());
-            CacheAccessor.addUploadShardCache(shardCache, resp.getVBI());          
+            CacheAccessor.addUploadShardCache(shardCache, resp.getVBI());
         } catch (Exception e) {
             LOG.error("", e);
         }
         return new VoidResp();
     }
-    
+
 }

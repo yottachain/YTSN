@@ -19,11 +19,15 @@ import static com.ytfs.service.packet.ServiceErrorCode.INVALID_UPLOAD_ID;
 import com.ytfs.service.packet.ServiceException;
 import com.ytfs.service.packet.UploadFileReq;
 import com.ytfs.service.packet.VoidResp;
+import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
 public class FileMetaHandler {
 
+    private static final Logger LOG = Logger.getLogger(FileMetaHandler.class);
+
     static VoidResp writeFileMeta(UploadFileReq req, User user) throws ServiceException, Throwable {
+        LOG.info("Create object:" + user.getUserID() + "/" + req.getBucketname() + "/" + req.getFileName());
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), req.getBucketname());
         if (meta == null) {
             throw new ServiceException(INVALID_BUCKET_NAME);
@@ -40,6 +44,7 @@ public class FileMetaHandler {
     }
 
     static DownloadObjectInitResp readFileMeta(DownloadFileReq req, User user) throws ServiceException, Throwable {
+        LOG.info("Read object:" + user.getUserID() + "/" + req.getBucketname() + "/" + req.getFileName());
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), req.getBucketname());
         if (meta == null) {
             throw new ServiceException(INVALID_BUCKET_NAME);
@@ -56,6 +61,7 @@ public class FileMetaHandler {
     }
 
     static VoidResp createBucket(CreateBucketReq req, User user) throws ServiceException, Throwable {
+        LOG.info("Crate bucket:" + user.getUserID() + "/" + req.getBucketName());
         String name = req.getBucketName();
         name = name == null ? "" : name.trim();
         if (name.isEmpty() || name.length() > 20) {
@@ -67,6 +73,7 @@ public class FileMetaHandler {
     }
 
     static ListBucketResp listBucket(ListBucketReq req, User user) throws ServiceException, Throwable {
+        LOG.info("LIST bucket:" + user.getUserID());
         String[] names = BucketAccessor.listBucket(user.getUserID());
         ListBucketResp resp = new ListBucketResp();
         resp.setNames(names);

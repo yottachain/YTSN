@@ -15,9 +15,12 @@ import com.ytfs.service.packet.UploadObjectInitResp;
 import com.ytfs.service.packet.VoidResp;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.List;
+import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
 public class UploadObjectHandler {
+
+    private static final Logger LOG = Logger.getLogger(UploadObjectHandler.class);
 
     /**
      * 上传对象完毕
@@ -42,6 +45,7 @@ public class UploadObjectHandler {
         EOSClient eos = new EOSClient(user.getEosName());
         eos.freeHDD(meta.getLength());
         eos.deductHDD(size);
+        LOG.info("Upload object " + user.getUserID() + "/" + meta.getVNU() + " OK.");
         return new VoidResp();
     }
 
@@ -55,6 +59,7 @@ public class UploadObjectHandler {
      * @throws Throwable
      */
     static UploadObjectInitResp init(UploadObjectInitReq ud, User user) throws ServiceException, Throwable {
+        LOG.info("Upload object init " + user.getUserID());
         int userid = user.getUserID();
         SuperNode n = SuperNodeList.getBlockSuperNodeByUserId(userid);
         if (n.getId() != ServerConfig.superNodeID) {

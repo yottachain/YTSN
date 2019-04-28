@@ -15,7 +15,6 @@ public class FromBPMsgDispatcher implements BPNodeCallback {
     @Override
     public byte[] onMessageFromBPNode(byte[] bytes, String string) {
         Object message = SerializationUtil.deserialize(bytes);
-        LOG.info("request:" + message.getClass().getSimpleName());
         Object response = null;
         try {
             if (message instanceof QueryObjectMetaReq) {

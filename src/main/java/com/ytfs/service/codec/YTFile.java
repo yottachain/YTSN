@@ -3,6 +3,7 @@ package com.ytfs.service.codec;
 import static com.ytfs.service.UserConfig.Compress_Reserve_Size;
 import static com.ytfs.service.UserConfig.Default_Block_Size;
 import static com.ytfs.service.UserConfig.Max_Memory_Usage;
+import static com.ytfs.service.UserConfig.tmpFilePath;
 import com.ytfs.service.utils.Function;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,7 +26,6 @@ import org.bson.Document;
 public class YTFile {
 
     private File blockDir = null;
-    private File parent = null;
     private final InputStream is;
     private final byte[] buf = new byte[16];
     private final List<Block> blockList = new ArrayList();
@@ -67,17 +67,12 @@ public class YTFile {
         digest(new FileInputStream(file));
         is = new BackableBufferedInputSteam(new FileInputStream(file), Default_Block_Size);
         length = file.length();
-        if (file.length() >= Max_Memory_Usage) {
-            inMemory = false;
-            parent = file.getParentFile();
-        } else {
-            inMemory = true;
-        }
+        inMemory = file.length() < Max_Memory_Usage;
     }
 
     public void init(String vnu) throws IOException {
         if (!inMemory) {
-            blockDir = new File(parent, vnu);
+            blockDir = new File(tmpFilePath, vnu);
             File end = new File(blockDir, "end");
             if (!end.exists()) {
                 clear();

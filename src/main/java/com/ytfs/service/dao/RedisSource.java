@@ -18,13 +18,15 @@ import redis.clients.jedis.exceptions.JedisException;
 
 public class RedisSource {
 
-    private static final List<RedisSource> REDIS_THREAD_LOCAL = new ArrayList();
+    static final List<RedisSource> REDIS_THREAD_LOCAL = new ArrayList();
+    static int counter = 0;
 
     private static RedisSource newInstance() {
         synchronized (REDIS_THREAD_LOCAL) {
             if (REDIS_THREAD_LOCAL.isEmpty()) {
                 try {
                     RedisSource source = new RedisSource();
+                    counter++;
                     return source;
                 } catch (Exception r) {
                     try {
@@ -51,6 +53,7 @@ public class RedisSource {
 
     private static final Logger LOG = Logger.getLogger(RedisSource.class);
     private BasicCommands jedis = null;
+    private long activeTime;
 
     private RedisSource() throws JedisException {
         String path = System.getProperty("mongo.conf", "conf/mongo.properties");
@@ -58,13 +61,14 @@ public class RedisSource {
             Properties p = new Properties();
             p.load(inStream);
             init(p);
+            activeTime = System.currentTimeMillis();
         } catch (Exception e) {
             close();
             throw e instanceof JedisException ? (JedisException) e : new JedisException(e.getMessage());
         }
     }
 
-    private void close() {
+    public void close() {
         if (getJedis() != null) {
             if (getJedis() instanceof JedisCluster) {
                 try {
@@ -111,6 +115,15 @@ public class RedisSource {
      * @return the jedis
      */
     public BasicCommands getJedis() {
+        activeTime = System.currentTimeMillis();
         return jedis;
     }
+
+    /**
+     * @return the activeTime
+     */
+    public boolean isExpired() {
+        return System.currentTimeMillis() - activeTime > 1000 * 60 * 3;
+    }
+
 }

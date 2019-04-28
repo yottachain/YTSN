@@ -14,9 +14,12 @@ import static com.ytfs.service.packet.ServiceErrorCode.INVALID_UPLOAD_ID;
 import com.ytfs.service.packet.ServiceException;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.List;
+import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
 public class SuperReqestHandler {
+
+    private static final Logger LOG = Logger.getLogger(SuperReqestHandler.class);
 
     /**
      * 保存上传进度至BPU
@@ -42,6 +45,7 @@ public class SuperReqestHandler {
      * @throws ServiceException
      */
     static SaveObjectMetaResp saveObjectMeta(SaveObjectMetaReq req) throws ServiceException {
+        LOG.info("Save object meta:" + req.getUserID() + "/" + req.getVNU());
         SaveObjectMetaResp resp = new SaveObjectMetaResp();
         ObjectMeta meta = queryObjectMeta(req.getVNU(), req.getUserID());
         List<ObjectRefer> refers = ObjectRefer.parse(meta.getBlocks());
@@ -68,6 +72,7 @@ public class SuperReqestHandler {
      * @throws ServiceException
      */
     static QueryObjectMetaResp queryObjectMeta(QueryObjectMetaReq req) throws ServiceException {
+        LOG.info("Query object meta:" + req.getUserID() + "/" + req.getVNU());
         ObjectMeta meta = queryObjectMeta(req.getVNU(), req.getUserID());
         QueryObjectMetaResp resp = new QueryObjectMetaResp(meta.getBlocks(), meta.getLength());
         return resp;
