@@ -1,12 +1,15 @@
 package com.ytfs.service;
 
+import static com.ytfs.service.ServerConfig.contractAccount;
+import static com.ytfs.service.ServerConfig.eosBPAccount;
+import static com.ytfs.service.ServerConfig.eosPrivateKey;
+import static com.ytfs.service.ServerConfig.eosURI;
 import com.ytfs.service.utils.GlobleThreadPool;
 import com.ytfs.service.utils.LogConfigurator;
 import static com.ytfs.service.ServerConfig.privateKey;
 import static com.ytfs.service.ServerConfig.superNodeID;
 import static com.ytfs.service.ServerConfig.port;
 import com.ytfs.service.dao.MongoSource;
-import com.ytfs.service.dao.RedisSource;
 import com.ytfs.service.net.P2PUtils;
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,7 +25,7 @@ public class ServerInitor {
     public static void stop() {
         P2PUtils.stop();
         MongoSource.terminate();
-        RedisSource.terminate();
+        //RedisSource.terminate();
         GlobleThreadPool.shutdown();
     }
 
@@ -52,7 +55,7 @@ public class ServerInitor {
                 }
                 P2PUtils.stop();
             }
-        } 
+        }
     }
 
     private static void load() throws IOException {
@@ -83,5 +86,22 @@ public class ServerInitor {
         } catch (Exception d) {
             throw new IOException("The 'port' parameter is not configured.");
         }
+        eosURI = p.getProperty("eosURI");
+        if (eosURI == null || eosURI.trim().isEmpty()) {
+            throw new IOException("The 'eosURI' parameter is not configured.");
+        }
+        eosPrivateKey = p.getProperty("eosPrivateKey");
+        if (eosPrivateKey == null || eosPrivateKey.trim().isEmpty()) {
+            throw new IOException("The 'eosPrivateKey' parameter is not configured.");
+        }
+        eosBPAccount = p.getProperty("eosBPAccount");
+        if (eosBPAccount == null || eosBPAccount.trim().isEmpty()) {
+            throw new IOException("The 'eosBPAccount' parameter is not configured.");
+        }
+        contractAccount = p.getProperty("contractAccount");
+        if (contractAccount == null || contractAccount.trim().isEmpty()) {
+            throw new IOException("The 'contractAccount' parameter is not configured.");
+        }  
+        
     }
 }

@@ -1,6 +1,6 @@
 package com.ytfs.service;
 
-import com.ytfs.service.servlet.UploadObjectCache;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jafka.jeos.EosApi;
 import io.jafka.jeos.EosApiFactory;
 import io.jafka.jeos.LocalApi;
@@ -16,6 +16,7 @@ import io.jafka.jeos.util.Raw;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class Test {
 
@@ -38,6 +39,7 @@ public class Test {
         String name = "username1234";
         Raw raw = new Raw();
         raw.packName(name);
+     
         String transferData = raw.toHex();
         //
 
@@ -46,7 +48,7 @@ public class Test {
 
         // ④ build the all actions
         List<TransactionAction> actions = Arrays.asList(//
-                new TransactionAction("hddpool", "getbalance", authorizations, transferData)//
+                new TransactionAction("hddpool12345", "getbalance", authorizations, transferData)//
         );
 
         // ⑤ build the packed transaction
@@ -69,7 +71,15 @@ public class Test {
 
         // --- push the signed-transaction to the blockchain
         PushedTransaction pts = eosApi.pushTransaction(req);
-        System.out.println(localApi.getObjectMapper().writeValueAsString(pts));
+        
+        String console=pts.getProcessed().getActionTraces().get(0).getConsole();
+        
+        ObjectMapper mapper = new ObjectMapper();
+        Map readValue = mapper.readValue(console, Map.class); 
+       // int balance = Integer.parseInt(readValue.get("balance"));
+        System.out.println(readValue.get("balance"));
+        
+       // System.out.println(localApi.getObjectMapper().writeValueAsString(pts));
 
     }
 

@@ -13,9 +13,12 @@ import com.ytfs.service.packet.VoidResp;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import org.apache.log4j.Logger;
 
 public class UploadShardHandler {
-
+    
+    private static final Logger LOG = Logger.getLogger(UploadShardHandler.class);
+    
     static void verify(UploadShardResp resp, byte[] key, int maxshardCount, int nodeid) throws ServiceException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         if (resp.getSHARDID() >= maxshardCount) {
             throw new ServiceException(TOO_MANY_SHARDS);
@@ -57,7 +60,7 @@ public class UploadShardHandler {
                 long failtimes = CacheAccessor.getUploadBlockINC(resp.getVBI());
                 if (failtimes >= ServerConfig.PNF) {
                     UploadObjectCache objcache = CacheAccessor.getUploadObjectCache(nodeid, cache.getVNU());
-                    EOSClient eos = new EOSClient(user.getEosID());
+                    EOSClient eos = new EOSClient(user.getEosName());
                     eos.punishHDD(objcache.getFilesize());
                     CacheAccessor.clearCache(cache.getVNU(), resp.getVBI());//清除缓存
                     return new VoidResp();
@@ -67,10 +70,12 @@ public class UploadShardHandler {
             shardCache.setNodeid(nodeid);
             shardCache.setRes(resp.getRES());
             shardCache.setVHF(resp.getVHF());
-            CacheAccessor.addUploadShardCache(shardCache, resp.getVBI());
+            shardCache.setShardid(resp.getSHARDID());
+            CacheAccessor.addUploadShardCache(shardCache, resp.getVBI());          
         } catch (Exception e) {
+            LOG.error("", e);
         }
         return new VoidResp();
     }
-
+    
 }

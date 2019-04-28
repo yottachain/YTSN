@@ -28,7 +28,7 @@ public class FileMetaHandler {
         if (meta == null) {
             throw new ServiceException(INVALID_BUCKET_NAME);
         }
-        if(req.getVNU()==null){
+        if (req.getVNU() == null) {
             throw new ServiceException(INVALID_UPLOAD_ID);
         }
         FileMeta filemeta = new FileMeta();

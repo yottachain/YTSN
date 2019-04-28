@@ -27,20 +27,7 @@ public class Test {
         //testObject();
     }
 
-    private static void testRedis() throws Exception {
-        BasicCommands jedis = RedisSource.getJedis();
-        if (jedis instanceof BinaryJedis) {
-            ((BinaryJedis) jedis).setex("aa".getBytes(), REDIS_BLOCK_EXPIRE, "bb".getBytes());
-
-            byte[] bb = ((BinaryJedis) jedis).get("aa".getBytes());
-            System.out.println(new String(bb));
-        } else {
-            ((BinaryJedisCluster) jedis).setex("aa".getBytes(), REDIS_BLOCK_EXPIRE, "bb".getBytes());
-            byte[] bb = ((BinaryJedisCluster) jedis).get("aa".getBytes());
-            System.out.println(new String(bb));
-        }
-
-    }
+ 
 
     private static void testSeq() throws Exception {
         //int uid = Sequence.getSequence(1);
@@ -85,7 +72,7 @@ public class Test {
         
         usr.setKUEp(kuep);
         usr.setKUSp(kusp);
-        usr.setSecretKey("sbbb".getBytes());
+        usr.setEosName("username1234");
         usr.setTotalBaseCost(2);
         usr.setUsedSpace(465);
         UserAccessor.addUser(usr);
@@ -94,7 +81,7 @@ public class Test {
         System.out.println(usr.getUserID());
         System.out.println(new String(usr.getKUEp()));
         System.out.println(new String(usr.getKUSp()));
-        System.out.println(new String(usr.getSecretKey()));
+        System.out.println(new String(usr.getEosName()));
         System.out.println(usr.getTotalBaseCost());
         System.out.println(usr.getUsedSpace());
 

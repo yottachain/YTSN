@@ -4,7 +4,9 @@ import com.mongodb.MongoException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.log4j.Logger;
@@ -16,39 +18,37 @@ import redis.clients.jedis.exceptions.JedisException;
 
 public class RedisSource {
 
-    private static RedisSource source = null;
+    private static final List<RedisSource> REDIS_THREAD_LOCAL = new ArrayList();
 
-    private static void newInstance() {
-        if (source != null) {
-            return;
-        }
-        try {
-            synchronized (RedisSource.class) {
-                if (source == null) {
-                    source = new RedisSource();
+    private static RedisSource newInstance() {
+        synchronized (REDIS_THREAD_LOCAL) {
+            if (REDIS_THREAD_LOCAL.isEmpty()) {
+                try {
+                    RedisSource source = new RedisSource();
+                    return source;
+                } catch (Exception r) {
+                    try {
+                        Thread.sleep(15000);
+                    } catch (InterruptedException ex) {
+                    }
+                    throw new JedisException(r.getMessage());
                 }
-            }
-        } catch (Exception r) {
-            try {
-                Thread.sleep(15000);
-            } catch (InterruptedException ex) {
-            }
-            throw new JedisException(r.getMessage());
-        }
-    }
-
-    public static BasicCommands getJedis() {
-        newInstance();
-        return source.jedis;
-    }
-
-    public static void terminate() {
-        synchronized (RedisSource.class) {
-            if (source != null) {
-                source.close();
+            } else {
+                return REDIS_THREAD_LOCAL.remove(0);
             }
         }
     }
+
+    public static void backSource(RedisSource source) {
+        synchronized (REDIS_THREAD_LOCAL) {
+            REDIS_THREAD_LOCAL.add(source);
+        }
+    }
+
+    public static RedisSource getSource() {
+        return newInstance();
+    }
+
     private static final Logger LOG = Logger.getLogger(RedisSource.class);
     private BasicCommands jedis = null;
 
@@ -65,14 +65,14 @@ public class RedisSource {
     }
 
     private void close() {
-        if (jedis != null) {
-            if (jedis instanceof JedisCluster) {
+        if (getJedis() != null) {
+            if (getJedis() instanceof JedisCluster) {
                 try {
-                    ((JedisCluster) jedis).close();
+                    ((JedisCluster) getJedis()).close();
                 } catch (IOException ex) {
                 }
             } else {
-                ((Jedis) jedis).close();
+                ((Jedis) getJedis()).close();
             }
         }
     }
@@ -105,5 +105,12 @@ public class RedisSource {
             jedis = new JedisCluster(nodes);
         }
         LOG.info("连接服务器成功!");
+    }
+
+    /**
+     * @return the jedis
+     */
+    public BasicCommands getJedis() {
+        return jedis;
     }
 }

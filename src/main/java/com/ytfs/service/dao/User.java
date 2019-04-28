@@ -6,8 +6,7 @@ import org.bson.types.Binary;
 public class User {
 
     private int userID;
-    private long eosID;
-    private byte[] secretKey;
+    private String eosName;
     private byte[] KUEp;
     private byte[] KUSp;
     private long usedSpace;
@@ -21,11 +20,8 @@ public class User {
         if (doc.containsKey("_id")) {
             this.userID = doc.getInteger("_id");
         }
-        if (doc.containsKey("eosID")) {
-            this.eosID = doc.getLong("eosID");
-        }
-        if (doc.containsKey("secretKey")) {
-            this.secretKey = ((Binary) doc.get("secretKey")).getData();
+        if (doc.containsKey("eosName")) {
+            this.eosName = doc.getString("eosName");
         }
         if (doc.containsKey("KUEp")) {
             this.KUEp = ((Binary) doc.get("KUEp")).getData();
@@ -44,7 +40,7 @@ public class User {
     public Document toDocument() {
         Document doc = new Document();
         doc.append("_id", userID);
-        doc.append("secretKey", new Binary(secretKey));
+        doc.append("eosName", eosName);
         doc.append("KUEp", new Binary(KUEp));
         doc.append("KUSp", new Binary(KUSp));
         doc.append("usedSpace", usedSpace);
@@ -64,20 +60,6 @@ public class User {
      */
     public void setUserID(int userID) {
         this.userID = userID;
-    }
-
-    /**
-     * @return the secretKey
-     */
-    public byte[] getSecretKey() {
-        return secretKey;
-    }
-
-    /**
-     * @param secretKey the secretKey to set
-     */
-    public void setSecretKey(byte[] secretKey) {
-        this.secretKey = secretKey;
     }
 
     /**
@@ -137,16 +119,16 @@ public class User {
     }
 
     /**
-     * @return the eosID
+     * @return the eosName
      */
-    public long getEosID() {
-        return eosID;
+    public String getEosName() {
+        return eosName;
     }
 
     /**
-     * @param eosID the eosID to set
+     * @param eosName the eosName to set
      */
-    public void setEosID(long eosID) {
-        this.eosID = eosID;
+    public void setEosName(String eosName) {
+        this.eosName = eosName;
     }
 }

@@ -103,15 +103,10 @@ public class NodeManager {
      * @return
      * @throws io.yottachain.nodemgmt.core.exception.NodeMgmtException
      */
-    public static Node[] getNode(int[] nodeids) throws NodeMgmtException {
+    public static List<Node>  getNode(List<Integer> nodeids) throws NodeMgmtException {
         start();
-        List<Integer> ls = new ArrayList();
-        for (int i : nodeids) {
-            ls.add(i);
-        }
-        List<Node> lss = YottaNodeMgmt.getNodes(ls);
-        Node[] sn = new Node[lss.size()];
-        return lss.toArray(sn);
+        List<Node> lss = YottaNodeMgmt.getNodes(nodeids);
+        return lss;
     }
 
     public static int getNodeIDByPubKey(String key) throws NodeMgmtException {

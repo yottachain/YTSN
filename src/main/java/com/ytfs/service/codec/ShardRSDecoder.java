@@ -37,6 +37,7 @@ public class ShardRSDecoder {
             ReedSolomon reedSolomon = ReedSolomon.create(dataShardCount + (remainSize > 0 ? 1 : 0), Default_PND);
             byte[][] datas = new byte[reedSolomon.getTotalShardCount()][];
             for (Shard shd : shards) {
+                System.out.println(shd.getShardIndex());
                 datas[shd.getShardIndex()] = shd.getData();
             }
             boolean needdecode = false;

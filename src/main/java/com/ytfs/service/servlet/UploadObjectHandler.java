@@ -39,7 +39,7 @@ public class UploadObjectHandler {
             size = size + refer.getRealSize();
         }
         size = ServerConfig.PMS + size;
-        EOSClient eos = new EOSClient(userid);
+        EOSClient eos = new EOSClient(user.getEosName());
         eos.freeHDD(meta.getLength());
         eos.deductHDD(size);
         return new VoidResp();
@@ -82,7 +82,7 @@ public class UploadObjectHandler {
                 return resp;
             }
         }
-        EOSClient eos = new EOSClient(user.getEosID());
+        EOSClient eos = new EOSClient(user.getEosName());
         boolean hasspace = eos.hasSpace(ud.getLength(), ServerConfig.PMS);
         if (!hasspace) {
             throw new ServiceException(ServiceErrorCode.NOT_ENOUGH_DHH);

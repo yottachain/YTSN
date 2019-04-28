@@ -4,20 +4,6 @@ import java.nio.ByteBuffer;
 
 public class UploadShardCache {
 
-    /**
-     * @return the shardid
-     */
-    public int getShardid() {
-        return shardid;
-    }
-
-    /**
-     * @param shardid the shardid to set
-     */
-    public void setShardid(int shardid) {
-        this.shardid = shardid;
-    }
-
     public byte[] toByte() {
         ByteBuffer buf = ByteBuffer.allocate(44);
         buf.put(VHF);
@@ -78,6 +64,19 @@ public class UploadShardCache {
         this.nodeid = nodeid;
     }
 
+    /**
+     * @return the shardid
+     */
+    public int getShardid() {
+        return shardid;
+    }
+
+    /**
+     * @param shardid the shardid to set
+     */
+    public void setShardid(int shardid) {
+        this.shardid = shardid;
+    }
     private byte[] VHF;//已上传的,未上传或失败的==null
     private int res;    //从存储节点返回的存储结果
     private int nodeid; //从存储节点返回节点ID 

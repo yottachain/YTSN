@@ -1,6 +1,5 @@
 package com.ytfs.service.servlet;
 
-
 import static com.ytfs.service.ServerConfig.REDIS_EXPIRE;
 import com.ytfs.service.dao.RedisSource;
 import com.ytfs.service.utils.Function;
@@ -62,48 +61,72 @@ public class UploadObjectCache {
             }
             return false;
         }
-        BasicCommands jedis = RedisSource.getJedis();
-        byte[] key = getCacheKey(VNU);
-        byte[] value = (jedis instanceof BinaryJedis)
-                ? ((BinaryJedis) jedis).get(key)
-                : ((BinaryJedisCluster) jedis).get(key);
-        if (value == null) {
-            return false;
-        } else {
-            ByteBuffer buf = ByteBuffer.wrap(key);
-            while (buf.hasRemaining()) {
-                short s = buf.getShort();
-                if (s == num) {
-                    return true;
+        RedisSource source = null;
+        try {
+            source = RedisSource.getSource();
+            BasicCommands jedis = source.getJedis();
+            byte[] key = getCacheKey(VNU);
+            byte[] value = (jedis instanceof BinaryJedis)
+                    ? ((BinaryJedis) jedis).get(key)
+                    : ((BinaryJedisCluster) jedis).get(key);
+            if (value == null) {
+                return false;
+            } else {
+                ByteBuffer buf = ByteBuffer.wrap(value);
+                while (buf.hasRemaining()) {
+                    short s = buf.getShort();
+                    if (s == num) {
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
+        } finally {
+            if (source != null) {
+                RedisSource.backSource(source);
+            }
         }
     }
 
     public void setBlockNums(ObjectId VNU, short[] num) {
-        BasicCommands jedis = RedisSource.getJedis();
-        byte[] key = getCacheKey(VNU);
-        ByteBuffer buf = ByteBuffer.allocate(num.length * 2);
-        for (short s : num) {
-            buf.putShort(s);
+        RedisSource source = null;
+        try {
+            source = RedisSource.getSource();
+            BasicCommands jedis = source.getJedis();
+            byte[] key = getCacheKey(VNU);
+            ByteBuffer buf = ByteBuffer.allocate(num.length * 2);
+            for (short s : num) {
+                buf.putShort(s);
+            }
+            buf.flip();
+            if (jedis instanceof BinaryJedis) {
+                ((BinaryJedis) jedis).setex(key, REDIS_EXPIRE, buf.array());
+            } else {
+                ((BinaryJedisCluster) jedis).setex(key, REDIS_EXPIRE, buf.array());
+            }
+            blockids = num;
+        } finally {
+            if (source != null) {
+                RedisSource.backSource(source);
+            }
         }
-        buf.flip();
-        if (jedis instanceof BinaryJedis) {
-            ((BinaryJedis) jedis).setex(key, REDIS_EXPIRE, buf.array());
-        } else {
-            ((BinaryJedisCluster) jedis).setex(key, REDIS_EXPIRE, buf.array());
-        }
-        blockids = num;
     }
 
     public static void setBlockNum(ObjectId VNU, short num) {
-        BasicCommands jedis = RedisSource.getJedis();
-        byte[] key = getCacheKey(VNU);
-        if (jedis instanceof BinaryJedis) {
-            ((BinaryJedis) jedis).append(key, Function.short2bytes(num));
-        } else {
-            ((BinaryJedisCluster) jedis).append(key, Function.short2bytes(num));
+        RedisSource source = null;
+        try {
+            source = RedisSource.getSource();
+            BasicCommands jedis = source.getJedis();
+            byte[] key = getCacheKey(VNU);
+            if (jedis instanceof BinaryJedis) {
+                ((BinaryJedis) jedis).append(key, Function.short2bytes(num));
+            } else {
+                ((BinaryJedisCluster) jedis).append(key, Function.short2bytes(num));
+            }
+        } finally {
+            if (source != null) {
+                RedisSource.backSource(source);
+            }
         }
     }
 }

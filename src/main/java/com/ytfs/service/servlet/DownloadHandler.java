@@ -14,6 +14,8 @@ import com.ytfs.service.packet.DownloadObjectInitReq;
 import com.ytfs.service.packet.DownloadObjectInitResp;
 import com.ytfs.service.packet.ServiceException;
 import io.yottachain.nodemgmt.core.vo.Node;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DownloadHandler {
 
@@ -56,15 +58,21 @@ public class DownloadHandler {
         resp.setVNF(vnf);
         int len = vnf > 0 ? vnf : (vnf * -1);
         ShardMeta[] metas = ShardAccessor.getShardMeta(req.getVBI(), len);
-        int[] nodeids = new int[metas.length];
         byte[][] VHF = new byte[metas.length][];
-        for (int ii = 0; ii < nodeids.length; ii++) {
+        int[] nodeids = new int[metas.length];
+        List<Integer> nodeidsls = new ArrayList();
+        for (int ii = 0; ii < metas.length; ii++) {
             nodeids[ii] = metas[ii].getNodeId();
+            if (!nodeidsls.contains(metas[ii].getNodeId())) {
+                nodeidsls.add(metas[ii].getNodeId());
+            }
             VHF[ii] = metas[ii].getVHF();
         }
         resp.setVHF(VHF);
-        Node[] nodes = NodeManager.getNode(nodeids);
-        resp.setNodes(nodes);
+        List<Node> ls = NodeManager.getNode(nodeidsls);
+        Node[] ns = new Node[ls.size()];
+        resp.setNodes(ls.toArray(ns));
+        resp.setNodeids(nodeids);
         return resp;
     }
 }

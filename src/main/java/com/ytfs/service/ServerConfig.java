@@ -27,4 +27,17 @@ public class ServerConfig {
 
     //端口
     public static int port;
+
+    //eos ADD
+    public static String eosURI;
+
+    //本超级节点私钥
+    public static String eosPrivateKey;
+
+    //本超级节点EOS账户
+    public static String eosBPAccount;
+
+    //合约账户
+    public static String contractAccount;
+
 }

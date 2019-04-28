@@ -71,6 +71,7 @@ public class P2PUtils {
             CONNECTS.add(key);
         }
         byte[] data = SerializationUtil.serialize(obj);
+        //System.out.println(Hex.encodeHexString(data));
         byte[] bs = null;
         try {                    //访问p2p网络
             switch (type) {
