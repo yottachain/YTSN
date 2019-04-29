@@ -1,6 +1,5 @@
 package com.ytfs.service.codec;
 
-import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.List;
 import org.apache.commons.codec.binary.Hex;
@@ -15,7 +14,6 @@ public class TestShardCoder {
     }
 
     private static void middleBlock() throws Exception {
-
         MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
         key = sha256.digest(key);
 

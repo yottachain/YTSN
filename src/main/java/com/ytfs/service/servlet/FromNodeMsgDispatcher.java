@@ -1,9 +1,11 @@
 package com.ytfs.service.servlet;
 
 import com.ytfs.service.node.NodeCache;
+import com.ytfs.service.packet.NodeRegReq;
 import com.ytfs.service.packet.SerializationUtil;
 import com.ytfs.service.packet.ServiceErrorCode;
 import com.ytfs.service.packet.ServiceException;
+import com.ytfs.service.packet.StatusRepReq;
 import com.ytfs.service.packet.UploadShardResp;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.p2phost.interfaces.NodeCallback;
@@ -18,10 +20,13 @@ public class FromNodeMsgDispatcher implements NodeCallback {
         Object response = null;
         try {
             Object message = SerializationUtil.deserialize(data);
-            LOG.info("request:" + message.getClass().getSimpleName());
             int nodeId = NodeCache.getNodeId(nodekey);
             if (message instanceof UploadShardResp) {
                 response = UploadShardHandler.uploadShardResp((UploadShardResp) message, nodeId);
+            } else if (message instanceof NodeRegReq) {
+                response = NodeMessageHandler.reg((NodeRegReq) message, nodeId);
+            } else if (message instanceof StatusRepReq) {
+                response = NodeMessageHandler.statusRep((StatusRepReq) message, nodeId);
             }
             return SerializationUtil.serialize(response);
         } catch (ServiceException s) {

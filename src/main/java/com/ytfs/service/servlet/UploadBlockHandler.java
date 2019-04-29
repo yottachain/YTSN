@@ -33,7 +33,7 @@ public class UploadBlockHandler {
      */
     static VoidResp complete(UploadBlockEndReq req, User user) throws ServiceException, Throwable {
         int userid = user.getUserID();
-        UploadBlockCache cache = CacheAccessor.getUploadBlockCache(req.getVBI()); 
+        UploadBlockCache cache = CacheAccessor.getUploadBlockCache(req.getVBI());
         Map<Integer, UploadShardCache> caches = CacheAccessor.getUploadShardCache(req.getVBI());
         List<Document> ls = verify(req, caches, cache.getShardcount(), req.getVBI());
         ShardAccessor.saveShardMetas(ls);
@@ -92,7 +92,7 @@ public class UploadBlockHandler {
             for (int ii = 0; ii < shardCount; ii++) {
                 UploadShardCache cache = caches.get(ii);
                 if (cache == null || !(cache.getRes() == UploadShardRes.RES_OK
-                        || cache.getRes() == UploadShardRes.RES_NO_SPACE || cache.getRes() == UploadShardRes.RES_VNF_EXISTS)) {
+                        || cache.getRes() == UploadShardRes.RES_VNF_EXISTS)) {
                     throw new ServiceException(INVALID_SHARD);
                 }
                 if (req.isRsShard()) {
@@ -140,7 +140,7 @@ public class UploadBlockHandler {
      */
     static VoidResp saveToDB(UploadBlockDBReq req, User user) throws ServiceException, Throwable {
         int userid = user.getUserID();
-        LOG.info("Upload block " + user.getUserID() + "/" + req.getVNU() + "/" + req.getId()+" to DB...");
+        LOG.info("Upload block " + user.getUserID() + "/" + req.getVNU() + "/" + req.getId() + " to DB...");
         UploadObjectCache progress = CacheAccessor.getUploadObjectCache(userid, req.getVNU());
         if (progress.exists(req.getVNU(), req.getId())) {
             return new VoidResp();
@@ -220,7 +220,7 @@ public class UploadBlockHandler {
      */
     static VoidResp repeat(UploadBlockDupReq req, User user) throws ServiceException, Throwable {
         int userid = user.getUserID();
-        LOG.info("Upload block " + user.getUserID() + "/" + req.getVNU() + "/" + req.getId()+" exist...");
+        LOG.info("Upload block " + user.getUserID() + "/" + req.getVNU() + "/" + req.getId() + " exist...");
         UploadObjectCache progress = CacheAccessor.getUploadObjectCache(userid, req.getVNU());
         if (progress.exists(req.getVNU(), req.getId())) {
             return new VoidResp();
@@ -328,7 +328,7 @@ public class UploadBlockHandler {
      */
     static UploadBlockSubResp subUpload(UploadBlockSubReq req, User user) throws ServiceException, Throwable {
         UploadBlockCache cache = CacheAccessor.getUploadBlockCache(req.getVBI());
-        LOG.info("Upload block " + user.getUserID() + "/" + cache.getVNU()  +" retry...");
+        LOG.info("Upload block " + user.getUserID() + "/" + cache.getVNU() + " retry...");
         List<UploadShardRes> fails = new ArrayList();
         Map<Integer, UploadShardCache> caches = CacheAccessor.getUploadShardCache(req.getVBI());
         UploadShardRes[] ress = req.getRes();

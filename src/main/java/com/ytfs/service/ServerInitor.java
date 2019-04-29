@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
@@ -34,7 +35,7 @@ public class ServerInitor {
             String path = System.getProperty("logger.path", "log");
             File dir = new File(path);
             dir.mkdirs();
-            String level = WrapperManager.getProperties().getProperty("log4j.loglevel", "INFO");
+            String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "INFO");
             LogConfigurator.configPath(new File(dir, "log"), level);
             load();
         } catch (IOException e) {

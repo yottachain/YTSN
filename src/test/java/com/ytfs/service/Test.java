@@ -38,8 +38,9 @@ public class Test {
         // ① pack transfer data
         String name = "username1234";
         Raw raw = new Raw();
+        
         raw.packName(name);
-     
+        raw.packUint64(5);
         String transferData = raw.toHex();
         //
 
@@ -47,7 +48,7 @@ public class Test {
         List<TransactionAuthorization> authorizations = Arrays.asList(new TransactionAuthorization(from, "active"));
 
         // ④ build the all actions
-        List<TransactionAction> actions = Arrays.asList(//
+        List<TransactionAction> actions = Arrays.asList(//getbalance
                 new TransactionAction("hddpool12345", "getbalance", authorizations, transferData)//
         );
 
@@ -72,13 +73,14 @@ public class Test {
         // --- push the signed-transaction to the blockchain
         PushedTransaction pts = eosApi.pushTransaction(req);
         
-        String console=pts.getProcessed().getActionTraces().get(0).getConsole();
-        
+         
+        System.out.println(localApi.getObjectMapper().writeValueAsString(pts));
+        /*
         ObjectMapper mapper = new ObjectMapper();
         Map readValue = mapper.readValue(console, Map.class); 
        // int balance = Integer.parseInt(readValue.get("balance"));
         System.out.println(readValue.get("balance"));
-        
+        */
        // System.out.println(localApi.getObjectMapper().writeValueAsString(pts));
 
     }

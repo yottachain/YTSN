@@ -77,10 +77,20 @@ public class EOSClient {
         Map readValue = mapper.readValue(console, Map.class);
         int balance = 0;
         try {
-            balance =(int) readValue.get("balance");
+            balance = (int) readValue.get("balance");
         } catch (NumberFormatException r) {
         }
         return true;
+    }
+
+    /**
+     * 扣除相应的HDD
+     *
+     * @param length
+     * @throws Throwable
+     */
+    public void deductHDD(long length) throws Throwable {
+
     }
 
     /**
@@ -99,16 +109,6 @@ public class EOSClient {
      * @throws Throwable
      */
     public void freeHDD(long length) throws Throwable {
-    }
-
-    /**
-     * 扣除相应的HDD
-     *
-     * @param length
-     * @throws Throwable
-     */
-    public void deductHDD(long length) throws Throwable {
-
     }
 
     /**

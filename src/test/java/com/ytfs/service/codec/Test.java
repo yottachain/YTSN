@@ -23,30 +23,34 @@ import sun.security.ec.ECPublicKeyImpl;
 public class Test {
 
     public static void main(String[] args) throws Exception {
-                byte[] kuep = Base58.decode("GZsJqUv51pw4c5HnBHiStK3jwJKXZjdtxVwkEShR9Ljb7ZUN1T");//公钥
-        byte[] kusp = Base58.decode("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");//si钥       
+        double d=17.9;
+        double d1=d*100d;
+        System.out.println(d1);
+            
         
+                if (true) {
+            return;
+        }
+        byte[] kuep = Base58.decode("GZsJqUv51pw4c5HnBHiStK3jwJKXZjdtxVwkEShR9Ljb7ZUN1T");//公钥
+        byte[] kusp = Base58.decode("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");//si钥       
+
         //EOS85t8zCVUuui5D4yzM72hUg2YWs6Qkf5pnXX6jw8qP7PrDQPbwj
         String KUEp = "85t8zCVUuui5D4yzM72hUg2YWs6Qkf5pnXX6jw8qP7PrDQPbwj";
         String KUSp = "5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ";
-        
+
         String p = KeyUtil.toPublicKey(KUSp);
         System.out.println(p);
         p = KeyUtil.toPublicKey(KUSp);
         System.out.println(p);
 
-        if (false) {
-            return;
-        }
+    
         byte[] ks = "sdsdsdgfvs".getBytes();
         byte[] bs1 = KeyStoreCoder.rsaEncryped(ks, Base58.decode(KUEp));
 
         byte[] bs2 = KeyStoreCoder.rsaDecryped(bs1, Base58.decode(KUSp));
 
         System.out.println(new String(bs2));
-        if (true) {
-            return;
-        }
+
 
         BigInteger bi = privateKey("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");
         String pubkey = KeyUtil.toPublicKey("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");
@@ -111,10 +115,8 @@ public class Test {
 
     public static ECParameterSpec initECParameterSpec(ECPoint g) {
         // the order of generator
-        BigInteger n = new BigInteger(
-                "5846006549323611672814741753598448348329118574063", 10);
-        n = new BigInteger(
-                "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
+        BigInteger n = new BigInteger("5846006549323611672814741753598448348329118574063", 10);
+        n = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
 
         // the cofactor
         int h = 2;
@@ -129,8 +131,7 @@ public class Test {
 
         EllipticCurve ellipticCurve = new EllipticCurve(ecField, a, b);
 
-        ECParameterSpec ecParameterSpec = new ECParameterSpec(ellipticCurve, g,
-                n, h);
+        ECParameterSpec ecParameterSpec = new ECParameterSpec(ellipticCurve, g, n, h);
         ECParameters s;
 
         return ecParameterSpec;
@@ -140,14 +141,12 @@ public class Test {
         // 公钥
         ECPublicKey publicKey = new ECPublicKeyImpl(g, ecParameterSpec);
         return publicKey;
-
     }
 
     public static ECPrivateKey initPrivateKey(BigInteger s, ECParameterSpec ecParameterSpec) throws Exception {
         // 私钥
         ECPrivateKey privateKey = new ECPrivateKeyImpl(s, ecParameterSpec);
         return privateKey;
-
     }
 
 }
