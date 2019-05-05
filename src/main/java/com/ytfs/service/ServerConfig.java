@@ -26,7 +26,7 @@ public class ServerConfig {
     public static String privateKey;
 
     //端口
-    public static int port;
+    public static int port=9999;
 
     //eos ADD
     public static String eosURI;
@@ -39,5 +39,8 @@ public class ServerConfig {
 
     //合约账户
     public static String contractAccount;
+
+    //端口
+    public static int httpPort=8080;
 
 }

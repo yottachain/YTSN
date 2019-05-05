@@ -23,46 +23,22 @@ import sun.security.ec.ECPublicKeyImpl;
 public class Test {
 
     public static void main(String[] args) throws Exception {
-        double d=17.9;
-        double d1=d*100d;
-        System.out.println(d1);
-            
-        
-                if (true) {
-            return;
-        }
+
         byte[] kuep = Base58.decode("GZsJqUv51pw4c5HnBHiStK3jwJKXZjdtxVwkEShR9Ljb7ZUN1T");//公钥
         byte[] kusp = Base58.decode("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");//si钥       
-
-        //EOS85t8zCVUuui5D4yzM72hUg2YWs6Qkf5pnXX6jw8qP7PrDQPbwj
-        String KUEp = "85t8zCVUuui5D4yzM72hUg2YWs6Qkf5pnXX6jw8qP7PrDQPbwj";
-        String KUSp = "5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ";
-
-        String p = KeyUtil.toPublicKey(KUSp);
-        System.out.println(p);
-        p = KeyUtil.toPublicKey(KUSp);
-        System.out.println(p);
-
-    
-        byte[] ks = "sdsdsdgfvs".getBytes();
-        byte[] bs1 = KeyStoreCoder.rsaEncryped(ks, Base58.decode(KUEp));
-
-        byte[] bs2 = KeyStoreCoder.rsaDecryped(bs1, Base58.decode(KUSp));
-
-        System.out.println(new String(bs2));
-
 
         BigInteger bi = privateKey("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");
         String pubkey = KeyUtil.toPublicKey("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");
         System.out.println(pubkey);
 
-        ECPoint ecp = initECPoint(pubkey);
+        Point ecp = initECPoint(pubkey);
 
         // ecp=new ECPoint( new BigInteger(  
         //        "2fe13c0537bbc11acaa07d793de4e6d5e5c94eee8", 16),new BigInteger(  
         //       "289070fb05d38ff58321f2e800536d538ccdaa3d9", 16));
         ECParameterSpec espec = initECParameterSpec(ecp);
-        ECPublicKey pubKey = initPublicKey(ecp, espec);
+        //ECPublicKey pubKey = initPublicKey(ecp, espec);
+        //pubKey.getEncoded();
         ECPrivateKey priKey = initPrivateKey(bi, espec);
         // initKey();
         /*
@@ -77,7 +53,7 @@ public class Test {
         //        pubKey.getParams());
         Cipher cipher = new NullCipher();
         // cipher.doFinal(data);
-        cipher.init(Cipher.ENCRYPT_MODE, pubKey, pubKey.getParams());
+       // cipher.init(Cipher.ENCRYPT_MODE, pubKey, pubKey.getParams());
         //byte[] bs = cipher.doFinal(data);
         //   ECPrivateKeySpec ecPrivateKeySpec = new ECPrivateKeySpec(priKey.getS(),
         //     priKey.getParams());
@@ -103,49 +79,49 @@ public class Test {
         return d;
     }
 
-    private static ECPoint initECPoint(String pk) {
+    private static Point initECPoint(String pk) {
         String ss = pk.substring(3);
         byte[] public_wif = io.jafka.jeos.util.Base58.decode(ss);
         byte[] public_key = Raw.copy(public_wif, 0, public_wif.length - 4);
         Curve curve = secp.getCurve();
         Point p = curve.decodePoint(public_key);
-        ECPoint ep = new ECPoint(p.getX().toBigInteger(), p.getY().toBigInteger());
-        return ep;
+        return p;
     }
 
-    public static ECParameterSpec initECParameterSpec(ECPoint g) {
+    public static ECParameterSpec initECParameterSpec(Point g) {
         // the order of generator
         BigInteger n = new BigInteger("5846006549323611672814741753598448348329118574063", 10);
-        n = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16);
-
         // the cofactor
         int h = 2;
         int m = 163;
         int[] ks = {7, 6, 3};
         ECFieldF2m ecField = new ECFieldF2m(m, ks);
-
+ 
         // y^2+xy=x^3+x^2+1
-        BigInteger a = new BigInteger("0", 16); //new BigInteger(A, 16);// new BigInteger("1", 2);
+        BigInteger a = new BigInteger("1", 2); //new BigInteger(A, 16);// new BigInteger("1", 2);
 
-        BigInteger b = new BigInteger("7", 16);  //new BigInteger(B, 16);//new BigInteger("1", 2);
-
+        BigInteger b = new BigInteger("1", 2);  //new BigInteger(B, 16);//new BigInteger("1", 2);
+ 
+        //EllipticCurve ellipticCurve = new EllipticCurve(ecField, a, b);
         EllipticCurve ellipticCurve = new EllipticCurve(ecField, a, b);
-
-        ECParameterSpec ecParameterSpec = new ECParameterSpec(ellipticCurve, g, n, h);
-        ECParameters s;
-
+        
+        ECPoint gg=new ECPoint(g.getX().toBigInteger(),g.getY().toBigInteger());
+    
+        ECParameterSpec ecParameterSpec = new ECParameterSpec(ellipticCurve, gg, n, h);
         return ecParameterSpec;
     }
 
     public static ECPublicKey initPublicKey(ECPoint g, ECParameterSpec ecParameterSpec) throws Exception {
         // 公钥
         ECPublicKey publicKey = new ECPublicKeyImpl(g, ecParameterSpec);
+ 
         return publicKey;
     }
 
     public static ECPrivateKey initPrivateKey(BigInteger s, ECParameterSpec ecParameterSpec) throws Exception {
         // 私钥
         ECPrivateKey privateKey = new ECPrivateKeyImpl(s, ecParameterSpec);
+       // ECPublicKey publicKey = new ECPublicKeyImpl(ecParameterSpec.getGenerator(), ecParameterSpec);
         return privateKey;
     }
 

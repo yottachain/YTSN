@@ -9,13 +9,14 @@ import com.ytfs.service.utils.LogConfigurator;
 import static com.ytfs.service.ServerConfig.privateKey;
 import static com.ytfs.service.ServerConfig.superNodeID;
 import static com.ytfs.service.ServerConfig.port;
+import static com.ytfs.service.ServerConfig.httpPort;
 import com.ytfs.service.dao.MongoSource;
+import com.ytfs.service.http.HttpServerBoot;
 import com.ytfs.service.net.P2PUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
@@ -26,6 +27,7 @@ public class ServerInitor {
 
     public static void stop() {
         P2PUtils.stop();
+        HttpServerBoot.stopHttpServer();
         MongoSource.terminate();
         GlobleThreadPool.shutdown();
     }
@@ -50,13 +52,19 @@ public class ServerInitor {
                 LOG.info("P2P initialization completed, port " + port);
                 break;
             } catch (Exception r) {
-                LOG.info("P2P initialization failed!", r);
+                LOG.error("P2P initialization failed!", r);
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException ex) {
                 }
                 P2PUtils.stop();
             }
+        }
+        try {
+            HttpServerBoot.startHttpServer();
+            LOG.info("Http server started, port " + httpPort);
+        } catch (Exception r) {
+            LOG.error("Http server failed to start!", r);
         }
     }
 
@@ -83,10 +91,16 @@ public class ServerInitor {
             throw new IOException("The 'privateKey' parameter is not configured.");
         }
         try {
-            String ss = p.getProperty("port").trim();
+            String ss = p.getProperty("port","9999").trim();
             port = Integer.parseInt(ss);
         } catch (Exception d) {
             throw new IOException("The 'port' parameter is not configured.");
+        }
+        try {
+            String ss = p.getProperty("httpPort","8080").trim();
+            httpPort = Integer.parseInt(ss);
+        } catch (Exception d) {
+            throw new IOException("The 'httpPort' parameter is not configured.");
         }
         eosURI = p.getProperty("eosURI");
         if (eosURI == null || eosURI.trim().isEmpty()) {

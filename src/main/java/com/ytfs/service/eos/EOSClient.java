@@ -54,7 +54,7 @@ public class EOSClient {
         String transferData = raw.toHex();
         List<TransactionAuthorization> authorizations = Arrays.asList(new TransactionAuthorization(from, "active"));
         List<TransactionAction> actions = Arrays.asList(//
-                new TransactionAction("hddpool12345", "getbalance", authorizations, transferData)//
+                new TransactionAction(ServerConfig.contractAccount, "getbalance", authorizations, transferData)//
         );
         PackedTransaction packedTransaction = new PackedTransaction();
         packedTransaction.setExpiration(arg.getHeadBlockTime().plusSeconds(arg.getExpiredSecond()));
