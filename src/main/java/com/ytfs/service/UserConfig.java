@@ -34,19 +34,27 @@ public class UserConfig {
     //用户ID
     public static int userID;
 
+    //用户钱包账户名
+    public static String username;
+
+    //用户私钥
+    public static byte[] KUSp;
+    public static String privateKey;
+    
+
+    //合约账户名
+    public static String contractAccount;
+
     //用户对应的超级节点
     public static SuperNode superNode;
 
-    //用户加密公钥
-    public static byte[] KUEp;
-
-    //用户签名私钥
-    public static byte[] KUSp;
-
-    //端口
+    //p2p端口
     public static int port;
-    
+
     //缓存路径
     public static File tmpFilePath;
+
+    //用户公钥，不用配置
+    public static byte[] KUEp;
 
 }

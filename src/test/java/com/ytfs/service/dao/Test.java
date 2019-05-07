@@ -59,6 +59,21 @@ public class Test {
     }
 
     private static void testUser() throws Exception {
+        
+        Bson bson = Filters.eq("_id", 1);
+        Document doc= new Document("usedSpace", 1);
+        doc.append("totalBaseCost", 1);
+        Document update = new Document("$set", doc);
+        //username1234
+       // update.append("$set",  new Document("eosName", "username1234"));
+        
+        MongoSource.getUserCollection().updateOne(bson, update);
+        
+        
+        if(true){
+            return;
+        }
+        
         User usr = new User(Sequence.generateUserID());
         //Invalid public key:25nsgBoxHrhgZ3xk7eQLqgU36SPomd92dgxeYxXUXndWV
         //25nsgBoxHrhgZ3xk7eQLqgU36SPomd92dgxeYxXUXndWV
@@ -71,18 +86,18 @@ public class Test {
         
         
         usr.setKUEp(kuep);
-        usr.setKUSp(kusp);
-        usr.setEosName("username1234");
-        usr.setTotalBaseCost(2);
+     //   usr.setKUSp(kusp);
+     //   usr.setEosName("username1234");
+     //   usr.setTotalBaseCost(2);
         usr.setUsedSpace(465);
         UserAccessor.addUser(usr);
 
         usr = UserAccessor.getUser(usr.getUserID());
         System.out.println(usr.getUserID());
         System.out.println(new String(usr.getKUEp()));
-        System.out.println(new String(usr.getKUSp()));
-        System.out.println(new String(usr.getEosName()));
-        System.out.println(usr.getTotalBaseCost());
+    //    System.out.println(new String(usr.getKUSp()));
+      //  System.out.println(new String(usr.getEosName()));
+     //   System.out.println(usr.getTotalBaseCost());
         System.out.println(usr.getUsedSpace());
 
     }

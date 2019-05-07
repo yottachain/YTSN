@@ -4,9 +4,12 @@ import static com.ytfs.service.dao.RedisSource.REDIS_THREAD_LOCAL;
 import static com.ytfs.service.dao.RedisSource.counter;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.log4j.Logger;
 
 public class RedisExpiredChecker extends Thread {
-
+    
+    private static final Logger LOG = Logger.getLogger(RedisExpiredChecker.class);
+    
     @Override
     public void run() {
         while (!this.isInterrupted()) {
@@ -15,11 +18,13 @@ public class RedisExpiredChecker extends Thread {
                 check();
             } catch (InterruptedException ex) {
                 break;
+            } catch (Exception ex) {
+                LOG.error("", ex);
             }
         }
-
+        
     }
-
+    
     public void close() {
         this.interrupt();
         try {
@@ -32,7 +37,7 @@ public class RedisExpiredChecker extends Thread {
             }
         }
     }
-
+    
     private void check() {
         synchronized (REDIS_THREAD_LOCAL) {
             List<RedisSource> ls = new ArrayList(REDIS_THREAD_LOCAL);
@@ -43,7 +48,6 @@ public class RedisExpiredChecker extends Thread {
                     rs.close();
                 }
             }
-
         }
     }
 }

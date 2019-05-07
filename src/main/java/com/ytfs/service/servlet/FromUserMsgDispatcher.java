@@ -7,6 +7,7 @@ import com.ytfs.service.packet.CreateBucketReq;
 import com.ytfs.service.packet.DownloadObjectInitReq;
 import com.ytfs.service.packet.DownloadBlockInitReq;
 import com.ytfs.service.packet.DownloadFileReq;
+import com.ytfs.service.packet.GetBalanceReq;
 import com.ytfs.service.packet.ListBucketReq;
 import com.ytfs.service.packet.ListSuperNodeReq;
 import com.ytfs.service.packet.ListSuperNodeResp;
@@ -47,6 +48,8 @@ public class FromUserMsgDispatcher implements UserCallback {
                 response = resp;
             } else if (message instanceof UploadObjectInitReq) {
                 response = UploadObjectHandler.init((UploadObjectInitReq) message, user);
+            } else if(message instanceof GetBalanceReq){
+                 response = UploadObjectHandler.getBalanceReq((GetBalanceReq) message, user);
             } else if (message instanceof UploadBlockInitReq) {
                 response = UploadBlockHandler.init((UploadBlockInitReq) message, user);
             } else if (message instanceof UploadBlockDupReq) {

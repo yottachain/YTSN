@@ -12,6 +12,7 @@ public class ObjectMeta {
     private ObjectId VNU;
     private int NLINK;
     private long length;
+    private long usedspace;
     private byte[] blocks;
 
     private final byte[] _id;
@@ -47,6 +48,9 @@ public class ObjectMeta {
         if (doc.containsKey("length")) {
             this.length = doc.getLong("length");
         }
+        if (doc.containsKey("usedspace")) {
+            this.usedspace = doc.getLong("usedspace");
+        }
         if (doc.containsKey("blocks")) {
             this.blocks = ((Binary) doc.get("blocks")).getData();
         }
@@ -56,6 +60,7 @@ public class ObjectMeta {
         Document doc = new Document();
         doc.append("_id", new Binary(getId()));
         doc.append("length", this.length);
+        doc.append("usedspace", this.usedspace);
         doc.append("VNU", VNU);
         doc.append("NLINK", NLINK);
         if (blocks == null) {
@@ -155,5 +160,19 @@ public class ObjectMeta {
      */
     public void setLength(long length) {
         this.length = length;
+    }
+
+    /**
+     * @return the usedspace
+     */
+    public long getUsedspace() {
+        return usedspace;
+    }
+
+    /**
+     * @param usedspace the usedspace to set
+     */
+    public void setUsedspace(long usedspace) {
+        this.usedspace = usedspace;
     }
 }

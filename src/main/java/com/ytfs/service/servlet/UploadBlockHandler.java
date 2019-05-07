@@ -19,7 +19,7 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 
 public class UploadBlockHandler {
-
+    
     private static final Logger LOG = Logger.getLogger(UploadBlockHandler.class);
 
     /**
@@ -40,6 +40,7 @@ public class UploadBlockHandler {
         BlockMeta meta = makeBlockMeta(req, req.getVBI(), cache.getShardcount());
         BlockAccessor.saveBlockMeta(meta);
         SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(req, userid, meta.getVBI(), cache.getVNU());
+        saveObjectMetaReq.setNlink(1);
         try {
             SaveObjectMetaResp resp = SuperReqestHandler.saveObjectMetaCall(saveObjectMetaReq);
             UploadObjectCache.setBlockNum(cache.getVNU(), req.getId());
@@ -53,7 +54,7 @@ public class UploadBlockHandler {
         LOG.info("Upload block:/" + cache.getVNU() + "/" + req.getVBI() + " OK!");
         return new VoidResp();
     }
-
+    
     static SaveObjectMetaReq makeSaveObjectMetaReq(UploadBlockEndReq req, int userid, long vbi, ObjectId VNU) {
         SaveObjectMetaReq saveObjectMetaReq = new SaveObjectMetaReq();
         saveObjectMetaReq.setUserID(userid);
@@ -68,7 +69,7 @@ public class UploadBlockHandler {
         saveObjectMetaReq.setRefer(refer);
         return saveObjectMetaReq;
     }
-
+    
     static BlockMeta makeBlockMeta(UploadBlockEndReq req, long VBI, int shardCount) {
         BlockMeta meta = new BlockMeta();
         meta.setVBI(VBI);
@@ -83,7 +84,7 @@ public class UploadBlockHandler {
         meta.setVHP(req.getVHP());
         return meta;
     }
-
+    
     static List<Document> verify(UploadBlockEndReq req, Map<Integer, UploadShardCache> caches, int shardCount, long vbi) throws ServiceException {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
@@ -151,7 +152,9 @@ public class UploadBlockHandler {
         BlockMeta meta = makeBlockMeta(req, Sequence.generateBlockID(1));
         BlockAccessor.saveBlockData(meta.getVBI(), req.getData());
         BlockAccessor.saveBlockMeta(meta);
+        long usedspace = req.getData().length;
         SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(req, userid, meta.getVBI());
+        saveObjectMetaReq.setNlink(1);
         try {
             SaveObjectMetaResp resp = SuperReqestHandler.saveObjectMetaCall(saveObjectMetaReq);
             UploadObjectCache.setBlockNum(req.getVNU(), req.getId());
@@ -164,7 +167,7 @@ public class UploadBlockHandler {
         }
         return new VoidResp();
     }
-
+    
     static void verify(UploadBlockDBReq req, byte[] vhb) throws ServiceException {
         if (!Arrays.equals(vhb, req.getVHB())) {
             throw new ServiceException(INVALID_VHB);
@@ -182,7 +185,7 @@ public class UploadBlockHandler {
             throw new ServiceException(TOO_BIG_BLOCK);
         }
     }
-
+    
     static BlockMeta makeBlockMeta(UploadBlockDBReq req, long VBI) {
         BlockMeta meta = new BlockMeta();
         meta.setVBI(VBI);
@@ -193,7 +196,7 @@ public class UploadBlockHandler {
         meta.setVHP(req.getVHP());
         return meta;
     }
-
+    
     static SaveObjectMetaReq makeSaveObjectMetaReq(UploadBlockDBReq req, int userid, long vbi) {
         SaveObjectMetaReq saveObjectMetaReq = new SaveObjectMetaReq();
         saveObjectMetaReq.setUserID(userid);
@@ -230,8 +233,9 @@ public class UploadBlockHandler {
             throw new ServiceException(NO_SUCH_BLOCK);
         }
         verify(req);
-        BlockAccessor.incBlockNLINK(meta);//+1
+        BlockAccessor.incBlockNLINK(meta);//+1        
         SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(req, userid, meta.getVBI());
+        saveObjectMetaReq.setNlink(meta.getNLINK() + 1);
         try {
             SaveObjectMetaResp resp = SuperReqestHandler.saveObjectMetaCall(saveObjectMetaReq);
             UploadObjectCache.setBlockNum(req.getVNU(), req.getId());
@@ -244,13 +248,13 @@ public class UploadBlockHandler {
         }
         return new VoidResp();
     }
-
+    
     static void verify(UploadBlockDupReq req) throws ServiceException {
         if (req.getKEU() == null || req.getKEU().length != 32) {
             throw new ServiceException(INVALID_KEU);
         }
     }
-
+    
     static SaveObjectMetaReq makeSaveObjectMetaReq(UploadBlockDupReq req, int userid, long vbi) {
         SaveObjectMetaReq saveObjectMetaReq = new SaveObjectMetaReq();
         saveObjectMetaReq.setUserID(userid);
@@ -303,7 +307,7 @@ public class UploadBlockHandler {
             return resp2;
         }
     }
-
+    
     static void setKEDANDVHB(UploadBlockDupResp resp, List<BlockMeta> ls) {
         byte[][] VHB = new byte[ls.size()][];
         byte[][] KED = new byte[ls.size()][];
@@ -383,11 +387,11 @@ public class UploadBlockHandler {
             CacheAccessor.setUploadBlockCache(cache, blockid);
         }
     }
-
+    
     private static void setNodes(UploadBlockInitResp resp, Node[] ns, long VBI) throws NodeMgmtException {
         resp.setVBI(VBI);
-        byte[] key = NodeManager.getSuperNodePrivateKey(ServerConfig.superNodeID);
-        // PrivateKey privateKey = (PrivateKey) KeyStoreCoder.rsaPrivateKey(key);
+        //byte[] key = NodeManager.getSuperNodePrivateKey(ServerConfig.superNodeID);
+        //PrivateKey privateKey = (PrivateKey) KeyStoreCoder.rsaPrivateKey(key);
         ShardNode[] nodes = new ShardNode[ns.length];
         resp.setNodes(nodes);
         for (int ii = 0; ii < ns.length; ii++) {
@@ -395,7 +399,7 @@ public class UploadBlockHandler {
             sign(null, nodes[ii], VBI);
         }
     }
-
+    
     private static void sign(PrivateKey privateKey, ShardNode sn, long VBI) {
         sn.setSign(new byte[0]);
         /*
@@ -410,7 +414,7 @@ public class UploadBlockHandler {
             throw new IllegalArgumentException(r.getMessage());
         }*/
     }
-
+    
     private static void setNodes(UploadBlockSubResp resp, Node[] ns, List<UploadShardRes> fails, long VBI, UploadBlockCache cache) throws NodeMgmtException {
         byte[] key = NodeManager.getSuperNodePrivateKey(ServerConfig.superNodeID);
         // PrivateKey privateKey = (PrivateKey) KeyStoreCoder.rsaPrivateKey(key);

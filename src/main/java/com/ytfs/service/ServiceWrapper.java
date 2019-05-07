@@ -18,9 +18,9 @@ public class ServiceWrapper implements WrapperListener {
 
     @Override
     public Integer start(String[] strings) {
-        if (!redisExpiredChecker.isAlive()) {
-            ServerInitor.init();
+        if (!redisExpiredChecker.isAlive()) {            
             redisExpiredChecker.start();
+            ServerInitor.init();
         }
         return null;
     }

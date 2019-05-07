@@ -8,6 +8,9 @@ import io.jafka.jeos.util.ecc.Curve;
 import io.jafka.jeos.util.ecc.Hex;
 import io.jafka.jeos.util.ecc.Point;
 import java.math.BigInteger;
+import java.security.PrivateKey;
+import java.security.Provider;
+import java.security.PublicKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECFieldF2m;
@@ -16,14 +19,47 @@ import java.security.spec.ECPoint;
 import java.security.spec.EllipticCurve;
 import javax.crypto.Cipher;
 import javax.crypto.NullCipher;
-import sun.security.ec.ECParameters;
 import sun.security.ec.ECPrivateKeyImpl;
 import sun.security.ec.ECPublicKeyImpl;
+import sun.security.util.ECUtil;
 
 public class Test {
+//根据EOS私钥生成Java的PrivateKey对象
+
+    public static PrivateKey getPrivateKeyFromEOS(String pk) throws Exception {
+        BigInteger iKey = privateKey(pk);
+        ECPrivateKeyImpl priKey = new ECPrivateKeyImpl(iKey, ECUtil.getECParameterSpec((Provider) null, "secp256k1"));
+        return priKey;
+    }
+
+//根据EOS公钥生成Java的PublicKey对象，参数中传入的EOS公钥需要去掉YTA/EOS的公钥前缀
+    public static PublicKey getPublicKEyFromEOS(String pk) throws Exception {
+        byte[] addr_buf = Base58.decode(pk);
+        byte[] pub_buf = Raw.copy(addr_buf, 0, addr_buf.length - 4);
+        Point ep = secp.getCurve().decodePoint(pub_buf);
+        ECPoint ecpoint = new ECPoint(ep.getX().toBigInteger(), ep.getY().toBigInteger());
+        ECPublicKeyImpl puk = new ECPublicKeyImpl(ecpoint, ECUtil.getECParameterSpec((Provider) null, "secp256k1"));
+        return puk;
+    }
+
+    public static void testFunction() throws Exception {
+        // 需要签名的数据
+        byte[] data = new byte[1000];
+
+        PrivateKey priKey = getPrivateKeyFromEOS("5JnSWYjcrAJSYe2huDRsofaPXwbing4LruUKDT1kyYLxuHmZCFk");
+        PublicKey pubKey = getPublicKEyFromEOS("6cE9Xyx5JygnPFemAZkx761Pt6LZD5M6ZLD9B1PAHXFcnbruKQ");
+
+        for (int i = 0; i < data.length; i++) {
+            data[i] = 0xa;
+        }
+
+        //byte[] sign = signData("SHA256withECDSA", data, priKey);
+        // boolean ret = verifySign("SHA256withECDSA", data, pubKey, sign);
+        //data[1] = 0xb;
+        //ret = verifySign("SHA256withECDSA", data, pubKey, sign);
+    }
 
     public static void main(String[] args) throws Exception {
-
         byte[] kuep = Base58.decode("GZsJqUv51pw4c5HnBHiStK3jwJKXZjdtxVwkEShR9Ljb7ZUN1T");//公钥
         byte[] kusp = Base58.decode("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");//si钥       
 
@@ -53,7 +89,7 @@ public class Test {
         //        pubKey.getParams());
         Cipher cipher = new NullCipher();
         // cipher.doFinal(data);
-       // cipher.init(Cipher.ENCRYPT_MODE, pubKey, pubKey.getParams());
+        // cipher.init(Cipher.ENCRYPT_MODE, pubKey, pubKey.getParams());
         //byte[] bs = cipher.doFinal(data);
         //   ECPrivateKeySpec ecPrivateKeySpec = new ECPrivateKeySpec(priKey.getS(),
         //     priKey.getParams());
@@ -96,17 +132,17 @@ public class Test {
         int m = 163;
         int[] ks = {7, 6, 3};
         ECFieldF2m ecField = new ECFieldF2m(m, ks);
- 
+
         // y^2+xy=x^3+x^2+1
         BigInteger a = new BigInteger("1", 2); //new BigInteger(A, 16);// new BigInteger("1", 2);
 
         BigInteger b = new BigInteger("1", 2);  //new BigInteger(B, 16);//new BigInteger("1", 2);
- 
+
         //EllipticCurve ellipticCurve = new EllipticCurve(ecField, a, b);
         EllipticCurve ellipticCurve = new EllipticCurve(ecField, a, b);
-        
-        ECPoint gg=new ECPoint(g.getX().toBigInteger(),g.getY().toBigInteger());
-    
+
+        ECPoint gg = new ECPoint(g.getX().toBigInteger(), g.getY().toBigInteger());
+
         ECParameterSpec ecParameterSpec = new ECParameterSpec(ellipticCurve, gg, n, h);
         return ecParameterSpec;
     }
@@ -114,14 +150,14 @@ public class Test {
     public static ECPublicKey initPublicKey(ECPoint g, ECParameterSpec ecParameterSpec) throws Exception {
         // 公钥
         ECPublicKey publicKey = new ECPublicKeyImpl(g, ecParameterSpec);
- 
+
         return publicKey;
     }
 
     public static ECPrivateKey initPrivateKey(BigInteger s, ECParameterSpec ecParameterSpec) throws Exception {
         // 私钥
         ECPrivateKey privateKey = new ECPrivateKeyImpl(s, ecParameterSpec);
-       // ECPublicKey publicKey = new ECPublicKeyImpl(ecParameterSpec.getGenerator(), ecParameterSpec);
+        // ECPublicKey publicKey = new ECPublicKeyImpl(ecParameterSpec.getGenerator(), ecParameterSpec);
         return privateKey;
     }
 

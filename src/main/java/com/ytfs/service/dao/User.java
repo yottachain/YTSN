@@ -6,11 +6,11 @@ import org.bson.types.Binary;
 public class User {
 
     private int userID;
-    private String eosName;
-    private byte[] KUEp;
-    private byte[] KUSp;
-    private long usedSpace;
-    private long totalBaseCost;
+    private byte[] KUEp;    //用户公钥
+    private long usedSpace;  //占用空间
+    private long costPerCycle;//每周期总费用
+    private long fileTotal;   //文件数
+    private long spaceTotal;  //文件总量
 
     public User(int userid) {
         this.userID = userid;
@@ -20,31 +20,31 @@ public class User {
         if (doc.containsKey("_id")) {
             this.userID = doc.getInteger("_id");
         }
-        if (doc.containsKey("eosName")) {
-            this.eosName = doc.getString("eosName");
-        }
         if (doc.containsKey("KUEp")) {
             this.KUEp = ((Binary) doc.get("KUEp")).getData();
-        }
-        if (doc.containsKey("KUSp")) {
-            this.KUSp = ((Binary) doc.get("KUSp")).getData();
         }
         if (doc.containsKey("usedSpace")) {
             this.usedSpace = doc.getLong("usedSpace");
         }
-        if (doc.containsKey("totalBaseCost")) {
-            this.totalBaseCost = doc.getLong("totalBaseCost");
+        if (doc.containsKey("costPerCycle")) {
+            this.costPerCycle = doc.getLong("costPerCycle");
+        }
+        if (doc.containsKey("spaceTotal")) {
+            this.spaceTotal = doc.getLong("spaceTotal");
+        }
+        if (doc.containsKey("fileTotal")) {
+            this.fileTotal = doc.getLong("fileTotal");
         }
     }
 
     public Document toDocument() {
         Document doc = new Document();
         doc.append("_id", userID);
-        doc.append("eosName", eosName);
         doc.append("KUEp", new Binary(KUEp));
-        doc.append("KUSp", new Binary(KUSp));
         doc.append("usedSpace", usedSpace);
-        doc.append("totalBaseCost", totalBaseCost);
+        doc.append("costPerCycle", costPerCycle);
+        doc.append("spaceTotal", spaceTotal);
+        doc.append("fileTotal", fileTotal);
         return doc;
     }
 
@@ -77,20 +77,6 @@ public class User {
     }
 
     /**
-     * @return the KUSp
-     */
-    public byte[] getKUSp() {
-        return KUSp;
-    }
-
-    /**
-     * @param KUSp the KUSp to set
-     */
-    public void setKUSp(byte[] KUSp) {
-        this.KUSp = KUSp;
-    }
-
-    /**
      * @return the usedSpace
      */
     public long getUsedSpace() {
@@ -107,28 +93,43 @@ public class User {
     /**
      * @return the totalBaseCost
      */
-    public long getTotalBaseCost() {
-        return totalBaseCost;
+    public long getCostPerCycle() {
+        return costPerCycle;
     }
 
     /**
-     * @param totalBaseCost the totalBaseCost to set
+     * @param costPerCycle
      */
-    public void setTotalBaseCost(long totalBaseCost) {
-        this.totalBaseCost = totalBaseCost;
+    public void setCostPerCycle(long costPerCycle) {
+        this.costPerCycle = costPerCycle;
     }
 
     /**
-     * @return the eosName
+     * @return the fileTotal
      */
-    public String getEosName() {
-        return eosName;
+    public long getFileTotal() {
+        return fileTotal;
     }
 
     /**
-     * @param eosName the eosName to set
+     * @param fileTotal the fileTotal to set
      */
-    public void setEosName(String eosName) {
-        this.eosName = eosName;
+    public void setFileTotal(long fileTotal) {
+        this.fileTotal = fileTotal;
     }
+
+    /**
+     * @return the spaceTotal
+     */
+    public long getSpaceTotal() {
+        return spaceTotal;
+    }
+
+    /**
+     * @param spaceTotal the spaceTotal to set
+     */
+    public void setSpaceTotal(long spaceTotal) {
+        this.spaceTotal = spaceTotal;
+    }
+
 }

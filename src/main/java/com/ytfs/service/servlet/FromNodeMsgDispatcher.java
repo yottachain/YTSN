@@ -9,23 +9,25 @@ import com.ytfs.service.packet.StatusRepReq;
 import com.ytfs.service.packet.UploadShardResp;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.p2phost.interfaces.NodeCallback;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 
 public class FromNodeMsgDispatcher implements NodeCallback {
-
+    
     private static final Logger LOG = Logger.getLogger(FromNodeMsgDispatcher.class);
-
+    
     @Override
     public byte[] onMessageFromNode(byte[] data, String nodekey) {
         Object response = null;
         try {
             Object message = SerializationUtil.deserialize(data);
-            int nodeId = NodeCache.getNodeId(nodekey);
             if (message instanceof UploadShardResp) {
+                int nodeId = NodeCache.getNodeId(nodekey);
                 response = UploadShardHandler.uploadShardResp((UploadShardResp) message, nodeId);
             } else if (message instanceof NodeRegReq) {
-                response = NodeMessageHandler.reg((NodeRegReq) message, nodeId);
+                response = NodeMessageHandler.reg((NodeRegReq) message);
             } else if (message instanceof StatusRepReq) {
+                int nodeId = NodeCache.getNodeId(nodekey);
                 response = NodeMessageHandler.statusRep((StatusRepReq) message, nodeId);
             }
             return SerializationUtil.serialize(response);
@@ -42,5 +44,5 @@ public class FromNodeMsgDispatcher implements NodeCallback {
             return SerializationUtil.serialize(se);
         }
     }
-
+    
 }

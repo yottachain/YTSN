@@ -103,7 +103,7 @@ public class NodeManager {
      * @return
      * @throws io.yottachain.nodemgmt.core.exception.NodeMgmtException
      */
-    public static List<Node>  getNode(List<Integer> nodeids) throws NodeMgmtException {
+    public static List<Node> getNode(List<Integer> nodeids) throws NodeMgmtException {
         start();
         List<Node> lss = YottaNodeMgmt.getNodes(nodeids);
         return lss;

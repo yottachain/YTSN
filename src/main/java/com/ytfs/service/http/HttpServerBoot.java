@@ -8,8 +8,9 @@ import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
 public class HttpServerBoot {
+    
 
-    static HttpServer httpServer;
+    static HttpServer httpServer=null;
 
     public static void startHttpServer() throws IOException {
         if (httpServer == null) {
@@ -29,4 +30,8 @@ public class HttpServerBoot {
             httpServer.shutdown();
         }
     }
+    
+     public static void main(String[] args) throws IOException {
+         startHttpServer();
+     }
 }

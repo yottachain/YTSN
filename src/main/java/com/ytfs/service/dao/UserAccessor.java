@@ -7,6 +7,15 @@ import org.bson.types.Binary;
 
 public class UserAccessor {
 
+    public static void updateUser(int uid, long usedSpace, long fileTotal, long spaceTotal) {
+        Bson bson = Filters.eq("_id", uid);
+        Document doc = new Document("usedspace", usedSpace);
+        doc.append("fileTotal", fileTotal);
+        doc.append("spaceTotal", spaceTotal);
+        Document update = new Document("$inc", doc);
+        MongoSource.getUserCollection().updateOne(bson, update);
+    }
+
     public static User getUser(int uid) {
         Bson bson = Filters.eq("_id", uid);
         Document document = MongoSource.getUserCollection().find(bson).first();

@@ -5,8 +5,11 @@ import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
 import com.ytfs.service.dao.User;
+import com.ytfs.service.dao.UserAccessor;
 import com.ytfs.service.eos.EOSClient;
+import com.ytfs.service.eos.EOSRequest;
 import com.ytfs.service.node.SuperNodeList;
+import com.ytfs.service.packet.GetBalanceReq;
 import com.ytfs.service.packet.ServiceErrorCode;
 import com.ytfs.service.packet.ServiceException;
 import com.ytfs.service.packet.UploadObjectEndReq;
@@ -35,16 +38,20 @@ public class UploadObjectHandler {
         int userid = user.getUserID();
         ObjectMeta meta = new ObjectMeta(userid, req.getVHW());
         ObjectAccessor.getObjectAndUpdateNLINK(meta);
+        long usedspace = meta.getUsedspace();
+        
         ObjectAccessor.addNewObject(meta.getVNU());
+        UserAccessor.updateUser(userid, usedspace, 1, meta.getLength());
+
         List<ObjectRefer> refers = ObjectRefer.parse(meta.getBlocks());
         long size = 0;
         for (ObjectRefer refer : refers) {
             size = size + refer.getRealSize();
         }
-        size = ServerConfig.PMS + size;
-        EOSClient eos = new EOSClient(user.getEosName());
-        eos.freeHDD(meta.getLength());
-        eos.deductHDD(size);
+        // size = ServerConfig.PMS + size;
+        //  EOSClient eos = new EOSClient(user.getEosName());
+        // eos.freeHDD(meta.getLength());
+        // eos.deductHDD(size);
         LOG.info("Upload object " + user.getUserID() + "/" + meta.getVNU() + " OK.");
         return new VoidResp();
     }
@@ -86,20 +93,24 @@ public class UploadObjectHandler {
                 resp.setRepeat(true);
                 return resp;
             }
-        }
-        EOSClient eos = new EOSClient(user.getEosName());
-        boolean hasspace = eos.hasSpace(ud.getLength(), ServerConfig.PMS);
-        if (!hasspace) {
-            throw new ServiceException(ServiceErrorCode.NOT_ENOUGH_DHH);
-        }
-        if (!exists) {
+        } else {
             meta.setVNU(new ObjectId());
-            meta.setNLINK(0);
-            meta.setLength(ud.getLength());
-            ObjectAccessor.addObject(meta);
-            resp.setVNU(meta.getVNU());
         }
-        eos.frozenHDD(ud.getLength());
+        byte[] signarg = EOSRequest.createEosClient(meta.getVNU());
+        resp.setSignArg(signarg);
         return resp;
+    }
+
+    static Object getBalanceReq(GetBalanceReq getBalanceReq, User user) throws ServiceException, Throwable {
+        LOG.info("Get Balance:" + user.getUserID());
+        boolean has = EOSClient.hasSpace(getBalanceReq.getLength(), getBalanceReq.getSignData(), getBalanceReq.getVNU());
+        if (has) {
+            ObjectMeta meta = new ObjectMeta(user.getUserID(), getBalanceReq.getVHW());
+            meta.setLength(getBalanceReq.getLength());
+            meta.setVNU(getBalanceReq.getVNU());
+            meta.setNLINK(0);
+            ObjectAccessor.insertOrUpdate(meta);
+        }
+        return new VoidResp();
     }
 }

@@ -37,6 +37,10 @@ public class SuperReqestHandler {
         }
     }
 
+    private static long sumUsedSpace(long space, long nlink) {
+        return space / nlink + 1;
+    }
+
     /**
      * 存储数据块的超级节点需要向存储用户元数据的超级节点请求保存已上传完毕的块引用
      *
@@ -57,9 +61,10 @@ public class SuperReqestHandler {
             }
         }
         if (!resp.isExists()) {
+            long usedspace = sumUsedSpace(req.getRefer().getRealSize(), req.getNlink());
             refers.add(req.getRefer());
             byte[] bs = ObjectRefer.merge(refers);
-            ObjectAccessor.updateObject(req.getVNU(), bs);
+            ObjectAccessor.updateObject(req.getVNU(), bs, usedspace);
         }
         return resp;
     }

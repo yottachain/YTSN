@@ -4,7 +4,6 @@ import com.ytfs.service.ServerConfig;
 import static com.ytfs.service.packet.UploadShardRes.RES_BAD_REQUEST;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache;
-import com.ytfs.service.eos.EOSClient;
 import com.ytfs.service.packet.ServiceErrorCode;
 import static com.ytfs.service.packet.ServiceErrorCode.TOO_MANY_SHARDS;
 import com.ytfs.service.packet.ServiceException;
@@ -60,9 +59,6 @@ public class UploadShardHandler {
             if (resp.getRES() == RES_BAD_REQUEST) {
                 long failtimes = CacheAccessor.getUploadBlockINC(resp.getVBI());
                 if (failtimes >= ServerConfig.PNF) {
-                    UploadObjectCache objcache = CacheAccessor.getUploadObjectCache(nodeid, cache.getVNU());
-                    EOSClient eos = new EOSClient(user.getEosName());
-                    eos.punishHDD(objcache.getFilesize());
                     CacheAccessor.clearCache(cache.getVNU(), resp.getVBI());//清除缓存
                     return new VoidResp();
                 }

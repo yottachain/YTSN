@@ -1,6 +1,5 @@
 package com.ytfs.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jafka.jeos.EosApi;
 import io.jafka.jeos.EosApiFactory;
 import io.jafka.jeos.LocalApi;
@@ -16,12 +15,24 @@ import io.jafka.jeos.util.Raw;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class Test {
 
     public static void main(String[] args) throws Exception {
+        /*
+        PushTransactionRequest request = EOSRequest.
+                makeGetBalanceRequest("username1234", "5JUB5GKXU68YyXERgEPoRJ9xWCNqL8xhUzhyK12GsdZpzQdozGa", "hddpool12345");
 
+        byte[] reqbs = EOSRequest.encode(request);
+        PushTransactionRequest req1 = EOSRequest.decode(reqbs);
+
+        PushedTransaction pts1 = EOSRequest.request(req1);
+        LocalApi localApi1 = EosApiFactory.createLocalApi();
+        System.out.println(localApi1.getObjectMapper().writeValueAsString(pts1));
+
+        if (true) {
+            return;
+        }*/
 
         // --- get the current state of blockchain
         EosApi eosApi = EosApiFactory.create("http://152.136.11.202:8888/");
@@ -30,17 +41,16 @@ public class Test {
 
         // --- sign the transation of token tansfer
         //String privateKey = "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3";//replace the real private key
-        String privateKey = "5JUB5GKXU68YyXERgEPoRJ9xWCNqL8xhUzhyK12GsdZpzQdozGa";//replace the real private key
-        String from = "hddpool12345";
+        String privateKey = "5JcDH48njDbUQLu1R8SWwKsfWLnqBpWXDDiCgxFC3hioDuwLhVx";//replace the real private key
+        String from = "username1234";//username1234,hddpool12345
         LocalApi localApi = EosApiFactory.createLocalApi();
         //PushTransactionRequest req = localApi.transfer(arg, privateKey, from1, to1, quantity, memo);
 
         // ① pack transfer data
         String name = "username1234";
         Raw raw = new Raw();
-        
         raw.packName(name);
-        raw.packUint64(5);
+        // raw.packUint64(5);扣除
         String transferData = raw.toHex();
         //
 
@@ -48,7 +58,7 @@ public class Test {
         List<TransactionAuthorization> authorizations = Arrays.asList(new TransactionAuthorization(from, "active"));
 
         // ④ build the all actions
-        List<TransactionAction> actions = Arrays.asList(//getbalance
+        List<TransactionAction> actions = Arrays.asList(//subbalance/
                 new TransactionAction("hddpool12345", "getbalance", authorizations, transferData)//
         );
 
@@ -72,17 +82,16 @@ public class Test {
 
         // --- push the signed-transaction to the blockchain
         PushedTransaction pts = eosApi.pushTransaction(req);
-        
-         
+
         System.out.println(localApi.getObjectMapper().writeValueAsString(pts));
+
         /*
         ObjectMapper mapper = new ObjectMapper();
         Map readValue = mapper.readValue(console, Map.class); 
        // int balance = Integer.parseInt(readValue.get("balance"));
         System.out.println(readValue.get("balance"));
-        */
-       // System.out.println(localApi.getObjectMapper().writeValueAsString(pts));
-
+         */
+        // System.out.println(localApi.getObjectMapper().writeValueAsString(pts));
     }
 
     private static String sign(String privateKey, SignArg arg, PackedTransaction t) {

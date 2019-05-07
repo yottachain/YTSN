@@ -1,8 +1,5 @@
 package com.ytfs.service;
 
-import static com.ytfs.service.ServerConfig.contractAccount;
-import static com.ytfs.service.ServerConfig.eosBPAccount;
-import static com.ytfs.service.ServerConfig.eosPrivateKey;
 import static com.ytfs.service.ServerConfig.eosURI;
 import com.ytfs.service.utils.GlobleThreadPool;
 import com.ytfs.service.utils.LogConfigurator;
@@ -106,18 +103,6 @@ public class ServerInitor {
         if (eosURI == null || eosURI.trim().isEmpty()) {
             throw new IOException("The 'eosURI' parameter is not configured.");
         }
-        eosPrivateKey = p.getProperty("eosPrivateKey");
-        if (eosPrivateKey == null || eosPrivateKey.trim().isEmpty()) {
-            throw new IOException("The 'eosPrivateKey' parameter is not configured.");
-        }
-        eosBPAccount = p.getProperty("eosBPAccount");
-        if (eosBPAccount == null || eosBPAccount.trim().isEmpty()) {
-            throw new IOException("The 'eosBPAccount' parameter is not configured.");
-        }
-        contractAccount = p.getProperty("contractAccount");
-        if (contractAccount == null || contractAccount.trim().isEmpty()) {
-            throw new IOException("The 'contractAccount' parameter is not configured.");
-        }
-
+        
     }
 }
