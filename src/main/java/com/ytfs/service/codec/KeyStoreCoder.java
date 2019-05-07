@@ -61,7 +61,7 @@ public class KeyStoreCoder {
         }
     }
 
-    public static Key rsaPrivateKey1(byte[] prikey) {
+    public static Key generatePrivateKey(byte[] prikey) {
         try {
             PKCS8EncodedKeySpec pkcs8KeySpec = new PKCS8EncodedKeySpec(prikey);
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");

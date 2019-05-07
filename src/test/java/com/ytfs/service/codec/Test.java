@@ -99,7 +99,18 @@ public class Test {
         // System.out.println(new String(bs2));
         //KeyUtil.signHash(ss, data);
     }
-
+private static BigInteger privateKey1(String pk) {
+    byte[] private_wif = Base58.decode(pk);
+    byte version = (byte) 0x80;
+    if (private_wif[0] != version) {
+        throw new IllegalArgumentException( "Expected version " + 0x80 + ", instead got " + version);
+    }
+    byte[] private_key = Raw.copy(private_wif, 0, private_wif.length - 4);
+ 
+    byte[] last_private_key = Raw.copy(private_key, 1, private_key.length - 1);
+    BigInteger d = new BigInteger(Hex.toHex(last_private_key), 16);
+    return d;
+}
     private static BigInteger privateKey(String pk) {
         byte[] private_wif = io.jafka.jeos.util.Base58.decode(pk);
         byte version = (byte) 0x80;

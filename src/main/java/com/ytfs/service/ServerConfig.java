@@ -9,14 +9,14 @@ public class ServerConfig {
     //单位空间（如16K）周期费用，如100000000 nHDD=1G使用365天，如果每周期60天
     public static long unitcost = 251;
 
+    //元数据空间
+    public final static long PCM = 16 * 1024;
+
     //REDIS存储key的过期时间
     public final static int REDIS_EXPIRE = 60 * 60 * 10;
 
     //REDIS存储key的过期时间
     public final static int REDIS_BLOCK_EXPIRE = 60 * 60;
-
-    //元数据空间
-    public final static long PCM = 16 * 1024;
 
     //小于PL2的数据块，直接记录在元数据库中
     public final static int PL2 = 256;

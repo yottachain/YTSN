@@ -1,6 +1,7 @@
 package com.ytfs.service.servlet;
 
 import com.ytfs.service.ServerConfig;
+import com.ytfs.service.UserConfig;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
@@ -38,16 +39,19 @@ public class UploadObjectHandler {
         int userid = user.getUserID();
         ObjectMeta meta = new ObjectMeta(userid, req.getVHW());
         ObjectAccessor.getObjectAndUpdateNLINK(meta);
-        long usedspace = meta.getUsedspace();
+        long usedspace = meta.getUsedspace() + ServerConfig.PCM;
+        long count = usedspace / UserConfig.Default_Shard_Size
+                + (usedspace % UserConfig.Default_Shard_Size > 0 ? 1 : 0);
+        long costPerCycle = count * ServerConfig.unitcost;
+        ObjectAccessor.addNewObject(meta.getVNU(), costPerCycle);
+        UserAccessor.updateUser(userid, usedspace, 1, meta.getLength());              
+        long firstCost=costPerCycle*ServerConfig.PMS;
+        byte[] signarg = EOSRequest.createEosClient(meta.getVNU());
         
-        ObjectAccessor.addNewObject(meta.getVNU());
-        UserAccessor.updateUser(userid, usedspace, 1, meta.getLength());
-
-        List<ObjectRefer> refers = ObjectRefer.parse(meta.getBlocks());
-        long size = 0;
-        for (ObjectRefer refer : refers) {
-            size = size + refer.getRealSize();
-        }
+        //costsign
+        //签名
+                
+ 
         // size = ServerConfig.PMS + size;
         //  EOSClient eos = new EOSClient(user.getEosName());
         // eos.freeHDD(meta.getLength());

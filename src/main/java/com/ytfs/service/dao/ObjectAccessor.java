@@ -8,8 +8,9 @@ import org.bson.types.ObjectId;
 
 public class ObjectAccessor {
 
-    public static void addNewObject(ObjectId id) {
+    public static void addNewObject(ObjectId id, long costPerCycle) {
         Document update = new Document("_id", id);
+        update.append("costPerCycle", costPerCycle);
         update.append("time", System.currentTimeMillis());
         MongoSource.getObjectNewCollection().insertOne(update);
     }
@@ -78,7 +79,7 @@ public class ObjectAccessor {
         }
     }
 
-    public static void updateObject(ObjectId VNU, byte[] blocks,long usedSpace) {
+    public static void updateObject(ObjectId VNU, byte[] blocks, long usedSpace) {
         Bson filter = Filters.eq("VNU", VNU);
         Document data = new Document("blocks", new Binary(blocks));
         Document update = new Document("$set", data);
