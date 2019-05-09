@@ -1,33 +1,21 @@
 package com.ytfs.service.dao;
 
-import com.mongodb.client.model.Filters;
-import static com.ytfs.service.ServerConfig.REDIS_BLOCK_EXPIRE;
+import com.ytfs.service.codec.KeyStoreCoder;
 import com.ytfs.service.utils.LogConfigurator;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
-import java.security.MessageDigest;
-import org.apache.commons.codec.binary.Hex;
-import org.bson.Document;
-import org.bson.conversions.Bson;
-import org.bson.types.Binary;
 import org.bson.types.ObjectId;
-import redis.clients.jedis.BasicCommands;
-import redis.clients.jedis.BinaryJedis;
-import redis.clients.jedis.BinaryJedisCluster;
 
 public class Test {
 
     public static void main(String[] a) throws Exception {
         LogConfigurator.configPath();
 
-
         //testRedis();
         //testSeq();     
         testUser();
         //testObject();
     }
-
- 
 
     private static void testSeq() throws Exception {
         //int uid = Sequence.getSequence(1);
@@ -59,47 +47,18 @@ public class Test {
     }
 
     private static void testUser() throws Exception {
-        
-        Bson bson = Filters.eq("_id", 1);
-        Document doc= new Document("usedSpace", 1);
-        doc.append("totalBaseCost", 1);
-        Document update = new Document("$set", doc);
-        //username1234
-       // update.append("$set",  new Document("eosName", "username1234"));
-        
-        MongoSource.getUserCollection().updateOne(bson, update);
-        
-        
-        if(true){
-            return;
-        }
-        
         User usr = new User(Sequence.generateUserID());
+
         //Invalid public key:25nsgBoxHrhgZ3xk7eQLqgU36SPomd92dgxeYxXUXndWV
-        //25nsgBoxHrhgZ3xk7eQLqgU36SPomd92dgxeYxXUXndWV
-        byte[] kuep = Base58.decode("GZsJqUv51pw4c5HnBHiStK3jwJKXZjdtxVwkEShR9Ljb7ZUN1T");//公钥
-        byte[] kusp = Base58.decode("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");//si钥    
-        String ss=KeyUtil.toPublicKey("5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ");
-        
-        System.out.println(ss);
-        kuep=Base58.decode(ss.substring(3));
-        
-        
+        //5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ
+        String prikey = "5JcDH48njDbUQLu1R8SWwKsfWLnqBpWXDDiCgxFC3hioDuwLhVx";
+        byte[] kusp = Base58.decode(prikey);//si钥    
+        String ss = KeyUtil.toPublicKey(prikey);
+        String pubkey = ss.substring(3);
+        System.out.println(pubkey);
+        byte[] kuep = Base58.decode(pubkey);
         usr.setKUEp(kuep);
-     //   usr.setKUSp(kusp);
-     //   usr.setEosName("username1234");
-     //   usr.setTotalBaseCost(2);
-        usr.setUsedSpace(465);
         UserAccessor.addUser(usr);
-
-        usr = UserAccessor.getUser(usr.getUserID());
-        System.out.println(usr.getUserID());
-        System.out.println(new String(usr.getKUEp()));
-    //    System.out.println(new String(usr.getKUSp()));
-      //  System.out.println(new String(usr.getEosName()));
-     //   System.out.println(usr.getTotalBaseCost());
-        System.out.println(usr.getUsedSpace());
-
     }
 
     private static void testObject() throws Exception {

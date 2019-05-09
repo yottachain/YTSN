@@ -10,14 +10,14 @@ import io.yottachain.nodemgmt.core.vo.SuperNode;
 import org.apache.log4j.Logger;
 
 public class SuperNodeList {
-    
+
     static SuperNode[] superList = null;
     private static final Logger LOG = Logger.getLogger(SuperNodeList.class);
 
     /**
      * 客户端获取node列表
      *
-     * @return
+     * @return SuperNode[]
      */
     private static SuperNode[] getSuperNodeList() {
         if (superList != null) {
@@ -61,20 +61,40 @@ public class SuperNodeList {
         int index = value % nodes.length;
         return nodes[index];
     }
-    
+
+    /**
+     * 根据超级节点编号获取超级节点
+     *
+     * @param id
+     * @return 0-32;
+     */
     public static SuperNode getBlockSuperNode(int id) {
         SuperNode[] nodes = getSuperNodeList();
         return nodes[id];
     }
-    
-    public static SuperNode getBlockSuperNodeByUserId(int userid) {
+
+    /**
+     * 获取管理该用户的超级节点
+     *
+     * @param userid
+     * @return 0-32;
+     */
+    public static SuperNode getUserSuperNode(int userid) {
         SuperNode[] nodes = getSuperNodeList();
         int index = userid % nodes.length;
         return nodes[index];
     }
-    
-    public static SuperNode getLocalNode() {
+
+    /**
+     * 获取管理该矿机的超级节点
+     *
+     * @param nodeid
+     * @return 0-32;
+     */
+    public static SuperNode getNGRSuperNode(int nodeid) {
         SuperNode[] nodes = getSuperNodeList();
-        return nodes[ServerConfig.superNodeID];
+        int index = nodeid % nodes.length;
+        return nodes[index];
     }
+
 }

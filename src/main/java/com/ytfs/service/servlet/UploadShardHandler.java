@@ -1,38 +1,44 @@
 package com.ytfs.service.servlet;
 
 import com.ytfs.service.ServerConfig;
+import com.ytfs.service.codec.KeyStoreCoder;
 import static com.ytfs.service.packet.UploadShardRes.RES_BAD_REQUEST;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache;
-import com.ytfs.service.packet.ServiceErrorCode;
-import static com.ytfs.service.packet.ServiceErrorCode.TOO_MANY_SHARDS;
-import com.ytfs.service.packet.ServiceException;
+import com.ytfs.service.utils.ServiceErrorCode;
+import static com.ytfs.service.utils.ServiceErrorCode.INVALID_SIGNATURE;
+import static com.ytfs.service.utils.ServiceErrorCode.TOO_MANY_SHARDS;
+import com.ytfs.service.utils.ServiceException;
 import com.ytfs.service.packet.UploadShardResp;
 import com.ytfs.service.packet.VoidResp;
+import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 
 public class UploadShardHandler {
 
     private static final Logger LOG = Logger.getLogger(UploadShardHandler.class);
 
+    //验证用户签名
     static void verify(UploadShardResp resp, byte[] key, int maxshardCount, int nodeid) throws ServiceException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         if (resp.getSHARDID() >= maxshardCount) {
             throw new ServiceException(TOO_MANY_SHARDS);
-        }//使用用户公钥验签
-        /*
-        Key pkey = KeyStoreCoder.rsaPublicKey(key);
-        java.security.Signature signetcheck = java.security.Signature.getInstance("DSA");
-        signetcheck.initVerify((PublicKey) pkey);
-        signetcheck.update(resp.getVHF());
-        signetcheck.update(Function.int2bytes(resp.getSHARDID()));
-        signetcheck.update(Function.int2bytes(nodeid));
-        signetcheck.update(Function.long2bytes(resp.getVBI()));
-        if (!signetcheck.verify(resp.getUSERSIGN())) {
-            throw new ServiceException(INVALID_SIGNATURE);
-        }*/
+        }
+        ByteBuffer buf = ByteBuffer.allocate(48);
+        buf.put(resp.getVHF());
+        buf.putInt(resp.getSHARDID());
+        buf.putInt(nodeid);
+        buf.putLong(resp.getVBI());
+        buf.flip();        
+        if (!KeyStoreCoder.ecdsaVerify(buf.array(), resp.getUSERSIGN(), key)) {
+            LOG.info(resp.getSHARDID() +" getUSERSIGN " + Hex.encodeHexString(resp.getUSERSIGN()));
+           // throw new ServiceException(INVALID_SIGNATURE);
+        }else{
+            LOG.info(resp.getSHARDID() +" getUSERSIGN " + Hex.encodeHexString(resp.getUSERSIGN()));
+        }
     }
 
     /**
@@ -57,9 +63,9 @@ public class UploadShardHandler {
                 throw new ServiceException(ServiceErrorCode.INVALID_NODE_ID);
             }
             if (resp.getRES() == RES_BAD_REQUEST) {
-                long failtimes = CacheAccessor.getUploadBlockINC(resp.getVBI());
+                long failtimes = cache.errInc();
                 if (failtimes >= ServerConfig.PNF) {
-                    CacheAccessor.clearCache(cache.getVNU(), resp.getVBI());//清除缓存
+                    CacheAccessor.delUploadBlockCache(resp.getVBI());//清除缓存
                     return new VoidResp();
                 }
             }
@@ -68,7 +74,7 @@ public class UploadShardHandler {
             shardCache.setRes(resp.getRES());
             shardCache.setVHF(resp.getVHF());
             shardCache.setShardid(resp.getSHARDID());
-            CacheAccessor.addUploadShardCache(shardCache, resp.getVBI());
+            cache.addUploadShardCache(shardCache);
         } catch (Exception e) {
             LOG.error("", e);
         }

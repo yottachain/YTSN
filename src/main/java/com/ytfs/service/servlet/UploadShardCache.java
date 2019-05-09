@@ -1,26 +1,11 @@
 package com.ytfs.service.servlet;
 
-import java.nio.ByteBuffer;
-
 public class UploadShardCache {
 
-    public byte[] toByte() {
-        ByteBuffer buf = ByteBuffer.allocate(44);
-        buf.put(VHF);
-        buf.putInt(res);
-        buf.putInt(nodeid);
-        buf.putInt(shardid);
-        buf.flip();
-        return buf.array();
-    }
-
-    public void fill(ByteBuffer buf) {
-        this.VHF = new byte[32];
-        buf.get(this.VHF);
-        this.res = buf.getInt();
-        this.nodeid = buf.getInt();
-        this.shardid = buf.getInt();
-    }
+    private byte[] VHF;//已上传的,未上传或失败的==null
+    private int res;    //从存储节点返回的存储结果
+    private int nodeid; //从存储节点返回节点ID 
+    private int shardid;
 
     /**
      * @return the VHF
@@ -77,8 +62,5 @@ public class UploadShardCache {
     public void setShardid(int shardid) {
         this.shardid = shardid;
     }
-    private byte[] VHF;//已上传的,未上传或失败的==null
-    private int res;    //从存储节点返回的存储结果
-    private int nodeid; //从存储节点返回节点ID 
-    private int shardid;
+
 }

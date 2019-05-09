@@ -3,23 +3,24 @@ package com.ytfs.service.servlet;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache;
 import com.ytfs.service.node.NodeManager;
-import com.ytfs.service.packet.CreateBucketReq;
+import com.ytfs.service.packet.s3.CreateBucketReq;
 import com.ytfs.service.packet.DownloadObjectInitReq;
 import com.ytfs.service.packet.DownloadBlockInitReq;
-import com.ytfs.service.packet.DownloadFileReq;
+import com.ytfs.service.packet.s3.DownloadFileReq;
 import com.ytfs.service.packet.GetBalanceReq;
-import com.ytfs.service.packet.ListBucketReq;
+import com.ytfs.service.packet.s3.ListBucketReq;
 import com.ytfs.service.packet.ListSuperNodeReq;
 import com.ytfs.service.packet.ListSuperNodeResp;
-import com.ytfs.service.packet.SerializationUtil;
-import com.ytfs.service.packet.ServiceErrorCode;
-import com.ytfs.service.packet.ServiceException;
+import com.ytfs.service.packet.SubBalanceReq;
+import com.ytfs.service.utils.SerializationUtil;
+import com.ytfs.service.utils.ServiceErrorCode;
+import com.ytfs.service.utils.ServiceException;
 import com.ytfs.service.packet.UploadBlockDBReq;
 import com.ytfs.service.packet.UploadBlockDupReq;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadBlockInitReq;
 import com.ytfs.service.packet.UploadBlockSubReq;
-import com.ytfs.service.packet.UploadFileReq;
+import com.ytfs.service.packet.s3.UploadFileReq;
 import com.ytfs.service.packet.UploadObjectEndReq;
 import com.ytfs.service.packet.UploadObjectInitReq;
 import io.jafka.jeos.util.Base58;
@@ -48,8 +49,10 @@ public class FromUserMsgDispatcher implements UserCallback {
                 response = resp;
             } else if (message instanceof UploadObjectInitReq) {
                 response = UploadObjectHandler.init((UploadObjectInitReq) message, user);
-            } else if(message instanceof GetBalanceReq){
-                 response = UploadObjectHandler.getBalanceReq((GetBalanceReq) message, user);
+            } else if (message instanceof GetBalanceReq) {
+                response = UploadObjectHandler.getBalanceReq((GetBalanceReq) message, user);
+            } else if (message instanceof SubBalanceReq) {
+                response = UploadObjectHandler.subBalanceReq((SubBalanceReq) message, user);
             } else if (message instanceof UploadBlockInitReq) {
                 response = UploadBlockHandler.init((UploadBlockInitReq) message, user);
             } else if (message instanceof UploadBlockDupReq) {

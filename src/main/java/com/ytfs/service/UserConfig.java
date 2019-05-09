@@ -32,16 +32,16 @@ public class UserConfig {
 
     //**************************可配置参数********************************
     //用户ID
-    public static int userID;
+    public static int userID1;
 
     //用户钱包账户名
     public static String username;
 
     //用户私钥
     public static byte[] KUSp;
-    public static String privateKey;
+    public static byte[] KUEp;       //用户公钥，不用配置
+    public static String privateKey; //用户私钥
     
-
     //合约账户名
     public static String contractAccount;
 
@@ -53,8 +53,5 @@ public class UserConfig {
 
     //缓存路径
     public static File tmpFilePath;
-
-    //用户公钥，不用配置
-    public static byte[] KUEp;
 
 }

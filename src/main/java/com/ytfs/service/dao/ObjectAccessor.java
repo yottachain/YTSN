@@ -1,6 +1,10 @@
 package com.ytfs.service.dao;
 
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
+import com.ytfs.service.ServerConfig;
+import java.util.ArrayList;
+import java.util.List;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.Binary;
@@ -8,9 +12,31 @@ import org.bson.types.ObjectId;
 
 public class ObjectAccessor {
 
-    public static void addNewObject(ObjectId id, long costPerCycle) {
+    public static boolean listNewObject() {
+        long curtime = System.currentTimeMillis();
+        Document sort = new Document("_id", 1);
+        FindIterable<Document> fi = MongoSource.getObjectNewCollection().find().sort(sort).limit(100);
+        List<Document> needDelete = new ArrayList();
+        for (Document doc : fi) {
+            long time = doc.getLong("time");
+            if (curtime - time > ServerConfig.PPC * ServerConfig.PMS) {
+                needDelete.add(doc);
+            } else {
+                break;
+            }
+        }
+        for (Document doc : needDelete) {
+            UserAccessor.updateUser(doc.getInteger("userid"), doc.getLong("costPerCycle"));
+            Bson filter = Filters.eq("_id", doc.getObjectId("_id"));
+            MongoSource.getObjectNewCollection().deleteOne(filter);
+        }
+        return needDelete.size() >= 100;
+    }
+
+    public static void addNewObject(ObjectId id, long costPerCycle, int userid) {
         Document update = new Document("_id", id);
         update.append("costPerCycle", costPerCycle);
+        update.append("userid", userid);
         update.append("time", System.currentTimeMillis());
         MongoSource.getObjectNewCollection().insertOne(update);
     }

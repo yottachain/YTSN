@@ -1,7 +1,7 @@
 package com.ytfs.service.net;
 
-import com.ytfs.service.packet.SerializationUtil;
-import com.ytfs.service.packet.ServiceException;
+import com.ytfs.service.utils.SerializationUtil;
+import com.ytfs.service.utils.ServiceException;
 import com.ytfs.service.packet.UploadShardReq;
 import com.ytfs.service.packet.UploadShardResp;
 import io.yottachain.p2phost.YottaP2P;

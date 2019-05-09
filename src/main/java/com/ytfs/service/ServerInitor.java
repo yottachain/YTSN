@@ -7,9 +7,12 @@ import static com.ytfs.service.ServerConfig.privateKey;
 import static com.ytfs.service.ServerConfig.superNodeID;
 import static com.ytfs.service.ServerConfig.port;
 import static com.ytfs.service.ServerConfig.httpPort;
+import static com.ytfs.service.ServerConfig.SNDSP;
+import com.ytfs.service.codec.KeyStoreCoder;
 import com.ytfs.service.dao.MongoSource;
 import com.ytfs.service.http.HttpServerBoot;
 import com.ytfs.service.net.P2PUtils;
+import io.yottachain.p2phost.utils.Base58;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -88,13 +91,18 @@ public class ServerInitor {
             throw new IOException("The 'privateKey' parameter is not configured.");
         }
         try {
-            String ss = p.getProperty("port","9999").trim();
+            SNDSP = Base58.decode(privateKey);
+        } catch (Exception d) {
+            throw new IOException("The 'privateKey' parameter is not configured.");
+        }
+        try {
+            String ss = p.getProperty("port", "9999").trim();
             port = Integer.parseInt(ss);
         } catch (Exception d) {
             throw new IOException("The 'port' parameter is not configured.");
         }
         try {
-            String ss = p.getProperty("httpPort","8080").trim();
+            String ss = p.getProperty("httpPort", "8080").trim();
             httpPort = Integer.parseInt(ss);
         } catch (Exception d) {
             throw new IOException("The 'httpPort' parameter is not configured.");
@@ -103,6 +111,6 @@ public class ServerInitor {
         if (eosURI == null || eosURI.trim().isEmpty()) {
             throw new IOException("The 'eosURI' parameter is not configured.");
         }
-        
+
     }
 }

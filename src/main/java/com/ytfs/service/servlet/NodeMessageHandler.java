@@ -2,7 +2,7 @@ package com.ytfs.service.servlet;
 
 import com.ytfs.service.packet.NodeRegReq;
 import com.ytfs.service.packet.NodeRegResp;
-import com.ytfs.service.packet.ServiceException;
+import com.ytfs.service.utils.ServiceException;
 import com.ytfs.service.packet.StatusRepReq;
 import com.ytfs.service.packet.StatusRepResp;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
@@ -13,17 +13,13 @@ public class NodeMessageHandler {
 
     private static final Logger LOG = Logger.getLogger(NodeMessageHandler.class);
 
-    static NodeRegResp reg(NodeRegReq req) throws ServiceException, Throwable {
+    static NodeRegResp reg(NodeRegReq req, String pubkey) throws ServiceException, Throwable {
         LOG.info("Reg Node:" + req.getNodeid());
-        LOG.info("Reg getOwner:" + req.getOwner());
-        LOG.info("Reg getAddrs:" + req.getAddrs().size());
-        LOG.info("Reg getMaxDataSpace:" + req.getMaxDataSpace());
-        Node node = YottaNodeMgmt.registerNode(req.getNodeid(), req.getOwner(), req.getMaxDataSpace(), req.getAddrs());
+        Node node = YottaNodeMgmt.registerNode(req.getNodeid(), pubkey, req.getOwner(), req.getMaxDataSpace(), req.getAddrs());
         NodeRegResp resp = new NodeRegResp();
         resp.setId(node.getId());
         resp.setAssignedSpace(node.getAssignedSpace());
-        LOG.info("Reg getId:" + node.getId());
-        LOG.info("Reg getAssignedSpace:" + node.getAssignedSpace());
+        LOG.info("Node Registered,Id:" + node.getId());
         return resp;
     }
 

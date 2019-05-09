@@ -23,7 +23,8 @@ public class EOSClient {
         String console = pts.getProcessed().getActionTraces().get(0).getConsole();
         ObjectMapper mapper = new ObjectMapper();
         Map readValue = mapper.readValue(console, Map.class);
-        long balance = (long) readValue.get("balance");
+        Object obj = readValue.get("balance");
+        long balance = (obj instanceof Integer) ? (int) obj : (long) obj;
         long unitcount = length / UserConfig.Default_Shard_Size;
         long remain = length % UserConfig.Default_Shard_Size > 0 ? 1 : 0;
         long needcost = ServerConfig.unitcost * (unitcount + remain);

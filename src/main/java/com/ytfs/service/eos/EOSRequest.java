@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ytfs.service.ServerConfig;
 import io.jafka.jeos.EosApi;
 import io.jafka.jeos.EosApiFactory;
+import io.jafka.jeos.LocalApi;
 import io.jafka.jeos.convert.Packer;
 import io.jafka.jeos.core.common.SignArg;
 import io.jafka.jeos.core.common.transaction.PackedTransaction;
@@ -23,23 +24,23 @@ import org.bson.types.ObjectId;
 public class EOSRequest {
 
     private static byte[] encodeSignArg(SignArg req) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsBytes(req);
+        LocalApi localApi = EosApiFactory.createLocalApi();
+        return localApi.getObjectMapper().writeValueAsBytes(req);
     }
 
     private static SignArg decodeSignArg(byte[] bs) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(bs, SignArg.class);
+        LocalApi localApi = EosApiFactory.createLocalApi();
+        return localApi.getObjectMapper().readValue(bs, SignArg.class);
     }
 
     private static byte[] encodeRequest(PushTransactionRequest req) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsBytes(req);
+        LocalApi localApi = EosApiFactory.createLocalApi();
+        return localApi.getObjectMapper().writeValueAsBytes(req);
     }
 
     private static PushTransactionRequest decodeRequest(byte[] bs) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(bs, PushTransactionRequest.class);
+        LocalApi localApi = EosApiFactory.createLocalApi();
+        return localApi.getObjectMapper().readValue(bs, PushTransactionRequest.class);
     }
 
     public static byte[] createEosClient(ObjectId id) throws JsonProcessingException {

@@ -1,8 +1,8 @@
 package com.ytfs.service.net;
 
-import com.ytfs.service.packet.SerializationUtil;
-import static com.ytfs.service.packet.ServiceErrorCode.INTERNAL_ERROR;
-import com.ytfs.service.packet.ServiceException;
+import com.ytfs.service.utils.SerializationUtil;
+import static com.ytfs.service.utils.ServiceErrorCode.INTERNAL_ERROR;
+import com.ytfs.service.utils.ServiceException;
 import com.ytfs.service.servlet.FromBPMsgDispatcher;
 import com.ytfs.service.servlet.FromNodeMsgDispatcher;
 import com.ytfs.service.servlet.FromUserMsgDispatcher;

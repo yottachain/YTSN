@@ -1,16 +1,16 @@
 package com.ytfs.service;
 
-import com.ytfs.service.dao.RedisExpiredChecker;
+import com.ytfs.service.servlet.NewObjectScanner;
 import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 public class ServiceWrapper implements WrapperListener {
 
     public static boolean isServer() {
-        return redisExpiredChecker.isAlive();
+        return newObjectScanner.isAlive();
     }
 
-    static RedisExpiredChecker redisExpiredChecker = new RedisExpiredChecker();
+    static NewObjectScanner newObjectScanner = new NewObjectScanner();
 
     public static void main(String[] args) {
         WrapperManager.start(new ServiceWrapper(), args);
@@ -18,8 +18,8 @@ public class ServiceWrapper implements WrapperListener {
 
     @Override
     public Integer start(String[] strings) {
-        if (!redisExpiredChecker.isAlive()) {            
-            redisExpiredChecker.start();
+        if (!newObjectScanner.isAlive()) {            
+            newObjectScanner.start();
             ServerInitor.init();
         }
         return null;
@@ -28,7 +28,7 @@ public class ServiceWrapper implements WrapperListener {
     @Override
     public int stop(int exitCode) {
         ServerInitor.stop();
-        redisExpiredChecker.close();
+        newObjectScanner.close();
         return exitCode;
     }
 

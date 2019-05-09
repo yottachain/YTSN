@@ -10,8 +10,8 @@ import com.ytfs.service.packet.QueryObjectMetaReq;
 import com.ytfs.service.packet.QueryObjectMetaResp;
 import com.ytfs.service.packet.SaveObjectMetaReq;
 import com.ytfs.service.packet.SaveObjectMetaResp;
-import static com.ytfs.service.packet.ServiceErrorCode.INVALID_UPLOAD_ID;
-import com.ytfs.service.packet.ServiceException;
+import static com.ytfs.service.utils.ServiceErrorCode.INVALID_UPLOAD_ID;
+import com.ytfs.service.utils.ServiceException;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -29,7 +29,7 @@ public class SuperReqestHandler {
      * @throws ServiceException
      */
     static SaveObjectMetaResp saveObjectMetaCall(SaveObjectMetaReq req) throws ServiceException {
-        SuperNode node = SuperNodeList.getBlockSuperNodeByUserId(req.getUserID());
+        SuperNode node = SuperNodeList.getUserSuperNode(req.getUserID());
         if (node.getId() == ServerConfig.superNodeID) {
             return saveObjectMeta(req);
         } else {

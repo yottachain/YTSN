@@ -35,6 +35,7 @@ public class NodeManager {
         }
     }
 
+    //Test
     private static SuperNode[] gettestSuperNode() {
         SuperNode[] sn = new SuperNode[1];
         SuperNode n = new SuperNode(0, null, null, null, null);

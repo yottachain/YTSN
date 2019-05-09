@@ -12,7 +12,7 @@ import com.ytfs.service.packet.DownloadBlockInitReq;
 import com.ytfs.service.packet.DownloadBlockInitResp;
 import com.ytfs.service.packet.DownloadObjectInitReq;
 import com.ytfs.service.packet.DownloadObjectInitResp;
-import com.ytfs.service.packet.ServiceException;
+import com.ytfs.service.utils.ServiceException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.util.ArrayList;
 import java.util.List;

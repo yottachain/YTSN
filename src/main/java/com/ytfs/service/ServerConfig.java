@@ -9,6 +9,9 @@ public class ServerConfig {
     //单位空间（如16K）周期费用，如100000000 nHDD=1G使用365天，如果每周期60天
     public static long unitcost = 251;
 
+    //计费周期如:60天
+    public static long PPC = 1000 * 60 * 60 * 24 * 60;
+
     //元数据空间
     public final static long PCM = 16 * 1024;
 
@@ -24,12 +27,16 @@ public class ServerConfig {
     //存储节点验签失败,拒绝存储,超过3次,惩罚
     public final static int PNF = 3;
 
+    //上传分片VHF线程数
+    public final static int SENDSHARDTHREAD = 20;
+
     //**************************可配置参数********************************
     //服务端超级节点编号,本服务节点编号
     public static int superNodeID;
 
-    //私钥
+    //超级节点私钥
     public static String privateKey;
+    public static byte[] SNDSP;
 
     //端口
     public static int port = 9999;
