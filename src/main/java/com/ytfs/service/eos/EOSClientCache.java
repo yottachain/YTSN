@@ -17,6 +17,7 @@ public class EOSClientCache {
             .maximumSize(MAX_SIZE)
             .build();
 
+  
     public static void putClient(ObjectId key, EosApi value) {
         clients.put(key, value);
     }

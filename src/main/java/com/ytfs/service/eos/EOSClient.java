@@ -31,6 +31,13 @@ public class EOSClient {
         return balance > needcost;
     }
 
+    /**
+     * 扣除初始费用
+     *
+     * @param reqdata
+     * @param id
+     * @throws Throwable
+     */
     public static void deductHDD(byte[] reqdata, ObjectId id) throws Throwable {
         EOSRequest.request(reqdata, id);
     }

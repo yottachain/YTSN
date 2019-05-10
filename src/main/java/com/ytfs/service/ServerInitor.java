@@ -3,12 +3,7 @@ package com.ytfs.service;
 import static com.ytfs.service.ServerConfig.eosURI;
 import com.ytfs.service.utils.GlobleThreadPool;
 import com.ytfs.service.utils.LogConfigurator;
-import static com.ytfs.service.ServerConfig.privateKey;
-import static com.ytfs.service.ServerConfig.superNodeID;
-import static com.ytfs.service.ServerConfig.port;
-import static com.ytfs.service.ServerConfig.httpPort;
-import static com.ytfs.service.ServerConfig.SNDSP;
-import com.ytfs.service.codec.KeyStoreCoder;
+import static com.ytfs.service.ServerConfig.*;
 import com.ytfs.service.dao.MongoSource;
 import com.ytfs.service.http.HttpServerBoot;
 import com.ytfs.service.net.P2PUtils;
@@ -107,10 +102,10 @@ public class ServerInitor {
         } catch (Exception d) {
             throw new IOException("The 'httpPort' parameter is not configured.");
         }
+        httpBindip = p.getProperty("httpBindip", "").trim();
         eosURI = p.getProperty("eosURI");
         if (eosURI == null || eosURI.trim().isEmpty()) {
             throw new IOException("The 'eosURI' parameter is not configured.");
         }
-
     }
 }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>统计</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style type="text/css">
+    .titlestyle {
+	font-size: 12px;
+	font-weight: bold;
+}
+    .content {
+	font-size: 12px;
+}
+    </style>
+    </head>
+    <body>
+        <div class="titlestyle">
+          <p><strong>接口列表</strong></p>
+        </div>
+        <hr>
+        <p class="titlestyle">用户统计数据:</p>
+    <p class="content">GET:/user/1234</p>
+    <p class="content"> 返回用户ID(1234)</p>
+    <p class="content">fileTotal:文件总数<br>
+    spaceTotal:文件实际总长度<br>
+    usedSpace:,文件总占用空间<br>
+    costPerCycle:
+    每周期总费用    </p>
+    <pre class="content">{"_id":1234,"costPerCycle":0,"spaceTotal":26651276,"fileTotal":11,"usedspace":25210457}
+    </pre>
+    <p class="content">&nbsp;</p>
+    <hr>
+    <p class="content"><span class="titlestyle">本超级节点统计数据:</span></p>
+    <p class="content">GET:/total</p>
+    <p class="content">返回所有用户合计</p>
+    <p class="content">fileTotal:文件总数<br>
+    spaceTotal:
+    文件实际总长度<br>
+    usedSpace:文件总占用空间<br>
+    costPerCycle:每周期总费用</p>
+    <pre class="content">{"_id":"ALL","usedspace":25210457,"spaceTotal":26651276,"fileTotal":133,"costPerCycle":12}
+    </pre>
+    <p class="content">&nbsp;</p>
+    <p class="content">&nbsp;</p>
+    <p class="content">&nbsp;</p>
+    </body>
+</html>

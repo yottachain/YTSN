@@ -1,68 +1,64 @@
 package com.ytfs.service.http;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ytfs.service.dao.UserAccessor;
+import java.io.InputStream;
+import org.bson.Document;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
+import org.glassfish.grizzly.http.util.HttpStatus;
 
 public class UseSpaceHandler extends HttpHandler {
 
+    static final String REQ_USER_PATH = "/user";
+    static final String REQ_TOTAL_PATH = "/total";
+
     @Override
     public void service(Request rqst, Response rspns) throws Exception {
-        rspns.setContentType("text/json");
-        UserCounter counter=new UserCounter();
-        
-        
-        rspns.getWriter().write("0");
+        try {
+            rspns.setContentType("text/json");
+            String path = rqst.getContextPath();
+            if (path.equalsIgnoreCase(REQ_USER_PATH)) {
+                String uri = rqst.getRequestURI();
+                String userid = uri.replaceFirst(REQ_USER_PATH, "");
+                String json = getusertotal(userid);
+                rspns.getWriter().write(json);
+            } else if (path.equalsIgnoreCase(REQ_TOTAL_PATH)) {
+                String json = gettotal();
+                rspns.getWriter().write(json);
+            } else {
+                rspns.setContentType("text/html");
+                InputStream is = this.getClass().getResourceAsStream("/statapi.html");
+                byte[] bs = new byte[1024];
+                int len = 0;
+                while ((len = is.read(bs)) != -1) {
+                    rspns.getOutputStream().write(bs, 0, len);
+                }
+            }
+            rspns.flush();
+        } catch (Exception e) {
+            String message = e.getMessage();
+            rspns.sendError(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode(), message);
+        }
     }
 
-    public static class UserCounter {
+    private String gettotal() throws Exception {
+        Document doc = UserAccessor.total();
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(doc);
+    }
 
-        private long filecount;
-        private long usespace;
-        private long totalcost;
-
-        /**
-         * @return the filecount
-         */
-        public long getFilecount() {
-            return filecount;
+    private String getusertotal(String id) throws Exception {
+        int userid = 0;
+        try {
+            userid = Integer.parseInt(id.substring(1));
+        } catch (Exception r) {
+            throw new Exception("Invalid userid");
         }
-
-        /**
-         * @param filecount the filecount to set
-         */
-        public void setFilecount(long filecount) {
-            this.filecount = filecount;
-        }
-
-        /**
-         * @return the usespace
-         */
-        public long getUsespace() {
-            return usespace;
-        }
-
-        /**
-         * @param usespace the usespace to set
-         */
-        public void setUsespace(long usespace) {
-            this.usespace = usespace;
-        }
-
-        /**
-         * @return the totalcost
-         */
-        public long getTotalcost() {
-            return totalcost;
-        }
-
-        /**
-         * @param totalcost the totalcost to set
-         */
-        public void setTotalcost(long totalcost) {
-            this.totalcost = totalcost;
-        }
-
+        Document doc = UserAccessor.userTotal(userid);
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(doc);
     }
 
 }

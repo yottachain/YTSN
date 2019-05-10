@@ -2,7 +2,7 @@
 
 rem ---------在这里设置要上传的文件路径------------
 
-set filepath=d:/seo.txt
+set filepath=d:/aaa.jar
 
 
 rem --------------------upload test----------------------

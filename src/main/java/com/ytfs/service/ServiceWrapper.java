@@ -18,7 +18,7 @@ public class ServiceWrapper implements WrapperListener {
 
     @Override
     public Integer start(String[] strings) {
-        if (!newObjectScanner.isAlive()) {            
+        if (!newObjectScanner.isAlive()) {
             newObjectScanner.start();
             ServerInitor.init();
         }
@@ -27,8 +27,8 @@ public class ServiceWrapper implements WrapperListener {
 
     @Override
     public int stop(int exitCode) {
-        ServerInitor.stop();
         newObjectScanner.close();
+        ServerInitor.stop();
         return exitCode;
     }
 

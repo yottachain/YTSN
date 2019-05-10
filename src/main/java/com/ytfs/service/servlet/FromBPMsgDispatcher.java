@@ -1,7 +1,5 @@
 package com.ytfs.service.servlet;
 
-import com.ytfs.service.packet.QueryObjectMetaReq;
-import com.ytfs.service.packet.SaveObjectMetaReq;
 import com.ytfs.service.utils.SerializationUtil;
 import com.ytfs.service.utils.ServiceErrorCode;
 import com.ytfs.service.utils.ServiceException;
@@ -14,14 +12,11 @@ public class FromBPMsgDispatcher implements BPNodeCallback {
 
     @Override
     public byte[] onMessageFromBPNode(byte[] bytes, String string) {
-        Object message = SerializationUtil.deserialize(bytes);
-        Object response = null;
         try {
-            if (message instanceof QueryObjectMetaReq) {
-                response = SuperReqestHandler.queryObjectMeta((QueryObjectMetaReq) message);
-            } else if (message instanceof SaveObjectMetaReq) {
-                response = SuperReqestHandler.saveObjectMeta((SaveObjectMetaReq) message);
-            }
+            Object message = SerializationUtil.deserialize(bytes);
+            Handler handler = HandlerFactory.getHandler(message);
+            handler.setRequest(message);
+            Object response = handler.handle();
             return SerializationUtil.serialize(response);
         } catch (ServiceException s) {
             LOG.error("", s);
