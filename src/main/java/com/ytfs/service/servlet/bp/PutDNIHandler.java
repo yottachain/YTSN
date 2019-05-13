@@ -1,0 +1,40 @@
+package com.ytfs.service.servlet.bp;
+
+import com.ytfs.service.ServerConfig;
+import static com.ytfs.service.ServiceErrorCode.INVALID_NODE_ID;
+import com.ytfs.service.ServiceException;
+import com.ytfs.service.node.SuperNodeList;
+import com.ytfs.service.packet.AddDNIReq;
+import com.ytfs.service.packet.VoidResp;
+import com.ytfs.service.servlet.Handler;
+import io.yottachain.nodemgmt.YottaNodeMgmt;
+import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
+import io.yottachain.nodemgmt.core.vo.SuperNode;
+import java.util.List;
+
+public class PutDNIHandler extends Handler<AddDNIReq> {
+
+    @Override
+    public Object handle() throws Throwable {
+        verify();
+        putDNI(this.request.getDnis());
+        return new VoidResp();
+    }
+
+    public static void putDNI(List<AddDNIReq.DNI> ls) throws NodeMgmtException {
+        for (AddDNIReq.DNI dni : ls) {
+            YottaNodeMgmt.addDNI(dni.getNodeid(), dni.getVHF());
+        }
+    }
+
+    private void verify() throws ServiceException {
+        List<AddDNIReq.DNI> ls = this.request.getDnis();
+        for (AddDNIReq.DNI dni : ls) {
+            SuperNode sn = SuperNodeList.getNGRSuperNode(dni.getNodeid());
+            if (sn.getId() != ServerConfig.superNodeID) {
+                throw new ServiceException(INVALID_NODE_ID);
+            }
+        }
+    }
+
+}

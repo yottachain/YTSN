@@ -14,7 +14,6 @@ import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.Handler;
-import com.ytfs.service.servlet.SendShard2SNM;
 import com.ytfs.service.servlet.UploadBlockCache;
 import com.ytfs.service.servlet.UploadObjectCache;
 import com.ytfs.service.servlet.UploadShardCache;
