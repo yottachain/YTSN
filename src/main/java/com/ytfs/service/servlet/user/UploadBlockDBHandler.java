@@ -64,16 +64,7 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         }
         return new VoidResp();
     }
-
-    /**
-     * 将数据块小于PL2的数据块写入数据库
-     *
-     * @param req
-     * @param userid
-     * @return OK
-     * @throws ServiceException
-     * @throws Throwable
-     */
+ 
     private void verify(UploadBlockDBReq req, byte[] vhb) throws ServiceException {
         if (!Arrays.equals(vhb, req.getVHB())) {
             throw new ServiceException(INVALID_VHB);
