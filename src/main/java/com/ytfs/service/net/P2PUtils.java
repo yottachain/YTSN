@@ -1,8 +1,8 @@
 package com.ytfs.service.net;
 
-import com.ytfs.service.utils.SerializationUtil;
-import static com.ytfs.service.utils.ServiceErrorCode.INTERNAL_ERROR;
-import com.ytfs.service.utils.ServiceException;
+import com.ytfs.service.SerializationUtil;
+import static com.ytfs.service.ServiceErrorCode.INTERNAL_ERROR;
+import com.ytfs.service.ServiceException;
 import com.ytfs.service.servlet.FromBPMsgDispatcher;
 import com.ytfs.service.servlet.FromNodeMsgDispatcher;
 import com.ytfs.service.servlet.FromUserMsgDispatcher;
@@ -71,7 +71,6 @@ public class P2PUtils {
             CONNECTS.add(key);
         }
         byte[] data = SerializationUtil.serialize(obj);
-        //System.out.println(Hex.encodeHexString(data));
         byte[] bs = null;
         try {                    //访问p2p网络
             switch (type) {

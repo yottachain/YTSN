@@ -1,8 +1,7 @@
 package com.ytfs.service.node;
 
-import com.ytfs.service.ServerConfig;
 import com.ytfs.service.ServiceWrapper;
-import com.ytfs.service.UserConfig;
+import com.ytfs.client.UserConfig;
 import com.ytfs.service.net.P2PUtils;
 import com.ytfs.service.packet.ListSuperNodeReq;
 import com.ytfs.service.packet.ListSuperNodeResp;

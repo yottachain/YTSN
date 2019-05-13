@@ -13,9 +13,9 @@ import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.Handler;
 import com.ytfs.service.servlet.UploadObjectCache;
 import com.ytfs.service.servlet.bp.SaveObjectMetaHandler;
-import static com.ytfs.service.utils.ServiceErrorCode.INVALID_KEU;
-import static com.ytfs.service.utils.ServiceErrorCode.NO_SUCH_BLOCK;
-import com.ytfs.service.utils.ServiceException;
+import static com.ytfs.service.ServiceErrorCode.INVALID_KEU;
+import static com.ytfs.service.ServiceErrorCode.NO_SUCH_BLOCK;
+import com.ytfs.service.ServiceException;
 import org.apache.log4j.Logger;
 
 public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {

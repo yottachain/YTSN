@@ -10,9 +10,9 @@ import com.ytfs.service.dao.User;
 import com.ytfs.service.packet.DownloadObjectInitResp;
 import com.ytfs.service.packet.s3.DownloadFileReq;
 import com.ytfs.service.servlet.Handler;
-import static com.ytfs.service.utils.ServiceErrorCode.INVALID_BUCKET_NAME;
-import static com.ytfs.service.utils.ServiceErrorCode.INVALID_OBJECT_NAME;
-import com.ytfs.service.utils.ServiceException;
+import static com.ytfs.service.ServiceErrorCode.INVALID_BUCKET_NAME;
+import static com.ytfs.service.ServiceErrorCode.INVALID_OBJECT_NAME;
+import com.ytfs.service.ServiceException;
 import org.apache.log4j.Logger;
 
 public class DownloadFileHandler extends Handler<DownloadFileReq> {

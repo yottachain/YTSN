@@ -73,6 +73,7 @@ public class HandlerFactory {
                     putHandlerClass(cls);
                 }
             } catch (Throwable e) {
+                e.printStackTrace();
             }
         }
     }
@@ -81,7 +82,9 @@ public class HandlerFactory {
         Type type = ((ParameterizedType) cls.getGenericSuperclass()).getActualTypeArguments()[0];
         Class reqcls = Class.forName(type.getTypeName());
         if (classMap.containsKey(reqcls)) {
-            throw new IOException("'" + cls.getName() + "' initialization error, '" + type.getTypeName() + "' is repeated.");
+            if (classMap.get(reqcls) != cls) {
+                throw new IOException("'" + cls.getName() + "' initialization error, '" + type.getTypeName() + "' is repeated.");
+            }
         } else {
             classMap.put(reqcls, cls);
         }

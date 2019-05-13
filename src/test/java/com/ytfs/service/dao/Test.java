@@ -1,6 +1,6 @@
 package com.ytfs.service.dao;
 
-import com.ytfs.service.utils.LogConfigurator;
+import com.ytfs.service.LogConfigurator;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import org.bson.types.ObjectId;
@@ -47,11 +47,8 @@ public class Test {
 
     private static void testUser() throws Exception {
         User usr = new User(Sequence.generateUserID());
-
-        //Invalid public key:25nsgBoxHrhgZ3xk7eQLqgU36SPomd92dgxeYxXUXndWV
-        //5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ
-        String prikey = "5KQKydL7TuRwjzaFSK4ezH9RUXWuYHW1yYDp5CmQfsfTuu9MBLZ";
-        byte[] kusp = Base58.decode(prikey);//si钥    
+        String prikey = "5JcDH48njDbUQLu1R8SWwKsfWLnqBpWXDDiCgxFC3hioDuwLhVx";
+        //byte[] kusp = Base58.decode(prikey);//si钥    
         String ss = KeyUtil.toPublicKey(prikey);
         String pubkey = ss.substring(3);
         System.out.println(pubkey);

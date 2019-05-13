@@ -10,7 +10,7 @@ import com.ytfs.service.packet.SaveObjectMetaReq;
 import com.ytfs.service.packet.SaveObjectMetaResp;
 import com.ytfs.service.servlet.Handler;
 import static com.ytfs.service.servlet.bp.QueryObjectMetaHandler.queryObjectMeta;
-import com.ytfs.service.utils.ServiceException;
+import com.ytfs.service.ServiceException;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.List;
 import org.apache.log4j.Logger;

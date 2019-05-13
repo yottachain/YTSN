@@ -2,7 +2,7 @@ package com.ytfs.service.eos;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ytfs.service.ServerConfig;
-import com.ytfs.service.UserConfig;
+import com.ytfs.client.UserConfig;
 import io.jafka.jeos.core.response.chain.transaction.PushedTransaction;
 import java.util.Map;
 import org.bson.types.ObjectId;

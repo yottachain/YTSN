@@ -1,7 +1,7 @@
 package com.ytfs.service.servlet.user;
 
 import com.ytfs.service.ServerConfig;
-import com.ytfs.service.UserConfig;
+import com.ytfs.client.UserConfig;
 import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
 import com.ytfs.service.dao.User;

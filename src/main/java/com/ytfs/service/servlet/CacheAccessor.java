@@ -5,8 +5,8 @@ import com.google.common.cache.CacheBuilder;
 import com.ytfs.service.packet.QueryObjectMetaReq;
 import com.ytfs.service.packet.QueryObjectMetaResp;
 import com.ytfs.service.servlet.bp.QueryObjectMetaHandler;
-import static com.ytfs.service.utils.ServiceErrorCode.INVALID_UPLOAD_ID;
-import com.ytfs.service.utils.ServiceException;
+import static com.ytfs.service.ServiceErrorCode.INVALID_UPLOAD_ID;
+import com.ytfs.service.ServiceException;
 import java.util.concurrent.TimeUnit;
 import org.bson.types.ObjectId;
 

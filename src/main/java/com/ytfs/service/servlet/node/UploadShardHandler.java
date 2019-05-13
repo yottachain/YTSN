@@ -1,21 +1,19 @@
 package com.ytfs.service.servlet.node;
 
 import com.ytfs.service.ServerConfig;
-import com.ytfs.service.codec.KeyStoreCoder;
-import com.ytfs.service.dao.BucketAccessor;
+import com.ytfs.codec.KeyStoreCoder;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache;
 import static com.ytfs.service.packet.UploadShardRes.RES_BAD_REQUEST;
 import com.ytfs.service.packet.UploadShardResp;
 import com.ytfs.service.packet.VoidResp;
-import com.ytfs.service.packet.s3.ListBucketResp;
 import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.Handler;
 import com.ytfs.service.servlet.UploadBlockCache;
 import com.ytfs.service.servlet.UploadShardCache;
-import com.ytfs.service.utils.ServiceErrorCode;
-import static com.ytfs.service.utils.ServiceErrorCode.TOO_MANY_SHARDS;
-import com.ytfs.service.utils.ServiceException;
+import com.ytfs.service.ServiceErrorCode;
+import static com.ytfs.service.ServiceErrorCode.TOO_MANY_SHARDS;
+import com.ytfs.service.ServiceException;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

@@ -6,8 +6,8 @@ import com.ytfs.service.dao.User;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.packet.s3.CreateBucketReq;
 import com.ytfs.service.servlet.Handler;
-import static com.ytfs.service.utils.ServiceErrorCode.INVALID_BUCKET_NAME;
-import com.ytfs.service.utils.ServiceException;
+import static com.ytfs.service.ServiceErrorCode.INVALID_BUCKET_NAME;
+import com.ytfs.service.ServiceException;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 

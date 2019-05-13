@@ -1,8 +1,8 @@
 package com.ytfs.service;
 
 import static com.ytfs.service.ServerConfig.eosURI;
-import com.ytfs.service.utils.GlobleThreadPool;
-import com.ytfs.service.utils.LogConfigurator;
+import com.ytfs.service.GlobleThreadPool;
+import com.ytfs.service.LogConfigurator;
 import static com.ytfs.service.ServerConfig.*;
 import com.ytfs.service.dao.MongoSource;
 import com.ytfs.service.http.HttpServerBoot;
