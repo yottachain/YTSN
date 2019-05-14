@@ -7,26 +7,57 @@ import com.ytfs.service.net.P2PUtils;
 import com.ytfs.service.node.SuperNodeList;
 import com.ytfs.service.packet.AddDNIReq;
 import com.ytfs.service.packet.AddDNIReq.DNI;
-import com.ytfs.service.packet.QueryObjectMetaReq;
-import com.ytfs.service.packet.QueryObjectMetaResp;
+import com.ytfs.service.servlet.bp.PutDNIHandler;
+import io.yottachain.nodemgmt.YottaNodeMgmt;
+import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.Binary;
 
 public class SendShard2SNM implements Runnable {
 
+    private static final Logger LOG = Logger.getLogger(SendShard2SNM.class);
+
     public static void sendShard2SNM(List<Document> ls) throws InterruptedException {
         SendShard2SNM sender = new SendShard2SNM();
-        sender.mapReq = makeRequest(ls);
+        sender.docs = ls;
         GlobleThreadPool.execute(sender);
     }
 
-    private Map<SuperNode, AddDNIReq> mapReq;
+    private List<Document> docs;
 
-    private static Map<SuperNode, AddDNIReq> makeRequest(List<Document> ls) {
+    @Override
+    public void run() {
+        try {
+            Map<SuperNode, AddDNIReq> map = makeRequest(docs);
+            Set<Map.Entry<SuperNode, AddDNIReq>> set = map.entrySet();
+            for (Map.Entry<SuperNode, AddDNIReq> ent : set) {
+                try {
+                    saveDNICall(ent.getValue(), ent.getKey());
+                } catch (ServiceException se) {
+                    LOG.error("Call PutDNI " + ent.getKey().getNodeid() + " ERR!", se);
+                    printErr(ent.getValue());
+                }
+            }
+        } catch (Throwable t) {
+            LOG.error("Unkown ERR!", t);
+        }
+    }
+
+    private void printErr(AddDNIReq req) {
+        List<DNI> ls = req.getDnis();
+        for (AddDNIReq.DNI dni : ls) {
+            LOG.error("ERR List " + dni.getNodeid() + "-[" + Hex.encodeHexString(dni.getVHF()) + "]");
+        }
+    }
+
+    private Map<SuperNode, AddDNIReq> makeRequest(List<Document> ls) {
         Map<SuperNode, AddDNIReq> map = new HashMap();
         for (Document doc : ls) {
             DNI dni = new DNI();
@@ -43,20 +74,11 @@ public class SendShard2SNM implements Runnable {
         return map;
     }
 
-    @Override
-    public void run() {
-        try {
-
-        } finally {
-
-        }
-    }
-
-    public static void saveDNICall(AddDNIReq req, SuperNode sn) throws ServiceException {
+    private void saveDNICall(AddDNIReq req, SuperNode sn) throws ServiceException {
         if (sn.getId() == ServerConfig.superNodeID) {
-            //resp = queryObjectMeta(req);
+            PutDNIHandler.putDNI(req.getDnis());
         } else {
-           // resp = (QueryObjectMetaResp) P2PUtils.requestBP(req, node);
+            P2PUtils.requestBP(req, sn);
         }
     }
 

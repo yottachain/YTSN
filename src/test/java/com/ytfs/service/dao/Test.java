@@ -12,7 +12,7 @@ public class Test {
         //UserAccessor.total();
         //testRedis();
         //testSeq();     
-        //testUser();
+        testUser();
         //testObject();
     }
 

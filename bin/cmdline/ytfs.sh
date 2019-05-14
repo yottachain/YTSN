@@ -30,9 +30,6 @@ do
     elif [[ $var == 'wrapper.java.classpath.1' ]]
     then
         classpath=${val:0:${#val}-1}
-    elif [[ $var == 'wrapper.java.classpath.2' ]]
-    then
-        classpath="$classpath:${val:0:${#val}-1}"
     fi 
 done < ../ytfs.conf
  
