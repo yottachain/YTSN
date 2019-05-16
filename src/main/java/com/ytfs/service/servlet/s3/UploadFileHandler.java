@@ -32,6 +32,7 @@ public class UploadFileHandler extends Handler<UploadFileReq> {
         filemeta.setBucketId(meta.getBucketId());
         filemeta.setFileName(request.getFileName());
         filemeta.setVNU(request.getVNU());
+        filemeta.setMeta(request.getMeta());
         FileAccessor.saveFileMeta(filemeta);
         return new VoidResp();
     }
