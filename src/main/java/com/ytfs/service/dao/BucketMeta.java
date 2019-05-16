@@ -8,6 +8,15 @@ public class BucketMeta {
     private String bucketName;
     private int userId;
     private ObjectId bucketId;
+    private byte[] meta;
+
+    public byte[] getMeta() {
+        return meta;
+    }
+
+    public void setMeta(byte[] meta) {
+        this.meta = meta;
+    }
 
     public BucketMeta(int userId, ObjectId bucketId, String bucketName) {
         this.userId = userId;
