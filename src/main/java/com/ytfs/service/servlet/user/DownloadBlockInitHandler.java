@@ -1,9 +1,9 @@
 package com.ytfs.service.servlet.user;
 
+import com.ytfs.common.node.NodeManager;
 import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.dao.ShardAccessor;
 import com.ytfs.service.dao.ShardMeta;
-import com.ytfs.service.node.NodeManager;
 import com.ytfs.service.packet.DownloadBlockDBResp;
 import com.ytfs.service.packet.DownloadBlockInitReq;
 import com.ytfs.service.packet.DownloadBlockInitResp;

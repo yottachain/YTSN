@@ -1,12 +1,12 @@
 package com.ytfs.service.servlet.user;
 
-import com.ytfs.service.ServerConfig;
-import com.ytfs.client.UserConfig;
+import com.ytfs.common.conf.ServerConfig;
+import com.ytfs.common.conf.UserConfig;
 import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserAccessor;
-import com.ytfs.service.eos.EOSRequest;
+import com.ytfs.common.eos.EOSRequest;
 import com.ytfs.service.packet.UploadObjectEndReq;
 import com.ytfs.service.packet.UploadObjectEndResp;
 import com.ytfs.service.servlet.Handler;

@@ -1,17 +1,29 @@
 package com.ytfs.service;
 
-import static com.ytfs.service.ServerConfig.eosURI;
-import com.ytfs.service.GlobleThreadPool;
-import com.ytfs.service.LogConfigurator;
-import static com.ytfs.service.ServerConfig.*;
+import com.mongodb.ServerAddress;
+import com.ytfs.common.conf.ServerConfig;
+import static com.ytfs.common.conf.ServerConfig.eosURI;
+import com.ytfs.common.GlobleThreadPool;
+import com.ytfs.common.LogConfigurator;
+import static com.ytfs.common.conf.ServerConfig.*;
 import com.ytfs.service.dao.MongoSource;
 import com.ytfs.service.http.HttpServerBoot;
-import com.ytfs.service.net.P2PUtils;
+import com.ytfs.common.net.P2PUtils;
+import com.ytfs.common.node.NodeManager;
+import com.ytfs.common.node.SuperNodeList;
+import com.ytfs.service.servlet.FromBPMsgDispatcher;
+import com.ytfs.service.servlet.FromNodeMsgDispatcher;
+import com.ytfs.service.servlet.FromUserMsgDispatcher;
+import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
+import io.yottachain.p2phost.interfaces.BPNodeCallback;
+import io.yottachain.p2phost.interfaces.NodeCallback;
+import io.yottachain.p2phost.interfaces.UserCallback;
 import io.yottachain.p2phost.utils.Base58;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
@@ -35,7 +47,10 @@ public class ServerInitor {
             String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "INFO");
             LogConfigurator.configPath(new File(dir, "log"), level);
             load();
-        } catch (IOException e) {
+            List<ServerAddress> addrs = MongoSource.getServerAddress();
+            NodeManager.start(addrs);
+            SuperNodeList.isServer = true;
+        } catch (NodeMgmtException | IOException e) {
             LOG.error("Init err.", e);
             System.exit(0);//循环初始化
         }
@@ -43,7 +58,10 @@ public class ServerInitor {
             try {
                 int port = ServerConfig.port + ii;
                 P2PUtils.start(port, ServerConfig.privateKey);
-                P2PUtils.register();
+                UserCallback userCallback = new FromUserMsgDispatcher();
+                BPNodeCallback bPNodeCallback = new FromBPMsgDispatcher();
+                NodeCallback nodeCallback = new FromNodeMsgDispatcher();
+                P2PUtils.register(userCallback, bPNodeCallback, nodeCallback);
                 LOG.info("P2P initialization completed, port " + port);
                 break;
             } catch (Exception r) {

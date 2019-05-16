@@ -1,15 +1,13 @@
 package com.ytfs.service.servlet.user;
 
-import com.ytfs.service.GlobleThreadPool;
-import com.ytfs.service.ServerConfig;
-import com.ytfs.service.ServiceException;
-import com.ytfs.service.net.P2PUtils;
-import com.ytfs.service.node.SuperNodeList;
+import com.ytfs.common.GlobleThreadPool;
+import com.ytfs.common.conf.ServerConfig;
+import com.ytfs.common.ServiceException;
+import com.ytfs.common.net.P2PUtils;
+import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.packet.AddDNIReq;
 import com.ytfs.service.packet.AddDNIReq.DNI;
 import com.ytfs.service.servlet.bp.PutDNIHandler;
-import io.yottachain.nodemgmt.YottaNodeMgmt;
-import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.HashMap;
 import java.util.List;

@@ -1,21 +1,21 @@
 package com.ytfs.service.servlet.user;
 
-import com.ytfs.service.ServerConfig;
+import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.dao.BlockMeta;
 import com.ytfs.service.dao.User;
+import com.ytfs.service.servlet.CacheAccessor;
+import com.ytfs.service.servlet.Handler;
+import com.ytfs.service.servlet.UploadObjectCache;
+import com.ytfs.service.servlet.bp.SaveObjectMetaHandler;
+import static com.ytfs.common.ServiceErrorCode.INVALID_KEU;
+import static com.ytfs.common.ServiceErrorCode.NO_SUCH_BLOCK;
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.SaveObjectMetaReq;
 import com.ytfs.service.packet.SaveObjectMetaResp;
 import com.ytfs.service.packet.UploadBlockDupReq;
 import com.ytfs.service.packet.VoidResp;
-import com.ytfs.service.servlet.CacheAccessor;
-import com.ytfs.service.servlet.Handler;
-import com.ytfs.service.servlet.UploadObjectCache;
-import com.ytfs.service.servlet.bp.SaveObjectMetaHandler;
-import static com.ytfs.service.ServiceErrorCode.INVALID_KEU;
-import static com.ytfs.service.ServiceErrorCode.NO_SUCH_BLOCK;
-import com.ytfs.service.ServiceException;
 import org.apache.log4j.Logger;
 
 public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {

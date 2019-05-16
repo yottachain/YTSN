@@ -1,6 +1,6 @@
 package com.ytfs.service.http;
 
-import com.ytfs.service.ServerConfig;
+import com.ytfs.common.conf.ServerConfig;
 import static com.ytfs.service.http.UseSpaceHandler.REQ_TOTAL_PATH;
 import static com.ytfs.service.http.UseSpaceHandler.REQ_USER_PATH;
 import java.io.IOException;

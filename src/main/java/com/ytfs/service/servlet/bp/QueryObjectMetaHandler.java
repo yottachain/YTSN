@@ -1,15 +1,15 @@
 package com.ytfs.service.servlet.bp;
 
-import com.ytfs.service.ServerConfig;
+import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
-import com.ytfs.service.net.P2PUtils;
-import com.ytfs.service.node.SuperNodeList;
+import com.ytfs.common.net.P2PUtils;
+import com.ytfs.common.node.SuperNodeList;
+import com.ytfs.service.servlet.Handler;
+import static com.ytfs.common.ServiceErrorCode.INVALID_UPLOAD_ID;
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.QueryObjectMetaReq;
 import com.ytfs.service.packet.QueryObjectMetaResp;
-import com.ytfs.service.servlet.Handler;
-import static com.ytfs.service.ServiceErrorCode.INVALID_UPLOAD_ID;
-import com.ytfs.service.ServiceException;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;

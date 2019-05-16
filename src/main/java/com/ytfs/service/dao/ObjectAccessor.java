@@ -2,7 +2,7 @@ package com.ytfs.service.dao;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
-import com.ytfs.service.ServerConfig;
+import com.ytfs.common.conf.ServerConfig;
 import java.util.ArrayList;
 import java.util.List;
 import org.bson.Document;

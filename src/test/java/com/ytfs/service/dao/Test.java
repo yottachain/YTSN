@@ -1,6 +1,6 @@
 package com.ytfs.service.dao;
 
-import com.ytfs.service.LogConfigurator;
+import com.ytfs.common.LogConfigurator;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import org.bson.types.ObjectId;

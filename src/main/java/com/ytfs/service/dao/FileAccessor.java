@@ -2,8 +2,8 @@ package com.ytfs.service.dao;
 
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.model.Filters;
-import static com.ytfs.service.ServiceErrorCode.OBJECT_ALREADY_EXISTS;
-import com.ytfs.service.ServiceException;
+import static com.ytfs.common.ServiceErrorCode.OBJECT_ALREADY_EXISTS;
+import com.ytfs.common.ServiceException;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;

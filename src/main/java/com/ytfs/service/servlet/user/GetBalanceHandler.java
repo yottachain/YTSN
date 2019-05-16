@@ -3,12 +3,12 @@ package com.ytfs.service.servlet.user;
 import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
 import com.ytfs.service.dao.User;
-import com.ytfs.service.eos.EOSClient;
+import com.ytfs.common.eos.EOSClient;
+import com.ytfs.service.servlet.Handler;
+import com.ytfs.common.ServiceErrorCode;
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.GetBalanceReq;
 import com.ytfs.service.packet.VoidResp;
-import com.ytfs.service.servlet.Handler;
-import com.ytfs.service.ServiceErrorCode;
-import com.ytfs.service.ServiceException;
 import org.apache.log4j.Logger;
 
 public class GetBalanceHandler extends Handler<GetBalanceReq> {

@@ -1,9 +1,9 @@
 package com.ytfs.service.servlet.bp;
 
-import com.ytfs.service.ServerConfig;
-import static com.ytfs.service.ServiceErrorCode.INVALID_NODE_ID;
-import com.ytfs.service.ServiceException;
-import com.ytfs.service.node.SuperNodeList;
+import com.ytfs.common.conf.ServerConfig;
+import static com.ytfs.common.ServiceErrorCode.INVALID_NODE_ID;
+import com.ytfs.common.ServiceException;
+import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.packet.AddDNIReq;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.Handler;

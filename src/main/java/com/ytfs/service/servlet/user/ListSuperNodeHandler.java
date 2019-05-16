@@ -1,6 +1,6 @@
 package com.ytfs.service.servlet.user;
 
-import com.ytfs.service.node.NodeManager;
+import com.ytfs.common.node.NodeManager;
 import com.ytfs.service.packet.ListSuperNodeReq;
 import com.ytfs.service.packet.ListSuperNodeResp;
 import com.ytfs.service.servlet.Handler;

@@ -1,14 +1,11 @@
 # ! /bin/sh
-# ------------在这里设置要上传的文件路径---------------------
-filepath=/root/test.dat
-
-# ---------------------upload test-----------------------
+# ---------------------ytfs-----------------------
 source ytfs.ev
 
 if [ -z $YTFS_HOME ]; then  
     echo "Environment variable 'YTFS_HOME' not found "
     exit 0;
-fi 
+fi
 
 echo "YTFS_HOME:$YTFS_HOME"
 cd $YTFS_HOME
@@ -24,14 +21,20 @@ do
     elif [[ $var == 'wrapper.java.additional.2' ]]
     then
         java_opts="$java_opts ${val:0:${#val}-1}"
+    elif [[ $var == 'wrapper.java.additional.3' ]]
+    then
+        java_opts="$java_opts ${val:0:${#val}-1}"
+    elif [[ $var == 'wrapper.java.additional.4' ]]
+    then
+        java_opts="$java_opts ${val:0:${#val}-1}"
     elif [[ $var == 'wrapper.java.classpath.1' ]]
     then
         classpath=${val:0:${#val}-1}
     fi 
-done < ../ytfs.conf
+done < ytfs.conf
  
-mainclass="com.ytfs.client.examples.SDKTest"
+mainclass="com.ytfs.service.ServiceWrapper"
 
-cmd="$java_cmd $java_opts -classpath $classpath $mainclass $filepath"
+cmd="$java_cmd $java_opts -classpath $classpath $mainclass"
 echo "cmd: $cmd"
 $cmd

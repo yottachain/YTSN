@@ -1,7 +1,7 @@
 package com.ytfs.service.servlet.user;
 
 import com.ytfs.service.dao.User;
-import com.ytfs.service.eos.EOSClient;
+import com.ytfs.common.eos.EOSClient;
 import com.ytfs.service.packet.SubBalanceReq;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.Handler;

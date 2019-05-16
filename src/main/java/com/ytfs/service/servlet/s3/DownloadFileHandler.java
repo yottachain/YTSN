@@ -6,13 +6,13 @@ import com.ytfs.service.dao.FileAccessor;
 import com.ytfs.service.dao.FileMeta;
 import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
+import com.ytfs.service.servlet.Handler;
+import static com.ytfs.common.ServiceErrorCode.INVALID_BUCKET_NAME;
+import static com.ytfs.common.ServiceErrorCode.INVALID_OBJECT_NAME;
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.packet.DownloadObjectInitResp;
 import com.ytfs.service.packet.s3.DownloadFileReq;
-import com.ytfs.service.servlet.Handler;
-import static com.ytfs.service.ServiceErrorCode.INVALID_BUCKET_NAME;
-import static com.ytfs.service.ServiceErrorCode.INVALID_OBJECT_NAME;
-import com.ytfs.service.ServiceException;
 import org.apache.log4j.Logger;
 
 public class DownloadFileHandler extends Handler<DownloadFileReq> {

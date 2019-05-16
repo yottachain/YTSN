@@ -4,13 +4,13 @@ import com.ytfs.service.dao.BucketCache;
 import com.ytfs.service.dao.BucketMeta;
 import com.ytfs.service.dao.FileAccessor;
 import com.ytfs.service.dao.FileMeta;
+import com.ytfs.service.servlet.Handler;
+import static com.ytfs.common.ServiceErrorCode.INVALID_BUCKET_NAME;
+import static com.ytfs.common.ServiceErrorCode.INVALID_UPLOAD_ID;
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.packet.s3.UploadFileReq;
-import com.ytfs.service.servlet.Handler;
-import static com.ytfs.service.ServiceErrorCode.INVALID_BUCKET_NAME;
-import static com.ytfs.service.ServiceErrorCode.INVALID_UPLOAD_ID;
-import com.ytfs.service.ServiceException;
 import org.apache.log4j.Logger;
 
 public class UploadFileHandler extends Handler<UploadFileReq> {

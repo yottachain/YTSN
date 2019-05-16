@@ -1,17 +1,17 @@
 package com.ytfs.service.servlet.user;
 
-import com.ytfs.service.ServerConfig;
+import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
 import com.ytfs.service.dao.User;
-import com.ytfs.service.eos.EOSRequest;
-import com.ytfs.service.node.SuperNodeList;
+import com.ytfs.common.eos.EOSRequest;
+import com.ytfs.common.node.SuperNodeList;
+import com.ytfs.service.servlet.Handler;
+import com.ytfs.common.ServiceErrorCode;
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.UploadObjectInitReq;
 import com.ytfs.service.packet.UploadObjectInitResp;
-import com.ytfs.service.servlet.Handler;
-import com.ytfs.service.ServiceErrorCode;
-import com.ytfs.service.ServiceException;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.List;
 import org.apache.log4j.Logger;
