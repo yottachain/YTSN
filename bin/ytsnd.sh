@@ -6,7 +6,7 @@ APP_LONG_NAME="ytfs core Server"
 
 # Wrapper
 WRAPPER_CMD="./wrapper"
-WRAPPER_CONF="../ytfs.conf"
+WRAPPER_CONF="ytsn.conf"
 
 # Priority at which to run the wrapper.  See "man nice" for valid priorities.
 #  nice is only used if a priority is specified.

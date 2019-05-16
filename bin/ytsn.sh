@@ -1,11 +1,11 @@
 # ! /bin/sh
-# ---------------------ytfs-----------------------
-source ytfs.ev
+ # ---------------------surfs-----------------------
+source ytsn.ev
 
 if [ -z $YTFS_HOME ]; then  
     echo "Environment variable 'YTFS_HOME' not found "
     exit 0;
-fi
+fi 
 
 echo "YTFS_HOME:$YTFS_HOME"
 cd $YTFS_HOME
@@ -31,7 +31,7 @@ do
     then
         classpath=${val:0:${#val}-1}
     fi 
-done < ytfs.conf
+done < ytsn.conf
  
 mainclass="com.ytfs.service.ServiceWrapper"
 
