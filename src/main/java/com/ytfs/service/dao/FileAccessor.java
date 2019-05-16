@@ -1,12 +1,16 @@
 package com.ytfs.service.dao;
 
 import com.mongodb.MongoWriteException;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import static com.ytfs.common.ServiceErrorCode.OBJECT_ALREADY_EXISTS;
 import com.ytfs.common.ServiceException;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FileAccessor {
 
@@ -30,6 +34,21 @@ public class FileAccessor {
         } else {
             return new FileMeta(doc);
         }
+    }
+
+    //根据bucketname获取objectname
+    public static String[] listObjectByBucket(ObjectId bucketId, int userid) {
+//        BucketMeta bucketMeta = BucketCache.getBucket(userid,bucketname);
+        List<String> ls = new ArrayList();
+        Bson bson1 = Filters.eq("bucketId", bucketId);
+        Bson bson2 = Filters.eq("userId", userid);
+        Bson bson = Filters.and(bson1, bson2);
+        FindIterable<Document> it = MongoSource.getFileCollection().find(bson);
+        for (Document doc : it) {
+            ls.add(doc.getString("fileName"));
+        }
+        String[] res = new String[ls.size()];
+        return ls.toArray(res);
     }
     
 }
