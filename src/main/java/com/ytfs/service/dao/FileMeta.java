@@ -1,6 +1,7 @@
 package com.ytfs.service.dao;
 
 import org.bson.Document;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 
 public class FileMeta {
@@ -9,10 +10,10 @@ public class FileMeta {
     private ObjectId bucketId;
     private String fileName;
     private ObjectId VNU;
-    
-    
-    public FileMeta(){
-        this.fileId=new ObjectId();
+    private byte[] meta;
+
+    public FileMeta() {
+        this.fileId = new ObjectId();
     }
 
     public FileMeta(Document doc) {
@@ -28,6 +29,9 @@ public class FileMeta {
         if (doc.containsKey("fileName")) {
             this.fileName = doc.getString("fileName");
         }
+        if (doc.containsKey("meta")) {
+            this.meta = ((Binary) doc.get("meta")).getData();
+        }
     }
 
     public Document toDocument() {
@@ -36,6 +40,7 @@ public class FileMeta {
         doc.append("bucketId", bucketId);
         doc.append("VNU", VNU);
         doc.append("fileName", fileName);
+        doc.append("meta", new Binary(meta));
         return doc;
     }
 
@@ -93,6 +98,20 @@ public class FileMeta {
      */
     public void setVNU(ObjectId VNU) {
         this.VNU = VNU;
+    }
+
+    /**
+     * @return the meta
+     */
+    public byte[] getMeta() {
+        return meta;
+    }
+
+    /**
+     * @param meta the meta to set
+     */
+    public void setMeta(byte[] meta) {
+        this.meta = meta;
     }
 
 }
