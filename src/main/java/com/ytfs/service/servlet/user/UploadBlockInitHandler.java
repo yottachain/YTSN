@@ -1,7 +1,6 @@
 package com.ytfs.service.servlet.user;
 
 import com.ytfs.common.conf.ServerConfig;
-import com.ytfs.common.codec.KeyStoreCoder;
 import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.dao.BlockMeta;
 import com.ytfs.service.dao.Sequence;
@@ -31,9 +30,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
-
+    
     private static final Logger LOG = Logger.getLogger(UploadBlockInitHandler.class);
-
+    
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
@@ -109,7 +108,7 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
             CacheAccessor.addUploadBlockCache(blockid, cache);
         }
     }
-
+    
     private void setNodes(UploadBlockInitResp resp, Node[] ns, long VBI) throws NodeMgmtException {
         resp.setVBI(VBI);
         ShardNode[] nodes = new ShardNode[ns.length];
@@ -127,12 +126,17 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
      * @param VBI
      */
     static void sign(ShardNode sn, long VBI) {
-        byte[] nid = sn.getKey().getBytes(Charset.forName("utf-8"));
-        ByteBuffer buf = ByteBuffer.allocate(nid.length + 8);
-        buf.put(nid);
-        buf.putLong(VBI);
-        buf.flip();
-        byte[] signed = KeyStoreCoder.ecdsaSign(buf.array(), ServerConfig.SNDSP);
-        sn.setSign(signed);
+        try {
+            byte[] nid = sn.getKey().getBytes(Charset.forName("utf-8"));
+            ByteBuffer buf = ByteBuffer.allocate(nid.length + 8);
+            buf.put(nid);
+            buf.putLong(VBI);
+            buf.flip();
+            String ss = io.yottachain.ytcrypto.YTCrypto.sign(ServerConfig.privateKey, buf.array());
+            byte[] signed = ss.getBytes("UTF-8");
+            sn.setSign(signed);
+        } catch (Exception r) {
+            LOG.error("", r);
+        }
     }
 }
