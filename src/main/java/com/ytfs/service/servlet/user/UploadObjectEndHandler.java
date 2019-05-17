@@ -24,11 +24,11 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         ObjectMeta meta = new ObjectMeta(userid, request.getVHW());
         ObjectAccessor.getObjectAndUpdateNLINK(meta);
         long usedspace = meta.getUsedspace() + ServerConfig.PCM;
-        EOSClient.addUsedSpace(usedspace);       
+        EOSClient.addUsedSpace(usedspace, user.getUsername());
         long count = usedspace / UserConfig.Default_Shard_Size
                 + (usedspace % UserConfig.Default_Shard_Size > 0 ? 1 : 0);
         long costPerCycle = count * ServerConfig.unitcost;
-        ObjectAccessor.addNewObject(meta.getVNU(), costPerCycle, user.getUserID());
+        ObjectAccessor.addNewObject(meta.getVNU(), costPerCycle, user.getUserID(), user.getUsername());
         UserAccessor.updateUser(userid, usedspace, 1, meta.getLength());
         long firstCost = costPerCycle * ServerConfig.PMS;
         byte[] signarg = EOSRequest.createEosClient(meta.getVNU());

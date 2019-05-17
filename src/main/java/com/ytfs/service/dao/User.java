@@ -6,6 +6,7 @@ import org.bson.types.Binary;
 public class User {
 
     private int userID;
+    private String username;
     private byte[] KUEp;    //用户公钥
     private long usedSpace;  //占用空间
     private long costPerCycle;//每周期总费用
@@ -35,6 +36,9 @@ public class User {
         if (doc.containsKey("fileTotal")) {
             this.fileTotal = doc.getLong("fileTotal");
         }
+        if (doc.containsKey("username")) {
+            this.username = doc.getString("username");
+        }
     }
 
     public Document toDocument() {
@@ -45,6 +49,7 @@ public class User {
         doc.append("costPerCycle", costPerCycle);
         doc.append("spaceTotal", spaceTotal);
         doc.append("fileTotal", fileTotal);
+        doc.append("username", username);
         return doc;
     }
 
@@ -130,6 +135,20 @@ public class User {
      */
     public void setSpaceTotal(long spaceTotal) {
         this.spaceTotal = spaceTotal;
+    }
+
+    /**
+     * @return the username
+     */
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * @param username the username to set
+     */
+    public void setUsername(String username) {
+        this.username = username;
     }
 
 }

@@ -4,11 +4,11 @@ import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
 import com.ytfs.service.dao.User;
-import com.ytfs.common.eos.EOSRequest;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.servlet.Handler;
 import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.eos.EOSClient;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.UploadObjectInitReq;
 import com.ytfs.service.packet.UploadObjectInitResp;
@@ -55,8 +55,14 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
             meta.setVNU(new ObjectId());
             resp.setVNU(meta.getVNU());
         }
-        byte[] signarg = EOSRequest.createEosClient(meta.getVNU());
-        resp.setSignArg(signarg);
+        boolean has= EOSClient.hasSpace(request.getLength(),user.getUsername());      
+        if (has) {           
+            meta.setLength(request.getLength());
+            meta.setNLINK(0);
+            ObjectAccessor.insertOrUpdate(meta);
+        } else {
+            throw new ServiceException(ServiceErrorCode.NOT_ENOUGH_DHH);
+        }
         return resp;
     }
 
