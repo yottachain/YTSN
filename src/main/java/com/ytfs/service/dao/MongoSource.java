@@ -4,6 +4,7 @@ import com.mongodb.*;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.*;
 import com.mongodb.client.model.*;
+import com.ytfs.common.conf.ServerConfig;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
@@ -230,7 +231,7 @@ public class MongoSource {
         if (doc == null) {
             doc = new Document();
             doc.append("_id", SEQ_UID_VAR);
-            doc.append("seq", (int) 0);
+            doc.append("seq", (int) ServerConfig.superNodeID);
             seq_collection.insertOne(doc);
         }
         bson = Filters.eq("_id", SEQ_BLKID_VAR); //为生成blockID

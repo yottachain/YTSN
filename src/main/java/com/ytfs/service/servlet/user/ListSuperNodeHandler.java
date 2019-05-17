@@ -4,6 +4,7 @@ import com.ytfs.common.node.NodeManager;
 import com.ytfs.service.packet.ListSuperNodeReq;
 import com.ytfs.service.packet.ListSuperNodeResp;
 import com.ytfs.service.servlet.Handler;
+import io.yottachain.nodemgmt.core.vo.SuperNode;
 import org.apache.log4j.Logger;
 
 public class ListSuperNodeHandler extends Handler<ListSuperNodeReq> {
@@ -14,7 +15,8 @@ public class ListSuperNodeHandler extends Handler<ListSuperNodeReq> {
     public Object handle() throws Throwable {
         ListSuperNodeResp resp = new ListSuperNodeResp();
         LOG.info("List super node...");
-        resp.setSuperList(NodeManager.getSuperNode());
+        SuperNode[] sn = NodeManager.getSuperNode();
+        resp.setSuperList(sn);
         return resp;
     }
 

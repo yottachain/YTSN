@@ -2,6 +2,7 @@ package com.ytfs.service.dao;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.model.Filters;
+import com.ytfs.common.node.SuperNodeList;
 import static com.ytfs.service.dao.MongoSource.SEQ_BLKID_VAR;
 import static com.ytfs.service.dao.MongoSource.SEQ_UID_VAR;
 import org.bson.Document;
@@ -14,13 +15,13 @@ public class Sequence {
      *
      * @return int
      */
-    public static int getSequence() {
+    public static int generateUserID() {
         Bson filter = Filters.eq("_id", SEQ_UID_VAR);
-        Document update = new Document("$inc", new Document("seq", (int) 1));
+        Document update = new Document("$inc", new Document("seq", (int) SuperNodeList.getSuperNodeCount()));
         Document doc = MongoSource.getSeqCollection().findOneAndUpdate(filter, update);
         if (doc == null) {
             throw new MongoException("Sequence deleted.");
-        }               
+        }
         if (doc.get("seq") instanceof Long) {
             return doc.getLong("seq").intValue();
         } else {
@@ -46,15 +47,6 @@ public class Sequence {
         } else {
             return doc.getInteger("seq");
         }
-    }
-
-    /**
-     * 生成UserID
-     *
-     * @return INT32
-     */
-    public static int generateUserID() {
-        return getSequence() + 1;
     }
 
     /**

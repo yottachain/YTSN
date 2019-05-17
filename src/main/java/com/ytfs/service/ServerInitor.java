@@ -125,5 +125,13 @@ public class ServerInitor {
         if (eosURI == null || eosURI.trim().isEmpty()) {
             throw new IOException("The 'eosURI' parameter is not configured.");
         }
+        BPAccount = p.getProperty("BPAccount");
+        if (BPAccount == null || BPAccount.trim().isEmpty()) {
+            throw new IOException("The 'BPAccount' parameter is not configured.");
+        }
+        BPPriKey = p.getProperty("BPPriKey");
+        if (BPPriKey == null || BPPriKey.trim().isEmpty()) {
+            throw new IOException("The 'BPPriKey' parameter is not configured.");
+        }
     }
 }

@@ -28,6 +28,7 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
     @Override
     public Object handle() throws Throwable {
         try {
+            LOG.info(request.getRES());
             int nodeid = this.getNodeId();
             LOG.debug("Upload shard " + request.getVBI() + "/" + request.getSHARDID() + "/" + request.getRES());
             UploadBlockCache cache = CacheAccessor.getUploadBlockCache(request.getVBI());
@@ -53,7 +54,7 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
             shardCache.setShardid(request.getSHARDID());
             cache.addUploadShardCache(shardCache);
         } catch (Exception e) {
-            LOG.error("", e);
+           // LOG.error("", e);
         }
         return new VoidResp();
     }
@@ -68,12 +69,12 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
         buf.putInt(nodeid);
         buf.putLong(resp.getVBI());
         buf.flip();
-        if (!KeyStoreCoder.ecdsaVerify(buf.array(), resp.getUSERSIGN(), key)) {
+        //if (!KeyStoreCoder.ecdsaVerify(buf.array(), resp.getUSERSIGN(), key)) {
             LOG.info(resp.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(resp.getUSERSIGN()));
             // throw new ServiceException(INVALID_SIGNATURE);
-        } else {
-            LOG.info(resp.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(resp.getUSERSIGN()));
-        }
+        //} else {
+        //    LOG.info(resp.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(resp.getUSERSIGN()));
+        //}
     }
 
 }
