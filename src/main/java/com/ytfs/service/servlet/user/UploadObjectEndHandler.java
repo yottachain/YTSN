@@ -2,6 +2,7 @@ package com.ytfs.service.servlet.user;
 
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.conf.UserConfig;
+import com.ytfs.common.eos.EOSClient;
 import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
 import com.ytfs.service.dao.User;
@@ -23,6 +24,7 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         ObjectMeta meta = new ObjectMeta(userid, request.getVHW());
         ObjectAccessor.getObjectAndUpdateNLINK(meta);
         long usedspace = meta.getUsedspace() + ServerConfig.PCM;
+        EOSClient.addUsedSpace(usedspace);       
         long count = usedspace / UserConfig.Default_Shard_Size
                 + (usedspace % UserConfig.Default_Shard_Size > 0 ? 1 : 0);
         long costPerCycle = count * ServerConfig.unitcost;

@@ -133,5 +133,9 @@ public class ServerInitor {
         if (BPPriKey == null || BPPriKey.trim().isEmpty()) {
             throw new IOException("The 'BPPriKey' parameter is not configured.");
         }
+        contractAccount = p.getProperty("contractAccount");
+        if (contractAccount == null || contractAccount.trim().isEmpty()) {
+            throw new IOException("The 'contractAccount' parameter is not configured.");
+        }
     }
 }
