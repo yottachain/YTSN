@@ -7,10 +7,13 @@ import static com.ytfs.common.ServiceErrorCode.OBJECT_ALREADY_EXISTS;
 import com.ytfs.common.ServiceException;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FileAccessor {
 
@@ -37,18 +40,20 @@ public class FileAccessor {
     }
 
     //根据bucketname获取objectname
-    public static String[] listObjectByBucket(ObjectId bucketId, int userid) {
+    public static Map<String,byte[]> listObjectByBucket(ObjectId bucketId, int userid) {
 //        BucketMeta bucketMeta = BucketCache.getBucket(userid,bucketname);
-        List<String> ls = new ArrayList();
+//        List<String> ls = new ArrayList();
+        Map<String,byte[]> map = new HashMap<>();
         Bson bson1 = Filters.eq("bucketId", bucketId);
         Bson bson2 = Filters.eq("userId", userid);
         Bson bson = Filters.and(bson1, bson2);
-        FindIterable<Document> it = MongoSource.getFileCollection().find(bson);
+        Document fields = new Document("fileName", 1);
+        fields.append("meta",1);
+        FindIterable<Document> it = MongoSource.getFileCollection().find(bson).projection(fields);
         for (Document doc : it) {
-            ls.add(doc.getString("fileName"));
+            map.put(doc.getString("fileName"),((Binary) doc.get("meta")).getData());
         }
-        String[] res = new String[ls.size()];
-        return ls.toArray(res);
+        return map;
     }
     
 }

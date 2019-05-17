@@ -9,6 +9,9 @@ import com.ytfs.service.packet.s3.ListObjectResp;
 import com.ytfs.service.servlet.Handler;
 import org.apache.log4j.Logger;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ListObjectHandler extends Handler<ListObjectReq> {
 
     private static final Logger LOG = Logger.getLogger(ListObjectHandler.class);
@@ -18,9 +21,10 @@ public class ListObjectHandler extends Handler<ListObjectReq> {
         User user = this.getUser();
         LOG.info("LIST object:" + user.getUserID());
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName());
-        String[] names = FileAccessor.listObjectByBucket(meta.getBucketId(),user.getUserID());
+        Map<String,byte[]> map;
+        map = FileAccessor.listObjectByBucket(meta.getBucketId(),user.getUserID());
         ListObjectResp resp = new ListObjectResp();
-        resp.setNames(names);
+        resp.setMap(map);
         return resp;
     }
 
