@@ -45,17 +45,27 @@ public class FileAccessor {
         LOG.info("bucketId======"+bucketId);
         Map<String,byte[]> map = new HashMap<>();
         Bson bson = Filters.eq("bucketId", bucketId);
-//        Bson bson2 = Filters.eq("userId", userid);
-//        Bson bson = Filters.and(bson1, bson2);
         Document fields = new Document("fileName", 1);
         fields.append("meta",1);
         FindIterable<Document> it = MongoSource.getFileCollection().find(bson).projection(fields);
         for (Document doc : it) {
-            LOG.info("fileName======"+doc.getString("fileName"));
-            LOG.info("fileName======"+doc.getString("fileName"));
             map.put(doc.getString("fileName"),((Binary) doc.get("meta")).getData());
         }
         return map;
     }
-    
+
+    /**
+     *
+     * @param meta
+     * @throws ServiceException
+     *   Delete object by bucket and fileName
+     */
+    public static void deleteFileMeta(FileMeta meta) throws ServiceException {
+        LOG.info("fileName=====deleteFileMeta() ======"+meta.getFileName());
+        LOG.info("bucketId=====deleteFileMeta() ======"+meta.getBucketId());
+        Bson bson1 = Filters.eq("bucketId", meta.getBucketId());
+        Bson bson2 = Filters.eq("fileName", meta.getFileName());
+        Bson bson = Filters.and(bson1, bson2);
+        MongoSource.getFileCollection().deleteOne(bson);
+    }
 }

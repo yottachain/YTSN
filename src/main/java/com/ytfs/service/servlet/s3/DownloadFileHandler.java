@@ -23,7 +23,7 @@ public class DownloadFileHandler extends Handler<DownloadFileReq> {
     public Object handle() throws Throwable {
         User user = this.getUser();
         LOG.info("Read object:" + user.getUserID() + "/" + request.getBucketname() + "/" + request.getFileName());
-        BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketname());
+        BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketname(),new byte[0]);
         if (meta == null) {
             throw new ServiceException(INVALID_BUCKET_NAME);
         }
