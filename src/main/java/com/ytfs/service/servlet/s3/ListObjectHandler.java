@@ -20,7 +20,7 @@ public class ListObjectHandler extends Handler<ListObjectReq> {
         User user = this.getUser();
         LOG.info("LIST object:" + user.getUserID());
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName());
-        Map<String,byte[]> map = FileAccessor.listObjectByBucket(meta.getBucketId(),user.getUserID());
+        Map<String,byte[]> map = FileAccessor.listObjectByBucket(meta.getBucketId());
         ListObjectResp resp = new ListObjectResp();
         resp.setMap(map);
         return resp;
