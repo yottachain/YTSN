@@ -21,7 +21,7 @@ public class UploadFileHandler extends Handler<UploadFileReq> {
     public Object handle() throws Throwable {
         User user = this.getUser();
         LOG.info("Create object:" + user.getUserID() + "/" + request.getBucketname() + "/" + request.getFileName());
-        BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketname());
+        BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketname(),request.getMeta());
         if (meta == null) {
             throw new ServiceException(INVALID_BUCKET_NAME);
         }

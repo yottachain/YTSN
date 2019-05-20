@@ -17,7 +17,7 @@ public class BucketCache {
             .maximumSize(MAX_SIZE)
             .build();
 
-    public static BucketMeta getBucket(int userid, String bucketname) {
+    public static BucketMeta getBucket(int userid, String bucketname,byte[] byte_meta) {
         String key = userid + bucketname;
         ObjectId id = buckets.getIfPresent(key);
         if (id == null) {
@@ -27,6 +27,6 @@ public class BucketCache {
                 return meta;
             }
         }
-        return new BucketMeta(userid, id, bucketname);
+        return new BucketMeta(userid, id, bucketname,byte_meta);
     }
 }

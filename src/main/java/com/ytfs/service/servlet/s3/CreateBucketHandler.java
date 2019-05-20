@@ -24,7 +24,8 @@ public class CreateBucketHandler extends Handler<CreateBucketReq> {
         if (name.isEmpty() || name.length() > 20) {
             throw new ServiceException(INVALID_BUCKET_NAME);
         }
-        BucketMeta meta = new BucketMeta(user.getUserID(), new ObjectId(), name);
+        byte[] byte_meta = request.getMeta();
+        BucketMeta meta = new BucketMeta(user.getUserID(), new ObjectId(), name,byte_meta);
         meta.setMeta(request.getMeta());
         BucketAccessor.saveBucketMeta(meta);
         return new VoidResp();

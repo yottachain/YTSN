@@ -1,6 +1,7 @@
 package com.ytfs.service.dao;
 
 import org.bson.Document;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 
 public class BucketMeta {
@@ -10,18 +11,13 @@ public class BucketMeta {
     private ObjectId bucketId;
     private byte[] meta;
 
-    public byte[] getMeta() {
-        return meta;
-    }
 
-    public void setMeta(byte[] meta) {
-        this.meta = meta;
-    }
 
-    public BucketMeta(int userId, ObjectId bucketId, String bucketName) {
+    public BucketMeta(int userId, ObjectId bucketId, String bucketName,byte[] meta) {
         this.userId = userId;
         this.bucketId = bucketId;
         this.bucketName = bucketName;
+        this.meta = meta;
     }
 
     public BucketMeta(Document doc) {
@@ -34,6 +30,9 @@ public class BucketMeta {
         if (doc.containsKey("bucketName")) {
             this.bucketName = doc.getString("bucketName");
         }
+        if(doc.containsKey("meta")) {
+            this.meta = ((Binary) doc.get("meta")).getData();
+        }
     }
 
     public Document toDocument() {
@@ -41,6 +40,7 @@ public class BucketMeta {
         doc.append("_id", bucketId);
         doc.append("userId", userId);
         doc.append("bucketName", bucketName);
+        doc.append("meta",new Binary(meta));
         return doc;
     }
 
@@ -84,6 +84,14 @@ public class BucketMeta {
      */
     public void setBucketId(ObjectId bucketId) {
         this.bucketId = bucketId;
+    }
+
+    public byte[] getMeta() {
+        return meta;
+    }
+
+    public void setMeta(byte[] meta) {
+        this.meta = meta;
     }
 
 }
