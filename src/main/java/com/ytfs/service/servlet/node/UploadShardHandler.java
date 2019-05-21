@@ -68,7 +68,7 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
         buf.putLong(resp.getVBI());
         buf.flip();
         //if (!KeyStoreCoder.ecdsaVerify(buf.array(), resp.getUSERSIGN(), key)) {
-        LOG.info(resp.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(resp.getUSERSIGN()));
+        //LOG.info(resp.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(resp.getUSERSIGN()));
         // throw new ServiceException(INVALID_SIGNATURE);
         //} else {
         //    LOG.info(resp.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(resp.getUSERSIGN()));

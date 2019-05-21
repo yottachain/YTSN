@@ -6,7 +6,7 @@ import com.ytfs.service.packet.UserSpaceReq;
 import com.ytfs.service.packet.UserSpaceResp;
 import com.ytfs.service.servlet.Handler;
 
-public class UserSpaceHandler extends Handler<UserSpaceReq> {
+public class UserStatHandler extends Handler<UserSpaceReq> {
 
     @Override
     public Object handle() throws Throwable {

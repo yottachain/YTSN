@@ -76,4 +76,17 @@ public class UserAccessor {
         MongoSource.getUserCollection().insertOne(user.toDocument());
     }
 
+    public static void deleteAndAddUser(int userId, User user) {
+        Bson filter = Filters.eq("_id", userId);
+        MongoSource.getUserCollection().deleteOne(filter);
+        MongoSource.getUserCollection().insertOne(user.toDocument());
+    }
+
+    public static void updateUserName(int userId, String username) {
+        Bson filter = Filters.eq("_id", userId);
+        Document data = new Document("username", username);
+        Document update = new Document("$set", data);
+        MongoSource.getUserCollection().updateOne(filter, update);
+    }
+
 }
