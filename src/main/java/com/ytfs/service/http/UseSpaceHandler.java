@@ -43,13 +43,14 @@ public class UseSpaceHandler extends HttpHandler {
         }
     }
 
+    
     private String gettotal() throws Exception {
         Document doc = UserAccessor.total();
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(doc);
     }
 
-    private String getusertotal(String id) throws Exception {
+    public static String getusertotal(String id) throws Exception {
         int userid = 0;
         try {
             userid = Integer.parseInt(id.substring(1));

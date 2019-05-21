@@ -16,7 +16,7 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
         int nodeid = this.getNodeId();
         LOG.info("StatusRep Node:" + request.getId());
         Node node = YottaNodeMgmt.updateNodeStatus(nodeid, request.getCpu(), request.getMemory(), request.getBandwidth(),
-                request.getMaxDataSpace(), request.getAssignedSpace(), request.getUsedSpace(), request.getAddrs());
+                request.getMaxDataSpace(), request.getAddrs());
         StatusRepResp resp = new StatusRepResp();
         resp.setProductiveSpace(node.getProductiveSpace());
         return resp;

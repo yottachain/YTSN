@@ -1,4 +1,6 @@
-C:\Program Files\NetBeans 8.2\java\maven\bin\mvn.bat
 mvn install:install-file -DartifactId=nodemgmt-java-binding -DgroupId=nodemgmt-java-binding -Dversion=1.0 -Dpackaging=jar -Dfile=D:\\YTSN\\lib\\nodemgmt-java-binding-1.0.jar
 mvn install:install-file -DartifactId=wrapper -DgroupId=wrapper -Dversion=3.51 -Dpackaging=jar -Dfile=D:\\YTSN\\lib\\wrapper-3.51.jar
 mvn install:install-file -DartifactId=p2p-wrapper -DgroupId=p2p-wrapper -Dversion=0.1 -Dpackaging=jar -Dfile=D:\\YTSN\\lib\\nodemgmt-java-binding-1.0-SNAPSHOT.jar
+mvn install:install-file -DartifactId=ytcrypto-java-binding -DgroupId=io.yottachain -Dversion=0.1 -Dpackaging=jar -Dfile=D:\\YTSN\\lib\\ytcrypto-java-binding-1.0-SNAPSHOT.jar
+
+C:\NetBeans\java\maven\bin\
