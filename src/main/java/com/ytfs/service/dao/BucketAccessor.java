@@ -8,11 +8,13 @@ import static com.ytfs.common.ServiceErrorCode.TOO_MANY_BUCKETS;
 import com.ytfs.common.ServiceException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
 public class BucketAccessor {
-
+    private static final Logger LOG = Logger.getLogger(FileAccessor.class);
     static final int Max_Bucket_count = 100;
 
     public static void saveBucketMeta(BucketMeta meta) throws ServiceException {
@@ -51,6 +53,14 @@ public class BucketAccessor {
         }
         String[] res = new String[ls.size()];
         return ls.toArray(res);
+    }
+
+    public static void deleteBucketMeta(BucketMeta meta) throws ServiceException {
+        LOG.info("bucketName=====deleteBucketMeta() ======"+meta.getBucketName());
+        LOG.info("bucketId=====deleteFileMeta() ======"+meta.getBucketId());
+        Bson bson = Filters.eq("bucketId", meta.getBucketId());
+        //根据bucketId删除bucket
+        MongoSource.getFileCollection().deleteOne(bson);
     }
 
 }
