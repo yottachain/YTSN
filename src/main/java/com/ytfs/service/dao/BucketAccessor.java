@@ -14,7 +14,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 
 public class BucketAccessor {
-    private static final Logger LOG = Logger.getLogger(FileAccessor.class);
+    private static final Logger LOG = Logger.getLogger(BucketAccessor.class);
     static final int Max_Bucket_count = 100;
 
     public static void saveBucketMeta(BucketMeta meta) throws ServiceException {
@@ -57,10 +57,10 @@ public class BucketAccessor {
 
     public static void deleteBucketMeta(BucketMeta meta) throws ServiceException {
         LOG.info("bucketName=====deleteBucketMeta() ======"+meta.getBucketName());
-        LOG.info("bucketId=====deleteFileMeta() ======"+meta.getBucketId());
-        Bson bson = Filters.eq("bucketId", meta.getBucketId());
+        LOG.info("bucketId=====deleteBucketMeta() ======"+meta.getBucketId());
+        Bson bson = Filters.eq("_id", meta.getBucketId());
         //根据bucketId删除bucket
-        MongoSource.getFileCollection().deleteOne(bson);
+        MongoSource.getBucketCollection().deleteOne(bson);
     }
 
 }

@@ -28,6 +28,8 @@ public class DownloadFileHandler extends Handler<DownloadFileReq> {
             throw new ServiceException(INVALID_BUCKET_NAME);
         }
         FileMeta fmeta = FileAccessor.getFileMeta(meta.getBucketId(), request.getFileName());
+        LOG.info("fmeta==================fileName=====" + request.getFileName());
+        LOG.info("fmeta==================bucketName=====" + request.getBucketname());
         if (fmeta == null) {
             throw new ServiceException(INVALID_OBJECT_NAME);
         }
