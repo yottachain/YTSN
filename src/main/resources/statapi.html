@@ -4,45 +4,69 @@
         <title>统计</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style type="text/css">
-    .titlestyle {
-	font-size: 12px;
-	font-weight: bold;
-}
-    .content {
-	font-size: 12px;
-}
-    </style>
+        <style type="text/css">
+            .titlestyle {
+                font-size: 12px;
+                font-weight: bold;
+            }
+            .content {
+                font-size: 12px;
+            }
+        </style>
     </head>
     <body>
         <div class="titlestyle">
-          <p><strong>接口列表</strong></p>
+            <p><strong>SN端接口列表</strong></p>
         </div>
+
+        <hr>
+        <p class="content"><span class="titlestyle">本超级节点统计数据:</span></p>
+        <p class="content">GET:/total</p>
+        <p class="content">返回所有用户合计</p>
+        <p class="content">fileTotal:文件总数<br>
+            spaceTotal:
+            文件实际总长度<br>
+            usedSpace:文件总占用空间<br>
+            costPerCycle:每周期总费用</p>
+        <pre class="content">{"_id":"ALL","usedspace":25210457,"spaceTotal":26651276,"fileTotal":133,"costPerCycle":12}
+        </pre>
+
+
+        <hr>
+        <p class="content"><span class="titlestyle">获取当前所有活跃节点:</span></p>
+        <p class="content">GET:/active_nodes</p>
+        <p class="content">返回当前所有活跃节点的id和公网ip</p>
+        <pre class="content">{"_id":"ALL","usedspace":25210457,"spaceTotal":26651276,"fileTotal":133,"costPerCycle":12}
+        </pre>
+
+        <hr>
+        <p class="content"><span class="titlestyle">获取当前超级节点的空间和矿工数统计信息:</span></p>
+        <p class="content">GET:/statistics</p>
+        <p class="content">
+            "activeMiner": xxx,        //活跃矿工数<br>
+            "totalMiner": xxx,         //全部矿工数<br>
+            "maxDataSpace":xxx,        //所有矿机最大空间的累加值<br>
+            "assignedSpace":xxx,       //所有矿机已分配空间的累加值<br>
+            "productiveSpace":xxx,     //所有矿机生产空间的累加值<br>
+            "usedSpace":xxx            //所有矿机已使用空间的累加值</p>
+        <pre class="content">{"_id":"ALL","usedspace":25210457,"spaceTotal":26651276,"fileTotal":133,"costPerCycle":12}
+        </pre> 
+
+
         <hr>
         <p class="titlestyle">用户统计数据:</p>
-    <p class="content">GET:/user/1234</p>
-    <p class="content"> 返回用户ID(1234)</p>
-    <p class="content">fileTotal:文件总数<br>
-    spaceTotal:文件实际总长度<br>
-    usedSpace:,文件总占用空间<br>
-    costPerCycle:
-    每周期总费用    </p>
-    <pre class="content">{"_id":1234,"costPerCycle":0,"spaceTotal":26651276,"fileTotal":11,"usedspace":25210457}
-    </pre>
-    <p class="content">&nbsp;</p>
-    <hr>
-    <p class="content"><span class="titlestyle">本超级节点统计数据:</span></p>
-    <p class="content">GET:/total</p>
-    <p class="content">返回所有用户合计</p>
-    <p class="content">fileTotal:文件总数<br>
-    spaceTotal:
-    文件实际总长度<br>
-    usedSpace:文件总占用空间<br>
-    costPerCycle:每周期总费用</p>
-    <pre class="content">{"_id":"ALL","usedspace":25210457,"spaceTotal":26651276,"fileTotal":133,"costPerCycle":12}
-    </pre>
-    <p class="content">&nbsp;</p>
-    <p class="content">&nbsp;</p>
-    <p class="content">&nbsp;</p>
+        <p class="content">GET:/user/1234</p>
+        <p class="content"> 返回用户ID(1234)</p>
+        <p class="content">fileTotal:文件总数<br>
+            spaceTotal:文件实际总长度<br>
+            usedSpace:,文件总占用空间<br>
+            costPerCycle:
+            每周期总费用    </p>
+        <pre class="content">{"_id":1234,"costPerCycle":0,"spaceTotal":26651276,"fileTotal":11,"usedspace":25210457}
+        </pre>
+
+
+        <p class="content">&nbsp;</p>
+        <p class="content">&nbsp;</p>
     </body>
 </html>
