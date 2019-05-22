@@ -1,8 +1,9 @@
 package com.ytfs.service.http;
 
 import com.ytfs.common.conf.ServerConfig;
+import static com.ytfs.service.http.UseSpaceHandler.REQ_ACTIVE_NODES_PATH;
+import static com.ytfs.service.http.UseSpaceHandler.REQ_STAT_PATH;
 import static com.ytfs.service.http.UseSpaceHandler.REQ_TOTAL_PATH;
-import static com.ytfs.service.http.UseSpaceHandler.REQ_USER_PATH;
 import java.io.IOException;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -25,7 +26,8 @@ public class HttpServerBoot {
             networkListener.getTransport().setWorkerThreadPoolConfig(threadPoolConfig);
             httpServer.addListener(networkListener);
             HttpHandler httpHandler = new UseSpaceHandler();
-            httpServer.getServerConfiguration().addHttpHandler(httpHandler, new String[]{"/", REQ_USER_PATH, REQ_TOTAL_PATH});
+            httpServer.getServerConfiguration().addHttpHandler(httpHandler,
+                    new String[]{"/", REQ_TOTAL_PATH, REQ_ACTIVE_NODES_PATH, REQ_STAT_PATH});
             httpServer.start();
         }
     }

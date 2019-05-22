@@ -2,7 +2,10 @@ package com.ytfs.service.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ytfs.service.dao.UserAccessor;
+import io.yottachain.nodemgmt.YottaNodeMgmt;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 import org.bson.Document;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
@@ -11,21 +14,27 @@ import org.glassfish.grizzly.http.util.HttpStatus;
 
 public class UseSpaceHandler extends HttpHandler {
 
-    static final String REQ_USER_PATH = "/user";
     static final String REQ_TOTAL_PATH = "/total";
+    static final String REQ_ACTIVE_NODES_PATH = "/active_nodes";
+    static final String REQ_STAT_PATH = "/statistics";
 
     @Override
     public void service(Request rqst, Response rspns) throws Exception {
         try {
             rspns.setContentType("text/json");
             String path = rqst.getContextPath();
-            if (path.equalsIgnoreCase(REQ_USER_PATH)) {
-                String uri = rqst.getRequestURI();
-                String userid = uri.replaceFirst(REQ_USER_PATH, "");
-                String json = getusertotal(userid.substring(1));
-                rspns.getWriter().write(json);
-            } else if (path.equalsIgnoreCase(REQ_TOTAL_PATH)) {
+            if (path.equalsIgnoreCase(REQ_TOTAL_PATH)) {
                 String json = gettotal();
+                rspns.getWriter().write(json);
+            } else if (path.equalsIgnoreCase(REQ_ACTIVE_NODES_PATH)) {
+                List<Map<String, String>> ls = YottaNodeMgmt.activeNodesList();
+                ObjectMapper mapper = new ObjectMapper();
+                String json = mapper.writeValueAsString(ls);
+                rspns.getWriter().write(json);
+            } else if (path.equalsIgnoreCase(REQ_STAT_PATH)) {
+                Map<String, Long> map = YottaNodeMgmt.statistics();
+                ObjectMapper mapper = new ObjectMapper();
+                String json = mapper.writeValueAsString(map);
                 rspns.getWriter().write(json);
             } else {
                 rspns.setContentType("text/html");
@@ -43,7 +52,6 @@ public class UseSpaceHandler extends HttpHandler {
         }
     }
 
-    
     private String gettotal() throws Exception {
         Document doc = UserAccessor.total();
         ObjectMapper mapper = new ObjectMapper();
