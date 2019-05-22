@@ -19,8 +19,6 @@ public class GetBuckettHandler extends Handler<GetBucketReq> {
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(),new byte[0]);
         GetBucketResp resp = new GetBucketResp();
         resp.setBucketName(meta.getBucketName());
-        resp.setMeta(meta.getMeta());
-
         return resp;
     }
 
