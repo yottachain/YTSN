@@ -22,7 +22,7 @@ public class UseSpaceHandler extends HttpHandler {
             if (path.equalsIgnoreCase(REQ_USER_PATH)) {
                 String uri = rqst.getRequestURI();
                 String userid = uri.replaceFirst(REQ_USER_PATH, "");
-                String json = getusertotal(userid);
+                String json = getusertotal(userid.substring(1));
                 rspns.getWriter().write(json);
             } else if (path.equalsIgnoreCase(REQ_TOTAL_PATH)) {
                 String json = gettotal();
@@ -53,7 +53,7 @@ public class UseSpaceHandler extends HttpHandler {
     public static String getusertotal(String id) throws Exception {
         int userid = 0;
         try {
-            userid = Integer.parseInt(id.substring(1));
+            userid = Integer.parseInt(id);
         } catch (Exception r) {
             throw new Exception("Invalid userid");
         }
