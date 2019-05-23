@@ -43,6 +43,9 @@ public class DownloadBlockInitHandler extends Handler<DownloadBlockInitReq> {
         }
         resp.setVHF(VHF);
         List<Node> ls = NodeManager.getNode(nodeidsls);
+        if (ls.size() != nodeidsls.size()) {
+            LOG.warn("Some Nodes have been cancelled.");
+        }
         Node[] ns = new Node[ls.size()];
         resp.setNodes(ls.toArray(ns));
         resp.setNodeids(nodeids);
