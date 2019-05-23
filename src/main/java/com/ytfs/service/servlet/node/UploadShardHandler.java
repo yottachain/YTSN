@@ -17,7 +17,6 @@ import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 
 public class UploadShardHandler extends Handler<UploadShardResp> {

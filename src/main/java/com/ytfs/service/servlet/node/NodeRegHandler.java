@@ -28,7 +28,7 @@ public class NodeRegHandler extends Handler<NodeRegReq> {
             return resp;
         } catch (NodeMgmtException e) {
             if (e.getMessage().contains("multiple write")) {
-                throw new ServiceException(NODE_EXISTS);
+                return new ServiceException(NODE_EXISTS);
             } else {
                 throw e;
             }
