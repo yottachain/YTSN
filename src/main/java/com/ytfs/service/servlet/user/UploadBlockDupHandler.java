@@ -63,6 +63,7 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
         saveObjectMetaReq.setUserID(userid);
         saveObjectMetaReq.setVNU(req.getVNU());
         ObjectRefer refer = new ObjectRefer();
+        refer.setVBI(vbi);
         refer.setId(req.getId());
         refer.setKEU(req.getKEU());
         refer.setOriginalSize(req.getOriginalSize());
