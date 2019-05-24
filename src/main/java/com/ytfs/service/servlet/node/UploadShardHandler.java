@@ -9,10 +9,12 @@ import com.ytfs.service.servlet.UploadShardCache;
 import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.TOO_MANY_SHARDS;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.codec.KeyStoreCoder;
 import static com.ytfs.service.packet.UploadShardRes.RES_BAD_REQUEST;
 import com.ytfs.service.packet.UploadShardResp;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.CacheAccessor;
+import io.yottachain.p2phost.utils.Base58;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -66,11 +68,10 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
         buf.putInt(nodeid);
         buf.putLong(resp.getVBI());
         buf.flip();
-        //if (!KeyStoreCoder.ecdsaVerify(buf.array(), resp.getUSERSIGN(), key)) {
-        //LOG.info(resp.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(resp.getUSERSIGN()));
-        // throw new ServiceException(INVALID_SIGNATURE);
-        //} else {
-        //    LOG.info(resp.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(resp.getUSERSIGN()));
+        String pubkey = Base58.encode(key);
+        //if (!KeyStoreCoder.ecdsaVerify(buf.array(), resp.getUSERSIGN(), pubkey)) {
+            //LOG.info(resp.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(resp.getUSERSIGN()));
+            // throw new ServiceException(INVALID_SIGNATURE);
         //}
     }
 

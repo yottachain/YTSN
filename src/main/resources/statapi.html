@@ -35,13 +35,13 @@
         <p class="content"><span class="titlestyle">获取当前所有活跃节点:</span></p>
         <p class="content">GET:/active_nodes</p>
         <p class="content">返回当前所有活跃节点的id和公网ip</p>
-        <pre class="content">
-            []
+        <pre class="content">[{"ip":"/ip4/152.136.18.74/tcp/9001","id":"222"},{"ip":"/ip4/223.72.87.110/tcp/9001","id":"243"},{"ip":"/ip4/122.227.151.182/tcp/9001","id":"258"},{"ip":"/ip4/122.227.151.182/tcp/9001","id":"261"}]
         </pre>
 
-        <hr>
+    <hr>
         <p class="content"><span class="titlestyle">获取当前超级节点的空间和矿工数统计信息:</span></p>
         <p class="content">GET:/statistics</p>
+        <p class="content">返回</p>
         <p class="content">
             "activeMiner": xxx,        //活跃矿工数<br>
             "totalMiner": xxx,         //全部矿工数<br>
@@ -49,10 +49,9 @@
             "assignedSpace":xxx,       //所有矿机已分配空间的累加值<br>
             "productiveSpace":xxx,     //所有矿机生产空间的累加值<br>
             "usedSpace":xxx            //所有矿机已使用空间的累加值</p>
-        <pre class="content">
-               {"assignedSpace":0,"productiveSpace":0,"usedSpace":0,"totalMiner":0,"activeMiner":0,"maxDataSpace":0}
-        </pre> 
-        <hr>
+    <p class="content">
+{"assignedSpace":0,"productiveSpace":0,"usedSpace":0,"totalMiner":0,"activeMiner":0,"maxDataSpace":0}    </p>
+<hr>
         <div class="titlestyle">
             <p><strong>用户端本地接口列表</strong></p>
         </div>
@@ -67,7 +66,7 @@
             costPerCycle:
             每周期总费用    </p>
         <pre class="content">
-            {"_id":2,"costPerCycle":0,"spaceTotal":695685105,"fileTotal":31,"usedspace":370811034}
+{"_id":2,"costPerCycle":0,"spaceTotal":695685105,"fileTotal":31,"usedspace":370811034}
         </pre>
 
         <hr>
@@ -75,7 +74,7 @@
         <p class="content">GET:http://152.136.18.185:8083/user/getPrivateKey</p>
         <p class="content"> 返回</p>
         <pre class="content">
-            5JXZV8PBL5Zw87MG7GaBc6jVwzGxPQa7ZfwevN6dqLFpRNPhELw
+5JXZV8PBL5Zw87MG7GaBc6jVwzGxPQa7ZfwevN6dqLFpRNPhELw
         </pre>
 
         <p class="content">&nbsp;</p>

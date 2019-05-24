@@ -60,6 +60,7 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
         }
         Node[] nodes = NodeManager.getNode(fails.size());
         if (nodes.length != fails.size()) {
+            LOG.warn("No enough data nodes:" + nodes.length + "/" + fails.size());
             throw new ServiceException(SERVER_ERROR);
         }
         setNodes(resp, nodes, fails, request.getVBI(), cache);

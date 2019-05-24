@@ -99,6 +99,7 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
         if (req.getShardCount() > 0) {//需要数据库
             Node[] nodes = NodeManager.getNode(req.getShardCount());
             if (nodes.length != req.getShardCount()) {
+                LOG.warn("No enough data nodes:" + nodes.length + "/" + req.getShardCount());
                 throw new ServiceException(SERVER_ERROR);
             }
             long blockid = Sequence.generateBlockID(req.getShardCount());
