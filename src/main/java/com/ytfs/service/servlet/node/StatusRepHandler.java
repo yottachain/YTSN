@@ -16,8 +16,8 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
 
     @Override
     public Object handle() throws Throwable {
+        int nodeid = this.getNodeId();
         try {
-            int nodeid = this.getNodeId();
             LOG.info("StatusRep Node:" + nodeid);
             Node node = YottaNodeMgmt.updateNodeStatus(nodeid, request.getCpu(), request.getMemory(), request.getBandwidth(),
                     request.getMaxDataSpace(), request.getAddrs());
@@ -26,6 +26,7 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
             return resp;
         } catch (NodeMgmtException e) {
             if (e.getMessage().contains("No result")) {
+                LOG.warn("Node does not exist,ID:" + nodeid);
                 return new ServiceException(INVALID_NODE_ID);
             } else {
                 throw e;
