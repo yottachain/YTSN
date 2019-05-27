@@ -72,7 +72,7 @@ public class FileAccessor {
             Bson bson2 = Filters.gt("_id", startId);
             filter = Filters.and(bson1, bson2);
         }
-        Bson sort = new Document("_id", 1);;
+        Bson sort = new Document("_id", 1);
         Document fields = new Document("fileName", 1);
         fields.append("_id", 1);
         fields.append("meta", 1);
