@@ -3,6 +3,9 @@ package com.ytfs.service.dao;
 import com.ytfs.common.LogConfigurator;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.bson.types.ObjectId;
 
 public class Test {
@@ -12,8 +15,32 @@ public class Test {
         //UserAccessor.total();
         //testRedis();
         //testSeq();     
-        testUser();
+        testObjectLs();
         //testObject();
+    }
+
+    private static void testObjectLs() throws Exception {
+        int limit = 200;
+        ObjectId bucketId = new ObjectId("5ceb533995adab7f02dc4d41");
+        long count = FileAccessor.totalObjectsByBucket(bucketId);
+        System.out.println("count:" + count);
+        ObjectId startId = null;
+        Map<String, byte[]> map = new HashMap();
+        long total = 0;
+        while (true) {
+            map.clear();
+            startId = FileAccessor.listObjectByBucket(map, bucketId, startId, limit);
+            Set<Map.Entry<String, byte[]>> set = map.entrySet();
+            for (Map.Entry<String, byte[]> ent : set) {
+                System.out.println(ent.getKey());
+            }
+            total = total + map.size();
+            System.out.println("***************" + map.size() + "*********************");
+            if (startId == null) {
+                break;
+            }
+        }
+        System.out.println("******total *********" + total + "*********************");
     }
 
     private static void testSeq() throws Exception {

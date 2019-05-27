@@ -28,10 +28,10 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
     public Object handle() throws Throwable {
         User user = this.getUser();
         UploadBlockCache cache = CacheAccessor.getUploadBlockCache(request.getVBI());
-        LOG.info("Upload block " + user.getUserID() + "/" + cache.getVNU() + " retry...");
+        UploadShardRes[] ress = request.getRes();
+        LOG.info("Upload block " + user.getUserID() + "/" + cache.getVNU() + ",Err count:" + ress.length + ",retry...");
         List<UploadShardRes> fails = new ArrayList();
         Map<Integer, UploadShardCache> caches = cache.getShardCaches();
-        UploadShardRes[] ress = request.getRes();
         for (UploadShardRes res : ress) {
             if (res.getRES() == UploadShardRes.RES_OK) {
                 continue;
@@ -63,12 +63,18 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
             LOG.warn("No enough data nodes:" + nodes.length + "/" + fails.size());
             throw new ServiceException(SERVER_ERROR);
         } else {
-            for (Node n : nodes) {
-                LOG.info("Assigned node:" + n.getId());
-            }
+            LOG.info("Assigned node:" + getAssignedNodeIDs(nodes));
         }
         setNodes(resp, nodes, fails, request.getVBI(), cache);
         return resp;
+    }
+
+    private String getAssignedNodeIDs(Node[] nodes) {
+        String res = null;
+        for (Node n : nodes) {
+            res = res == null ? ("[" + n.getId()) : ("," + n.getId());
+        }
+        return res + "]";
     }
 
     private void setNodes(UploadBlockSubResp resp, Node[] ns, List<UploadShardRes> fails, long VBI, UploadBlockCache cache) throws NodeMgmtException {

@@ -1,0 +1,27 @@
+1.安装mongodb单机版
+https://blog.csdn.net/hellboy0621/article/details/80332667
+下载4.0.9版
+
+2.解压ytsn.tar.gz
+编辑: %ytsn%/conf/server.properties
+
+#超级节点编号 ，如果部署三台，就按 0，1，2进行编号
+superNodeID=0
+privateKey=5JvCxXLSLzihWdXT7C9mtQkfLFHJZPdX1hxQo6su7dNt28mZ5W2
+BPAccount=producer2
+BPPriKey=5J9bzuUBmq4JK1bdp7BB9Um2TyKpfKeqJ6uSEvvYKRN1nGVLhp8
+
+下面默认
+eosURI=http://localhost:8888/
+port=9999
+httpPort=8082
+httpBindip=localhost
+
+3.安装服务
+cd %ytsn%/bin
+运行
+./ytsnd.sh install
+
+4.启动服务
+service ytsnd start
+日志：%ytsn%/log/log
