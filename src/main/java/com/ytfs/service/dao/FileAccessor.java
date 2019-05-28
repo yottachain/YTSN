@@ -60,7 +60,7 @@ public class FileAccessor {
         return MongoSource.getFileCollection().countDocuments(filter);
     }
 
-    public static ObjectId listObjectByBucket(Map<String, byte[]> map, ObjectId bucketId, ObjectId startId, int limit) {
+    public static Map<ObjectId,String> listObjectByBucket(Map<String, byte[]> map, ObjectId bucketId, ObjectId startId, int limit) {
         if (limit < 10) {
             limit = 10;
         }
@@ -77,17 +77,21 @@ public class FileAccessor {
         fields.append("_id", 1);
         fields.append("meta", 1);
         ObjectId lastId = null;
+        String lastFileName = null;
         int count = 0;
         FindIterable<Document> it = MongoSource.getFileCollection().find(filter).projection(fields).sort(sort).limit(limit);
         for (Document doc : it) {
             lastId = doc.getObjectId("_id");
+            lastFileName = doc.getString("fileName");
             count++;
             map.put(doc.getString("fileName"), ((Binary) doc.get("meta")).getData());
         }
         if (count < limit) {
             return null;
         } else {
-            return lastId;
+            Map<ObjectId,String> lastMap = new HashMap<>();
+            lastMap.put(lastId,lastFileName);
+            return lastMap;
         }
     }
 
