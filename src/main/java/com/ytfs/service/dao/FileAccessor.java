@@ -60,17 +60,22 @@ public class FileAccessor {
         return MongoSource.getFileCollection().countDocuments(filter);
     }
 
-    public static Map<ObjectId,String> listObjectByBucket(Map<String, byte[]> map, ObjectId bucketId, ObjectId startId, int limit) {
+    public static String listObjectByBucket(Map<String, byte[]> map, ObjectId bucketId, String fileName, int limit) {
         if (limit < 10) {
             limit = 10;
         }
         Bson filter = null;
-        if (startId == null) {
+        if (fileName == null) {
             filter = Filters.eq("bucketId", bucketId);
         } else {
             Bson bson1 = Filters.eq("bucketId", bucketId);
-            Bson bson2 = Filters.gt("_id", startId);
-            filter = Filters.and(bson1, bson2);
+            Bson bson2 = Filters.eq("fileName", fileName);
+            Bson bson = Filters.and(bson1, bson2);
+            Document doc = MongoSource.getFileCollection().find(bson).first();
+            FileMeta fileMeta = new FileMeta(doc);
+
+            Bson bson4 = Filters.gt("_id", fileMeta.getFileId());
+            filter = Filters.and(bson1, bson4);
         }
         Bson sort = new Document("_id", 1);
         Document fields = new Document("fileName", 1);
@@ -89,9 +94,7 @@ public class FileAccessor {
         if (count < limit) {
             return null;
         } else {
-            Map<ObjectId,String> lastMap = new HashMap<>();
-            lastMap.put(lastId,lastFileName);
-            return lastMap;
+            return lastFileName;
         }
     }
 
