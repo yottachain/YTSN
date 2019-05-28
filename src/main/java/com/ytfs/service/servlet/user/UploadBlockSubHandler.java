@@ -72,7 +72,7 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
     private String getAssignedNodeIDs(Node[] nodes) {
         String res = null;
         for (Node n : nodes) {
-            res = res == null ? ("[" + n.getId()) : ("," + n.getId());
+            res = res == null ? ("[" + n.getId()) : (res + "," + n.getId());
         }
         return res + "]";
     }
