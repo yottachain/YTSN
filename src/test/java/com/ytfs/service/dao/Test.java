@@ -42,8 +42,8 @@ public class Test {
             }
         }
         System.out.println("******total *********" + total + "*********************");
-    }
-*/
+    }*/
+
     private static void testSeq() throws Exception {
         //int uid = Sequence.getSequence(1);
         //System.out.println(Integer.toHexString(uid));
