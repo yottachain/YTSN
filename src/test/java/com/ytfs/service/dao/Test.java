@@ -15,10 +15,11 @@ public class Test {
         //UserAccessor.total();
         //testRedis();
         //testSeq();     
-        testObjectLs();
+      //  testObjectLs();
         //testObject();
     }
 
+    /*
     private static void testObjectLs() throws Exception {
         int limit = 200;
         ObjectId bucketId = new ObjectId("5ceb533995adab7f02dc4d41");
@@ -42,7 +43,7 @@ public class Test {
         }
         System.out.println("******total *********" + total + "*********************");
     }
-
+*/
     private static void testSeq() throws Exception {
         //int uid = Sequence.getSequence(1);
         //System.out.println(Integer.toHexString(uid));
