@@ -14,6 +14,7 @@ import static com.ytfs.service.packet.UploadShardRes.RES_BAD_REQUEST;
 import com.ytfs.service.packet.UploadShardResp;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.CacheAccessor;
+import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.p2phost.utils.Base58;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
@@ -27,8 +28,14 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
 
     @Override
     public Object handle() throws Throwable {
+        int nodeid;
         try {
-            int nodeid = this.getNodeId();
+            nodeid = this.getNodeId();
+        } catch (NodeMgmtException e) {
+            LOG.error("Invalid node pubkey:" + this.getPublicKey());
+            return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
+        }
+        try {
             LOG.debug("Upload shard " + request.getVBI() + "/" + request.getSHARDID() + "/" + request.getRES());
             UploadBlockCache cache = CacheAccessor.getUploadBlockCache(request.getVBI());
             User user = UserCache.getUser(cache.getUserKey());
@@ -70,8 +77,8 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
         buf.flip();
         String pubkey = Base58.encode(key);
         //if (!KeyStoreCoder.ecdsaVerify(buf.array(), resp.getUSERSIGN(), pubkey)) {
-            //LOG.info(resp.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(resp.getUSERSIGN()));
-            // throw new ServiceException(INVALID_SIGNATURE);
+        //LOG.info(resp.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(resp.getUSERSIGN()));
+        // throw new ServiceException(INVALID_SIGNATURE);
         //}
     }
 
