@@ -29,7 +29,7 @@ public class ListObjectHandler extends Handler<ListObjectReq> {
         LOG.info("map.size()==================="+map.size());
         ListObjectResp resp = new ListObjectResp();
         resp.setMap(map);
-        if(lastMap.size() == 1) {
+        if(lastMap != null) {
             for(Map.Entry<ObjectId,String> entry : lastMap.entrySet()) {
                 resp.setObjectId(entry.getKey());
                 resp.setFileName(entry.getValue());

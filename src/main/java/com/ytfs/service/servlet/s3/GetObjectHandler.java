@@ -20,8 +20,10 @@ public class GetObjectHandler extends Handler<GetObjectReq> {
         GetObjectResp resp = new GetObjectResp();
         if(fileMeta != null) {
             resp.setFileName(fileMeta.getFileName());
+            resp.setObjectId(fileMeta.getFileId());
         } else {
             resp.setFileName(null);
+            resp.setObjectId(null);
         }
         return resp;
     }
