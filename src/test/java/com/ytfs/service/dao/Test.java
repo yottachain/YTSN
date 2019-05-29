@@ -11,7 +11,9 @@ import org.bson.types.ObjectId;
 public class Test {
 
     public static void main(String[] a) throws Exception {
-        LogConfigurator.configPath();
+ 
+        
+        //LogConfigurator.configPath();
         //UserAccessor.total();
         //testRedis();
         //testSeq();     
