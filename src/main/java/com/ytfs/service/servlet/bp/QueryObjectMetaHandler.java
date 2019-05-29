@@ -1,7 +1,6 @@
 package com.ytfs.service.servlet.bp;
 
 import com.ytfs.common.conf.ServerConfig;
-import com.ytfs.service.dao.ObjectMeta;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.servlet.Handler;
