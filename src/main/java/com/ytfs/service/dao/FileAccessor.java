@@ -68,25 +68,19 @@ public class FileAccessor {
         if (fileName == null) {
             filter = Filters.eq("bucketId", bucketId);
         } else {
+            FileMeta fileMeta = getFileMeta(bucketId,fileName);
             Bson bson1 = Filters.eq("bucketId", bucketId);
-            Bson bson2 = Filters.eq("fileName", fileName);
-            Bson bson = Filters.and(bson1, bson2);
-            Document doc = MongoSource.getFileCollection().find(bson).first();
-            FileMeta fileMeta = new FileMeta(doc);
-
-            Bson bson4 = Filters.gt("_id", fileMeta.getFileId());
-            filter = Filters.and(bson1, bson4);
+            Bson bson2 = Filters.gt("_id", fileMeta.getFileId());
+            filter = Filters.and(bson1, bson2);
         }
         Bson sort = new Document("_id", 1);
         Document fields = new Document("fileName", 1);
         fields.append("_id", 1);
         fields.append("meta", 1);
-        ObjectId lastId = null;
         String lastFileName = null;
         int count = 0;
         FindIterable<Document> it = MongoSource.getFileCollection().find(filter).projection(fields).sort(sort).limit(limit);
         for (Document doc : it) {
-            lastId = doc.getObjectId("_id");
             lastFileName = doc.getString("fileName");
             count++;
             map.put(doc.getString("fileName"), ((Binary) doc.get("meta")).getData());
