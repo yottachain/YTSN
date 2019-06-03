@@ -64,7 +64,7 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         }
         return new VoidResp();
     }
- 
+
     private void verify(UploadBlockDBReq req, byte[] vhb) throws ServiceException {
         if (!Arrays.equals(vhb, req.getVHB())) {
             throw new ServiceException(INVALID_VHB);
@@ -72,7 +72,7 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         if (req.getVHP() == null || req.getVHP().length != 32) {
             throw new ServiceException(INVALID_VHP);
         }
-        if (req.getKEU() == null) {
+        if (req.getKEU() == null || req.getKEU().length != 32) {
             throw new ServiceException(INVALID_KEU);
         }
         if (req.getKED() == null || req.getKED().length != 32) {
