@@ -72,7 +72,7 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         if (req.getVHP() == null || req.getVHP().length != 32) {
             throw new ServiceException(INVALID_VHP);
         }
-        if (req.getKEU() == null || req.getKEU().length != 32) {
+        if (req.getKEU() == null) {
             throw new ServiceException(INVALID_KEU);
         }
         if (req.getKED() == null || req.getKED().length != 32) {

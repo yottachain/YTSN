@@ -53,7 +53,7 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
     }
 
     private void verify(UploadBlockDupReq req) throws ServiceException {
-        if (req.getKEU() == null || req.getKEU().length != 32) {
+        if (req.getKEU() == null) {
             throw new ServiceException(INVALID_KEU);
         }
     }

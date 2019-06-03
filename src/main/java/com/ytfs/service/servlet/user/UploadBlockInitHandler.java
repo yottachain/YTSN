@@ -12,7 +12,7 @@ import com.ytfs.service.servlet.Handler;
 import com.ytfs.service.servlet.UploadBlockCache;
 import com.ytfs.service.servlet.UploadObjectCache;
 import static com.ytfs.common.ServiceErrorCode.ILLEGAL_VHP_NODEID;
-import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
+import static com.ytfs.common.ServiceErrorCode.NO_ENOUGH_NODE;
 import static com.ytfs.common.ServiceErrorCode.TOO_MANY_SHARDS;
 import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.ShardNode;
@@ -100,7 +100,7 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
             Node[] nodes = NodeManager.getNode(req.getShardCount());
             if (nodes.length != req.getShardCount()) {
                 LOG.warn("No enough data nodes:" + nodes.length + "/" + req.getShardCount());
-                throw new ServiceException(SERVER_ERROR);
+                throw new ServiceException(NO_ENOUGH_NODE);
             }
             long blockid = Sequence.generateBlockID(req.getShardCount());
             setNodes(resp, nodes, blockid);

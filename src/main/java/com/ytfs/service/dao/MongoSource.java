@@ -168,7 +168,7 @@ public class MongoSource {
         try {
             return new ServerAddress(addr[0], Integer.parseInt(addr[1]));
         } catch (NumberFormatException d) {
-            LOG.warn("无效的服务器地址:[" + host + "]");
+            LOG.warn("Invalid server address:[" + host + "]");
             return null;
         }
     }
@@ -176,7 +176,7 @@ public class MongoSource {
     private void init(Properties p) {
         String hostlist = p.getProperty("serverlist");
         if (hostlist == null || hostlist.trim().isEmpty()) {
-            throw new MongoException("MongoSource.properties文件中没有指定serverlist");
+            throw new MongoException("No serverlist is specified in the MongoSource.properties file.");
         }
         String[] hosts = hostlist.trim().split(",");
         List<ServerAddress> addrs = new ArrayList<>();
@@ -184,12 +184,12 @@ public class MongoSource {
             ServerAddress addr = toAddress(host);
             if (addr != null) {
                 addrs.add(addr);
-                LOG.info("[" + addr.toString() + "]添加到服务器列表中...");
+                LOG.info("[" + addr.toString() + "]Add to the server list...");
             }
         }
         serverAddress = addrs;
         if (addrs.isEmpty()) {
-            throw new MongoException("MongoSource.properties文件中没有指定serverlist");
+            throw new MongoException("No serverlist is specified in the MongoSource.properties file.");
         }
         MongoCredential credential = null;
         String username = p.getProperty("username", "").trim();
@@ -220,7 +220,7 @@ public class MongoSource {
         }
         MongoClientSettings settings = builder.applyToClusterSettings(build -> build.hosts(addrs)).build();
         client = MongoClients.create(settings);
-        LOG.info("连接服务器成功!");
+        LOG.info("Successful connection to Mongo server.");
         database = client.getDatabase(DATABASENAME);
     }
 
@@ -259,7 +259,7 @@ public class MongoSource {
             indexOptions = indexOptions.name(USER_INDEX_NAME);
             user_collection.createIndex(Indexes.ascending("KUEp"), indexOptions);
         }
-        LOG.info("创建用户表!");
+        LOG.info("Successful creation of user tables.");
     }
 
     private void init_object_collection() {
@@ -278,7 +278,7 @@ public class MongoSource {
             object_collection.createIndex(Indexes.ascending("VNU"), indexOptions);
         }
         object_new_collection = database.getCollection(OBJECT_NEW_TABLE_NAME);
-        LOG.info("创建用户去重表!");
+        LOG.info("Successful creation of object tables.");
     }
 
     private void init_block_collection() {
@@ -298,7 +298,7 @@ public class MongoSource {
         }
         block_dat_collection = database.getCollection(BLOCK_DAT_TABLE_NAME);
         shard_collection = database.getCollection(SHARD_TABLE_NAME);
-        LOG.info("创建数据块META表!");
+        LOG.info("Successful creation of data block tables.");
     }
 
     private void init_bucket_collection() {
@@ -316,7 +316,7 @@ public class MongoSource {
             indexOptions = indexOptions.name(BUCKET_INDEX_NAME);
             bucket_collection.createIndex(Indexes.ascending("userId", "bucketName"), indexOptions);
         }
-        LOG.info("创建用户BUCKET表!");
+        LOG.info("Successful creation of user bucket table.");
     }
 
     private void init_file_collection() {
@@ -334,6 +334,6 @@ public class MongoSource {
             indexOptions = indexOptions.name(FILE_INDEX_NAME);
             file_collection.createIndex(Indexes.ascending("bucketId", "fileName"), indexOptions);
         }
-        LOG.info("创建用户文件表!");
+        LOG.info("Successful creation of user file table.");
     }
 }

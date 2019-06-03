@@ -1,6 +1,9 @@
 package com.ytfs.service.servlet.user;
 
+import static com.ytfs.common.ServiceErrorCode.INVALID_USER_ID;
+import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.ServerConfig;
+import com.ytfs.common.eos.EOSClient;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.dao.Sequence;
@@ -15,16 +18,16 @@ import io.yottachain.nodemgmt.core.vo.SuperNode;
 import io.yottachain.p2phost.utils.Base58;
 
 public class RegUserHandler extends Handler<RegUserReq> {
-    
+
     public static class QueryUserHandler extends Handler<QueryUserReq> {
-        
+
         @Override
         public Object handle() throws Throwable {
             return queryAndReg(request);
         }
     }
-    
-    private static QueryUserResp queryAndReg(QueryUserReq req) {
+
+    private static QueryUserResp queryAndReg(QueryUserReq req) throws ServiceException {
         byte[] KUEp = Base58.decode(req.getPubkey());
         User user = UserAccessor.getUser(KUEp);
         if (user != null) {
@@ -39,6 +42,11 @@ public class RegUserHandler extends Handler<RegUserReq> {
             }
         } else {
             if (req.getUserId() == -1) {
+                try {//需要验证用户
+                    EOSClient.getBalance(req.getUsername());
+                } catch (Throwable e) {
+                    throw new ServiceException(INVALID_USER_ID);
+                }
                 user = new User(Sequence.generateUserID());
             } else {
                 user = new User(req.getUserId());
@@ -51,7 +59,7 @@ public class RegUserHandler extends Handler<RegUserReq> {
         resp.setUserId(user.getUserID());
         return resp;
     }
-    
+
     @Override
     public Object handle() throws Throwable {
         byte[] KUEp = Base58.decode(request.getPubkey());
@@ -84,5 +92,5 @@ public class RegUserHandler extends Handler<RegUserReq> {
         regUserResp.setSuperNodeNum(ressn.getId());
         return regUserResp;
     }
-    
+
 }

@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.user;
 
+import static com.ytfs.common.ServiceErrorCode.NO_ENOUGH_NODE;
 import com.ytfs.service.dao.User;
 import com.ytfs.common.node.NodeManager;
 import com.ytfs.service.servlet.CacheAccessor;
@@ -7,7 +8,6 @@ import com.ytfs.service.servlet.Handler;
 import com.ytfs.service.servlet.UploadBlockCache;
 import com.ytfs.service.servlet.UploadShardCache;
 import static com.ytfs.service.servlet.user.UploadBlockInitHandler.sign;
-import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadBlockSubReq;
@@ -61,7 +61,7 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
         Node[] nodes = NodeManager.getNode(fails.size());
         if (nodes.length != fails.size()) {
             LOG.warn("No enough data nodes:" + nodes.length + "/" + fails.size());
-            throw new ServiceException(SERVER_ERROR);
+            throw new ServiceException(NO_ENOUGH_NODE);
         } else {
             LOG.info("Assigned node:" + getAssignedNodeIDs(nodes));
         }

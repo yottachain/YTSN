@@ -19,7 +19,6 @@ import io.yottachain.p2phost.interfaces.BPNodeCallback;
 import io.yottachain.p2phost.interfaces.NodeCallback;
 import io.yottachain.p2phost.interfaces.UserCallback;
 import io.yottachain.p2phost.utils.Base58;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,18 +40,15 @@ public class ServerInitor {
 
     public static void init() {
         try {
-            String path = System.getProperty("logger.path", "log");
-            File dir = new File(path);
-            dir.mkdirs();
             String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "INFO");
-            LogConfigurator.configPath(new File(dir, "log"), level);
+            LogConfigurator.configPath(level);
             load();
             List<ServerAddress> addrs = MongoSource.getServerAddress();
-            NodeManager.start(addrs,eosURI);
+            NodeManager.start(addrs, eosURI);
             SuperNodeList.isServer = true;
         } catch (NodeMgmtException | IOException e) {
             LOG.error("Init err.", e);
-            System.exit(0);//循环初始化
+            System.exit(0); 
         }
         for (int ii = 0; ii < 10; ii++) {
             try {
@@ -75,7 +71,6 @@ public class ServerInitor {
         }
         try {
             HttpServerBoot.startHttpServer();
-            LOG.info("Http server started, port " + httpPort);
         } catch (Exception r) {
             LOG.error("Http server failed to start!", r);
         }
