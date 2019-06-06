@@ -1,1 +1,17 @@
 http://cw.hubwiz.com/card/c/eos-rpc-api/1/1/1/
+
+
+        List<Document> pipeline = new ArrayList<>();
+        Document matchdoc = new Document("bucketId", bucketid);
+        matchdoc.put("fileName", filename);
+        Document match = new Document("$match", matchdoc);
+        pipeline.add(match);
+        Document countdoc = new Document("count", new Document("$size", "$version"));
+        Document project = new Document("$project", countdoc);
+        pipeline.add(project);
+        Document document = MongoSource.getFileCollection().aggregate(pipeline).first();
+        if (document == null) {
+            return;
+        }  
+            int size=document.getInteger("count");
+        }
