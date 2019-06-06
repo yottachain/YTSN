@@ -125,12 +125,14 @@ public class FileAccessorV2 {
         MongoSource.getFileCollection().deleteOne(Filters.and(bson1, bson2, bson3));
     }
 
+    public static final ObjectId firstVersionId = new ObjectId("000000000000000000000000");
+
     /**
      * 遍历目录
      *
      * @param bucketId
      * @param nextFileName =null,从第一条记录开始
-     * @param nextVersionId =null,遍历最新版本,!=null遍历所有版本
+     * @param nextVersionId =null,遍历最新版本,!=null遍历所有版本(初始值=firstVersionId)
      * @param prefix 根据前缀查询
      * @param limit
      * @return　List
@@ -178,7 +180,9 @@ public class FileAccessorV2 {
             fields.append("bucketId", 1).append("fileName", 1);
             fields.append("version", new Document("$slice", -1));
         } else {
-            toFindNextVersionId = true;
+            if (!nextVersionId.equals(firstVersionId)) {
+                toFindNextVersionId = true;
+            }
         }
         int count = 0;
         List<FileMetaV2> res = new ArrayList();
