@@ -145,14 +145,14 @@ public class FileAccessorV2 {
         Bson filter = null;
         Bson regex = null;
         if (!(prefix == null || prefix.isEmpty())) {
-            prefix = prefix.replace("/", "\\/").replace("\\", "\\\\");
+            prefix = prefix.replace("\\", "\\\\");
             regex = Filters.regex("fileName", "^" + prefix);
         }
         if (nextFileName == null || nextFileName.isEmpty()) {
             if (regex == null) {
                 filter = Filters.eq("bucketId", bucketId);
             } else {
-                Filters.and(Filters.eq("bucketId", bucketId), regex);
+                filter = Filters.and(Filters.eq("bucketId", bucketId), regex);
             }
         } else {
             Bson bson1 = Filters.eq("bucketId", bucketId);
@@ -212,21 +212,5 @@ public class FileAccessorV2 {
             }
         }
         return res;
-    }
-
-    public static List<FileMetaV2> listBucket(ObjectId bucketId) throws ServiceException {
-        return listBucket(bucketId, null, null, null, 100);
-    }
-
-    public static List<FileMetaV2> listBucket(ObjectId bucketId, String nextFileName) throws ServiceException {
-        return listBucket(bucketId, nextFileName, null, null, 100);
-    }
-
-    public static List<FileMetaV2> listBucket(ObjectId bucketId, String nextFileName, int limit) throws ServiceException {
-        return listBucket(bucketId, nextFileName, null, null, limit);
-    }
-
-    public static List<FileMetaV2> listBucket(ObjectId bucketId, String nextFileName, String prefix, int limit) throws ServiceException {
-        return listBucket(bucketId, nextFileName, null, prefix, limit);
     }
 }
