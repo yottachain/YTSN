@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.user;
 
+import com.ytfs.common.Function;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.dao.BlockMeta;
@@ -24,13 +25,17 @@ import com.ytfs.service.packet.SaveObjectMetaResp;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.VoidResp;
+import io.yottachain.nodemgmt.YottaNodeMgmt;
+import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 import org.bson.Document;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 
 public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
@@ -60,9 +65,25 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             BlockAccessor.decBlockNLINK(meta);//-1
             throw r;
         }
-        SendShard2SNM.sendShard2SNM(ls);
+        sendDNI(ls);
         LOG.info("Upload block:/" + cache.getVNU() + "/" + request.getVBI() + " OK!");
         return new VoidResp();
+    }
+
+    private void sendDNI(List<Document> ls) {
+        for (Document doc : ls) {
+            int nid = doc.getInteger("nodeId");
+            byte[] vhf = ((Binary) doc.get("VHF")).getData();
+            byte[] vbi = Function.long2bytes(request.getVBI());
+            byte[] data = new byte[vhf.length + 8];
+            System.arraycopy(vbi, 0, data, 0, 8);
+            System.arraycopy(vhf, 0, data, 8, vhf.length);
+            try {
+                YottaNodeMgmt.addDNI(nid, data);
+            } catch (NodeMgmtException ne) {
+                LOG.error("PutDNI " + nid + "-[" + Hex.encodeHexString(vhf) + "] ERR", ne);
+            }
+        }
     }
 
     private SaveObjectMetaReq makeSaveObjectMetaReq(UploadBlockEndReq req, int userid, long vbi, ObjectId VNU) {

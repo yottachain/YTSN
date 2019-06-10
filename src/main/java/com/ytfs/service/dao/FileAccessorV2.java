@@ -1,10 +1,12 @@
 package com.ytfs.service.dao;
 
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import static com.ytfs.common.ServiceErrorCode.INVALID_NEXTFILENAME;
 import static com.ytfs.common.ServiceErrorCode.INVALID_NEXTVERSIONID;
+import static com.ytfs.common.ServiceErrorCode.OBJECT_ALREADY_EXISTS;
 import com.ytfs.common.ServiceException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +15,29 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 public class FileAccessorV2 {
+
+    /**
+     * 插入文件meta,如果记录存在抛出OBJECT_ALREADY_EXISTS错误
+     *
+     * @param meta
+     * @return 版本号
+     * @throws ServiceException
+     */
+    public static ObjectId insertFileMeta(FileMetaV2 meta) throws ServiceException {
+        Document doc = new Document("bucketId", meta.getBucketId());
+        doc.append("fileName", meta.getFileName());
+        List<Document> vers = new ArrayList();
+        vers.add(meta.getVerDocument());
+        doc.append("version", vers);
+        try {
+            MongoSource.getFileCollection().insertOne(doc);
+        } catch (MongoWriteException e) {
+            if (e.getMessage().contains("dup key")) {
+                throw new ServiceException(OBJECT_ALREADY_EXISTS);
+            }
+        }
+        return meta.getVersionId();
+    }
 
     /**
      * 插入文件meta,如果记录存在生成新版本
