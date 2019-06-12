@@ -1,14 +1,10 @@
 package com.ytfs.service.servlet.s3;
 
-import com.ytfs.service.dao.BucketCache;
-import com.ytfs.service.dao.BucketMeta;
-import com.ytfs.service.dao.FileAccessor;
-import com.ytfs.service.dao.FileMeta;
+import com.ytfs.service.dao.*;
 import com.ytfs.service.servlet.Handler;
 import static com.ytfs.common.ServiceErrorCode.INVALID_BUCKET_NAME;
 import static com.ytfs.common.ServiceErrorCode.INVALID_UPLOAD_ID;
 import com.ytfs.common.ServiceException;
-import com.ytfs.service.dao.User;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.packet.s3.UploadFileReq;
 import org.apache.log4j.Logger;
@@ -28,12 +24,12 @@ public class UploadFileHandler extends Handler<UploadFileReq> {
         if (request.getVNU() == null) {
             throw new ServiceException(INVALID_UPLOAD_ID);
         }
-        FileMeta filemeta = new FileMeta();
+        FileMetaV2 filemeta = new FileMetaV2();
         filemeta.setBucketId(meta.getBucketId());
         filemeta.setFileName(request.getFileName());
-        filemeta.setVNU(request.getVNU());
         filemeta.setMeta(request.getMeta());
-        FileAccessor.saveFileMeta(filemeta);
+        filemeta.setVersionId(request.getVNU());
+        FileAccessorV2.saveFileMeta(filemeta);
         return new VoidResp();
     }
 
