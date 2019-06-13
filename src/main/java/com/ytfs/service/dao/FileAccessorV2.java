@@ -68,6 +68,9 @@ public class FileAccessorV2 {
      * @return FileMetaV2
      */
     public static FileMetaV2 getFileMeta(ObjectId bucketid, String filename, ObjectId versionId) {
+        if (versionId == null) {
+            return getFileMeta(bucketid, filename);
+        }
         Bson bson1 = Filters.eq("bucketId", bucketid);
         Bson bson2 = Filters.eq("fileName", filename);
         Bson bson3 = Filters.eq("version.versionId", versionId);
