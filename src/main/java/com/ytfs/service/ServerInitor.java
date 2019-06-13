@@ -44,7 +44,7 @@ public class ServerInitor {
             LogConfigurator.configPath(level);
             load();
             List<ServerAddress> addrs = MongoSource.getServerAddress();
-            NodeManager.start(addrs, eosURI);
+            NodeManager.start(addrs, eosURI,BPAccount,BPPriKey,contractAccount);
             SuperNodeList.isServer = true;
         } catch (NodeMgmtException | IOException e) {
             LOG.error("Init err.", e);
