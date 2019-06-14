@@ -1,19 +1,14 @@
 package com.ytfs.service.servlet.s3;
 
-import com.ytfs.service.dao.BucketCache;
-import com.ytfs.service.dao.BucketMeta;
-import com.ytfs.service.dao.FileAccessor;
-import com.ytfs.service.dao.FileMeta;
-import com.ytfs.service.dao.ObjectAccessor;
-import com.ytfs.service.dao.ObjectMeta;
+import com.ytfs.service.dao.*;
 import com.ytfs.service.servlet.Handler;
 import static com.ytfs.common.ServiceErrorCode.INVALID_BUCKET_NAME;
 import static com.ytfs.common.ServiceErrorCode.INVALID_OBJECT_NAME;
 import com.ytfs.common.ServiceException;
-import com.ytfs.service.dao.User;
 import com.ytfs.service.packet.DownloadObjectInitResp;
 import com.ytfs.service.packet.s3.DownloadFileReq;
 import org.apache.log4j.Logger;
+import org.bson.types.ObjectId;
 
 public class DownloadFileHandler extends Handler<DownloadFileReq> {
 
@@ -23,17 +18,17 @@ public class DownloadFileHandler extends Handler<DownloadFileReq> {
     public Object handle() throws Throwable {
         User user = this.getUser();
         LOG.info("Read object:" + user.getUserID() + "/" + request.getBucketname() + "/" + request.getFileName());
+        ObjectId versionId = request.getVersionId();
+        LOG.info("versionId====="+versionId);
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketname(),new byte[0]);
         if (meta == null) {
             throw new ServiceException(INVALID_BUCKET_NAME);
         }
-        FileMeta fmeta = FileAccessor.getFileMeta(meta.getBucketId(), request.getFileName());
-        LOG.info("fmeta==================fileName=====" + request.getFileName());
-        LOG.info("fmeta==================bucketName=====" + request.getBucketname());
+        FileMetaV2 fmeta = FileAccessorV2.getFileMeta(meta.getBucketId(), request.getFileName(),versionId);
         if (fmeta == null) {
             throw new ServiceException(INVALID_OBJECT_NAME);
         }
-        ObjectMeta ometa = ObjectAccessor.getObject(fmeta.getVNU());
+        ObjectMeta ometa = ObjectAccessor.getObject(fmeta.getVersionId());
         DownloadObjectInitResp resp = new DownloadObjectInitResp();
         resp.setRefers(ometa.getBlocks());
         resp.setLength(ometa.getLength());
