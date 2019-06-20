@@ -19,7 +19,7 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
     public Object handle() throws Throwable {
         try {
             int nodeid = this.getNodeId();
-            LOG.info("StatusRep Node:" + nodeid);
+            LOG.debug("StatusRep Node:" + nodeid);
             Node node = YottaNodeMgmt.updateNodeStatus(nodeid, request.getCpu(), request.getMemory(), request.getBandwidth(),
                     request.getMaxDataSpace(), request.getAddrs(), request.isRelay());
             StatusRepResp resp = new StatusRepResp();

@@ -1,16 +1,11 @@
 package com.ytfs.service;
 
+import com.ytfs.service.check.SendSpotCheckTask;
 import com.ytfs.service.servlet.NewObjectScanner;
 import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 public class ServiceWrapper implements WrapperListener {
-
-    public static boolean isServer() {
-        return newObjectScanner.isAlive();
-    }
-
-    static NewObjectScanner newObjectScanner = new NewObjectScanner();
 
     public static void main(String[] args) {
         WrapperManager.start(new ServiceWrapper(), args);
@@ -18,16 +13,16 @@ public class ServiceWrapper implements WrapperListener {
 
     @Override
     public Integer start(String[] strings) {
-        if (!newObjectScanner.isAlive()) {
-            newObjectScanner.start();
-            ServerInitor.init();
-        }
+        ServerInitor.init();
+        NewObjectScanner.startUp();
+        SendSpotCheckTask.startUp();
         return null;
     }
 
     @Override
     public int stop(int exitCode) {
-        newObjectScanner.close();
+        NewObjectScanner.shutdown();
+        SendSpotCheckTask.shutdown();
         ServerInitor.stop();
         return exitCode;
     }

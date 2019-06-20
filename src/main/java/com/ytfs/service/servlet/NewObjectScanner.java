@@ -7,6 +7,21 @@ public class NewObjectScanner extends Thread {
 
     private static final Logger LOG = Logger.getLogger(NewObjectScanner.class);
 
+    private static NewObjectScanner instance;
+
+    public static synchronized void startUp() {
+        if (instance == null) {
+            instance = new NewObjectScanner();
+            instance.start();
+        }
+    }
+
+    public static synchronized void shutdown() {
+        if (instance != null) {
+            instance.interrupt();
+        }
+    }
+
     @Override
     public void run() {
         while (!this.isInterrupted()) {
@@ -27,10 +42,6 @@ public class NewObjectScanner extends Thread {
             }
         }
 
-    }
-
-    public void close() {
-        this.interrupt();
     }
 
 }
