@@ -16,7 +16,6 @@ public class FromNodeMsgDispatcher implements NodeCallback {
         try {
             Object message = SerializationUtil.deserialize(data);
             Handler handler = HandlerFactory.getHandler(message);
-            handler.setRequest(message);
             handler.setPubkey(nodekey);
             Object response = handler.handle();
             return SerializationUtil.serialize(response);

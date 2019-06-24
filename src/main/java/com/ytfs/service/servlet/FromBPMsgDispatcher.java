@@ -15,7 +15,6 @@ public class FromBPMsgDispatcher implements BPNodeCallback {
         try {
             Object message = SerializationUtil.deserialize(bytes);
             Handler handler = HandlerFactory.getHandler(message);
-            handler.setRequest(message);
             Object response = handler.handle();
             return SerializationUtil.serialize(response);
         } catch (ServiceException s) {

@@ -3,6 +3,7 @@ package com.ytfs.service.check;
 import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.SpotCheckTaskList;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
@@ -15,37 +16,36 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public class SendSpotCheckTask extends Thread {
-    
+
     private static final Logger LOG = Logger.getLogger(SendSpotCheckTask.class);
     private List<SpotCheckList> sc;
     private boolean exit = false;
     private final long inteval = 1000 * 60 * 60;
-    
+
     private static SendSpotCheckTask instance;
-    
+
     public static synchronized void startUp() {
         if (instance == null) {
             instance = new SendSpotCheckTask();
             instance.start();
         }
     }
-    
+
     public static synchronized void shutdown() {
         if (instance != null) {
             instance.exit = true;
             instance.interrupt();
         }
     }
-    
+
     @Override
     public void run() {
         LOG.info("SpotCheckTask distributor startup...");
-        /*
         try {
-            sleep(inteval);
+            sleep(1000 * 60);
         } catch (InterruptedException ex) {
             return;
-        }*/
+        }
         while (!exit) {
             try {
                 if (sc == null || sc.isEmpty()) {
@@ -70,9 +70,10 @@ public class SendSpotCheckTask extends Thread {
             }
         }
     }
-    
+
     private void sendTask(SpotCheckList scheck) throws Base64DecodingException, NodeMgmtException, ServiceException {
         SpotCheckTaskList mytask = new SpotCheckTaskList();
+        mytask.setSnid(ServerConfig.superNodeID);
         mytask.setTaskId(scheck.getTaskID());
         mytask.setTaskList(new ArrayList());
         List<SpotCheckTask> ls = scheck.getTaskList();

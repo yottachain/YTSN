@@ -15,7 +15,6 @@ public class FromUserMsgDispatcher implements UserCallback {
         try {
             Object message = SerializationUtil.deserialize(data);
             Handler handler = HandlerFactory.getHandler(message);
-            handler.setRequest(message);
             handler.setPubkey(userkey);
             Object response = handler.handle();
             return SerializationUtil.serialize(response);

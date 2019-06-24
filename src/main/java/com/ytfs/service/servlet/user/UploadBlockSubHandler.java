@@ -40,7 +40,7 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
             if (ca == null) {
                 if (res.getRES() == UploadShardRes.RES_NETIOERR) {//需要惩罚节点
                     if (cache.getNodes()[res.getSHARDID()] == res.getNODEID()) {
-                        NodeManager.punishNode(res.getNODEID());
+                        //NodeManager.punishNode(res.getNODEID());
                     }
                 }
                 fails.add(res);
@@ -49,7 +49,7 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
                     continue;
                 }
                 if (res.getRES() == UploadShardRes.RES_NO_SPACE && res.getRES() == ca.getRes()) {
-                    NodeManager.noSpace(res.getNODEID());
+                    //NodeManager.noSpace(res.getNODEID());
                 }
                 fails.add(res);
             }
