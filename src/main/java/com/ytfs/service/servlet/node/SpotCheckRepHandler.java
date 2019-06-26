@@ -1,5 +1,7 @@
 package com.ytfs.service.servlet.node;
 
+import com.ytfs.common.ServiceErrorCode;
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.SpotCheckStatus;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.Handler;
@@ -14,6 +16,12 @@ public class SpotCheckRepHandler extends Handler<SpotCheckStatus> {
 
     @Override
     public Object handle() throws Throwable {
+        try {
+            getNodeId();
+        } catch (NodeMgmtException e) {
+            LOG.error("Invalid node pubkey:" + this.getPublicKey());
+            return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
+        }
         try {
             String taskid = request.getTaskId();
             LOG.info("SpotCheckTaskStatus:" + taskid + "," + request.getPercent());

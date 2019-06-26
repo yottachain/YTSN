@@ -29,7 +29,6 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
                 LOG.error("Invalid node pubkey:" + this.getPublicKey());
                 return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
             }
-
             if (nodeid != request.getId()) {
                 LOG.error("StatusRep Nodeid ERR:" + nodeid + "!=" + request.getId());
                 return new ServiceException(ServiceErrorCode.INVALID_NODE_ID);
@@ -59,9 +58,6 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
                 return new ServiceException(INVALID_NODE_ID);
             } else if (e.getMessage().contains("node do not belong to this SN")) {
                 LOG.warn("Node do not belong to this SN,ID:" + request.getId());
-                return new ServiceException(INVALID_NODE_ID);
-            } else if (e.getMessage().contains("node ID cannot be null")) {
-                LOG.warn("Node ID cannot be null,ID:" + request.getId());
                 return new ServiceException(INVALID_NODE_ID);
             } else {
                 throw e;
