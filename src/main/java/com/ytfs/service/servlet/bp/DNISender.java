@@ -9,7 +9,6 @@ import com.ytfs.service.packet.bp.AddDNIReq;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.logging.Level;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 

@@ -10,8 +10,11 @@ import com.ytfs.service.servlet.Handler;
 import com.ytfs.service.servlet.HandlerFactory;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.log4j.Logger;
 
 public class SNSynchronizer implements Runnable {
+
+    private static final Logger LOG = Logger.getLogger(SNSynchronizer.class);
 
     /**
      * 并行执行
@@ -71,9 +74,12 @@ public class SNSynchronizer implements Runnable {
             } else {
                 resp = P2PUtils.requestBP(req, node);
             }
+            LOG.debug("Sync " + req.getClass().getSimpleName() + " to " + node.getId());
         } catch (ServiceException se) {
+            LOG.error("Sync " + req.getClass().getSimpleName() + " to " + node.getId() + " ERR.");
             resp = se;
         } catch (Throwable ex) {
+            LOG.error("Sync " + req.getClass().getSimpleName() + " to " + node.getId() + " ERR:" + ex.getMessage());
             resp = new ServiceException(SERVER_ERROR);
         }
         onResponse(resp, node.getId());

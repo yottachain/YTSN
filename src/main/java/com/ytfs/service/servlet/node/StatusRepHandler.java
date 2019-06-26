@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.node;
 
+import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.INVALID_NODE_ID;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.ServerConfig;
@@ -21,8 +22,20 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
     @Override
     public Object handle() throws Throwable {
         try {
-            int nodeid = this.getNodeId();
-            LOG.debug("StatusRep Node:" + nodeid);
+            int nodeid;
+            try {
+                nodeid = this.getNodeId();
+            } catch (NodeMgmtException e) {
+                LOG.error("Invalid node pubkey:" + this.getPublicKey());
+                return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
+            }
+
+            if (nodeid != request.getId()) {
+                LOG.error("StatusRep Nodeid ERR:" + nodeid + "!=" + request.getId());
+                return new ServiceException(ServiceErrorCode.INVALID_NODE_ID);
+            } else {
+                LOG.debug("StatusRep Node:" + nodeid);
+            }
             Node node = YottaNodeMgmt.updateNodeStatus(nodeid, request.getCpu(), request.getMemory(), request.getBandwidth(),
                     request.getMaxDataSpace(), request.getAddrs(), request.isRelay());
             StatusRepResp resp = new StatusRepResp();
@@ -43,6 +56,12 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
                 return new ServiceException(INVALID_NODE_ID);
             } else if (e.getMessage().contains("No result")) {
                 LOG.warn("No result,ID:" + request.getId());
+                return new ServiceException(INVALID_NODE_ID);
+            } else if (e.getMessage().contains("node do not belong to this SN")) {
+                LOG.warn("Node do not belong to this SN,ID:" + request.getId());
+                return new ServiceException(INVALID_NODE_ID);
+            } else if (e.getMessage().contains("node ID cannot be null")) {
+                LOG.warn("Node ID cannot be null,ID:" + request.getId());
                 return new ServiceException(INVALID_NODE_ID);
             } else {
                 throw e;
