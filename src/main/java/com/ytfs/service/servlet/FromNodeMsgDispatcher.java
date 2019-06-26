@@ -13,8 +13,14 @@ public class FromNodeMsgDispatcher implements NodeCallback {
 
     @Override
     public byte[] onMessageFromNode(byte[] data, String nodekey) {
+        Object message;
         try {
-            Object message = SerializationUtil.deserialize(data);
+            message = SerializationUtil.deserialize(data);
+        } catch (Throwable r) {
+            LOG.error("Deserialize ERR:" + r.getMessage());
+            return SerializationUtil.serialize(new ServiceException(ServiceErrorCode.SERVER_ERROR));
+        }
+        try {
             Handler handler = HandlerFactory.getHandler(message);
             handler.setPubkey(nodekey);
             Object response = handler.handle();

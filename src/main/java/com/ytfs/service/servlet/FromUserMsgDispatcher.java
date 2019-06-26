@@ -12,8 +12,14 @@ public class FromUserMsgDispatcher implements UserCallback {
 
     @Override
     public byte[] onMessageFromUser(byte[] data, String userkey) {
+        Object message;
         try {
-            Object message = SerializationUtil.deserialize(data);
+            message = SerializationUtil.deserialize(data);
+        } catch (Throwable r) {
+            LOG.error("Deserialize ERR:" + r.getMessage());
+            return SerializationUtil.serialize(new ServiceException(ServiceErrorCode.SERVER_ERROR));
+        }
+        try {
             Handler handler = HandlerFactory.getHandler(message);
             handler.setPubkey(userkey);
             Object response = handler.handle();

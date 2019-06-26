@@ -12,8 +12,14 @@ public class FromBPMsgDispatcher implements BPNodeCallback {
 
     @Override
     public byte[] onMessageFromBPNode(byte[] bytes, String string) {
+        Object message;
         try {
-            Object message = SerializationUtil.deserialize(bytes);
+            message = SerializationUtil.deserialize(bytes);
+        } catch (Throwable r) {
+            LOG.error("Deserialize ERR:" + r.getMessage());
+            return SerializationUtil.serialize(new ServiceException(ServiceErrorCode.SERVER_ERROR));
+        }
+        try {
             Handler handler = HandlerFactory.getHandler(message);
             Object response = handler.handle();
             return SerializationUtil.serialize(response);

@@ -2,8 +2,11 @@ package com.ytfs.service.servlet.node;
 
 import static com.ytfs.common.ServiceErrorCode.INVALID_NODE_ID;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.conf.ServerConfig;
+import com.ytfs.service.SNSynchronizer;
 import com.ytfs.service.packet.StatusRepReq;
 import com.ytfs.service.packet.StatusRepResp;
+import com.ytfs.service.packet.bp.NodeSyncReq;
 import com.ytfs.service.servlet.Handler;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
@@ -28,10 +31,18 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
             if (ls != null && !ls.isEmpty()) {
                 resp.setRelayUrl(ls.get(0));
             }
+            List<String> addrs = request.getAddrs();
+            node.setAddrs(addrs);
+            NodeSyncReq req = new NodeSyncReq();
+            req.setNode(node);
+            SNSynchronizer.request(req, ServerConfig.superNodeID);
             return resp;
         } catch (NodeMgmtException e) {
-            if (e.getMessage().contains("No result")) {
-                LOG.warn("Node does not exist,ID:" + request.getId());
+            if (e.getMessage().contains("please register this node first")) {
+                LOG.warn("Please register this node first,ID:" + request.getId());
+                return new ServiceException(INVALID_NODE_ID);
+            } else if (e.getMessage().contains("No result")) {
+                LOG.warn("No result,ID:" + request.getId());
                 return new ServiceException(INVALID_NODE_ID);
             } else {
                 throw e;

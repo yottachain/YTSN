@@ -25,6 +25,7 @@ import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.VoidResp;
+import com.ytfs.service.servlet.bp.DNISender;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import java.security.MessageDigest;
@@ -80,11 +81,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             data[0] = snid;
             System.arraycopy(vbi, 0, data, 1, 8);
             System.arraycopy(vhf, 0, data, 9, vhf.length);
-            try {
-                YottaNodeMgmt.addDNI(nid, data);
-            } catch (NodeMgmtException ne) {
-                LOG.error("PutDNI " + nid + "-[" + Hex.encodeHexString(vhf) + "] ERR", ne);
-            }
+            DNISender.startSender(data, nid);
         }
     }
 

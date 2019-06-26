@@ -1,7 +1,5 @@
 package com.ytfs.service.servlet.node;
 
-import static com.ytfs.common.ServiceErrorCode.INVALID_NODE_ID;
-import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.SpotCheckStatus;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.Handler;

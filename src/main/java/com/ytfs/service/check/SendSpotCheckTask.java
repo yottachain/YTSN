@@ -48,7 +48,13 @@ public class SendSpotCheckTask extends Thread {
         while (!exit) {
             try {
                 if (sc == null || sc.isEmpty()) {
-                    sc = YottaNodeMgmt.getSpotCheckList();
+                    try {
+                        sc = YottaNodeMgmt.getSpotCheckList();
+                    } catch (Throwable t) {
+                        LOG.error("Get SpotCheckList ERR:" + t.getMessage());
+                        sleep(60000);
+                        continue;
+                    }
                     LOG.info("Query returns " + sc.size() + " tasks.");
                 }
                 SpotCheckList scheck = sc.get(0);
