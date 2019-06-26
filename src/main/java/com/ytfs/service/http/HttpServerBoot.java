@@ -1,9 +1,12 @@
 package com.ytfs.service.http;
 
 import com.ytfs.common.conf.ServerConfig;
-import static com.ytfs.service.http.UseSpaceHandler.REQ_ACTIVE_NODES_PATH;
-import static com.ytfs.service.http.UseSpaceHandler.REQ_STAT_PATH;
-import static com.ytfs.service.http.UseSpaceHandler.REQ_TOTAL_PATH;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_ACTIVE_NODES_PATH;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_CHG_MPOOL;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_NEW_NODEID;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_PRE_REGNODE;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_STAT_PATH;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_TOTAL_PATH;
 import java.io.IOException;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -25,9 +28,10 @@ public class HttpServerBoot {
             ThreadPoolConfig threadPoolConfig = ThreadPoolConfig.defaultConfig().setCorePoolSize(2).setMaxPoolSize(20);
             networkListener.getTransport().setWorkerThreadPoolConfig(threadPoolConfig);
             httpServer.addListener(networkListener);
-            HttpHandler httpHandler = new UseSpaceHandler();
+            HttpHandler httpHandler = new LocalHttpHandler();
             httpServer.getServerConfiguration().addHttpHandler(httpHandler,
-                    new String[]{"/", REQ_TOTAL_PATH, REQ_ACTIVE_NODES_PATH, REQ_STAT_PATH});
+                    new String[]{"/", REQ_TOTAL_PATH, REQ_ACTIVE_NODES_PATH,
+                        REQ_STAT_PATH, REQ_NEW_NODEID, REQ_PRE_REGNODE, REQ_CHG_MPOOL});
             httpServer.start();
         }
     }

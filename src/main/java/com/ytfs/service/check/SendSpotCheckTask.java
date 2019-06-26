@@ -1,7 +1,5 @@
 package com.ytfs.service.check;
 
-import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.net.P2PUtils;
@@ -13,6 +11,7 @@ import io.yottachain.nodemgmt.core.vo.SpotCheckList;
 import io.yottachain.nodemgmt.core.vo.SpotCheckTask;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 
 public class SendSpotCheckTask extends Thread {
@@ -71,7 +70,7 @@ public class SendSpotCheckTask extends Thread {
         }
     }
 
-    private void sendTask(SpotCheckList scheck) throws Base64DecodingException, NodeMgmtException, ServiceException {
+    private void sendTask(SpotCheckList scheck) throws NodeMgmtException, ServiceException {
         SpotCheckTaskList mytask = new SpotCheckTaskList();
         mytask.setSnid(ServerConfig.superNodeID);
         mytask.setTaskId(scheck.getTaskID());
@@ -82,10 +81,10 @@ public class SendSpotCheckTask extends Thread {
             myst.setId(st.getId());
             myst.setNodeId(st.getNodeID());
             myst.setAddr(st.getAddr());
-            byte[] vni = Base64.decode(st.getVni());
+            byte[] vni = Base64.decodeBase64(st.getVni());
             if (vni.length > 32) {
                 byte[] VHF = new byte[32];
-                System.arraycopy(vni, 8, VHF, 0, 32);
+                System.arraycopy(vni, vni.length - 32, VHF, 0, 32);
                 myst.setVHF(VHF);
             } else {
                 myst.setVHF(vni);

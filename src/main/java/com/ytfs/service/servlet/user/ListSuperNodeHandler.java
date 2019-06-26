@@ -1,8 +1,8 @@
 package com.ytfs.service.servlet.user;
 
 import com.ytfs.common.node.NodeManager;
-import com.ytfs.service.packet.ListSuperNodeReq;
-import com.ytfs.service.packet.ListSuperNodeResp;
+import com.ytfs.service.packet.user.ListSuperNodeReq;
+import com.ytfs.service.packet.user.ListSuperNodeResp;
 import com.ytfs.service.servlet.Handler;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import org.apache.log4j.Logger;

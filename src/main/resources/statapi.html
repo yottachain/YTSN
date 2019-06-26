@@ -20,8 +20,27 @@
         </div>
 
         <hr>
-        <p class="content"><span class="titlestyle">本超级节点统计数据:</span></p>
-        <p class="content">GET:/total</p>
+        <p class="content"><span class="titlestyle">获取最新矿机ID</span></p>
+        <p class="content">GET:/newnodeid</p>
+        <p class="content">返回</p>
+        <p class="content">{"nodeid": 1234}</p>
+        <hr>
+        <p class="content"><span class="titlestyle">矿机预注册</span></p>
+<p class="content">POST:/preregnode</p>
+<p class="content">body:一个签名过的事务，其中包括抵押币和其他矿机参数,字符串形式</p>
+<p class="content">返回</p>
+<p class="content">ContentType:text/plain</p>
+<p class="content"> OK</p>
+<hr>
+<p class="content"><span class="titlestyle">修改矿池</span></p>
+<p class="content">POST:/changeminerpool</p>
+<p class="content">body:一个签名过的事务，其中包括矿机ID、矿池ID及配额等参数,字符串形式</p>
+<p class="content">返回</p>
+<p class="content">ContentType:text/plain</p>
+<p class="content"> OK</p>
+<hr>
+<p class="content"><span class="titlestyle">本超级节点统计数据:</span></p>
+<p class="content">GET:/total</p>
         <p class="content">返回所有用户合计</p>
         <p class="content">fileTotal:文件总数<br>
             spaceTotal:
@@ -52,32 +71,7 @@
     <p class="content">
 {"assignedSpace":0,"productiveSpace":0,"usedSpace":0,"totalMiner":0,"activeMiner":0,"maxDataSpace":0}    </p>
 <hr>
-        <div class="titlestyle">
-            <p><strong>用户端本地接口列表</strong></p>
-        </div>
-
-        <hr>
-        <p class="titlestyle">用户统计数据:</p>
-        <p class="content">GET:http://152.136.18.185:8083/user/getUserStat</p>
-        <p class="content"> 返回当前用户</p>
-        <p class="content">fileTotal:文件总数<br>
-            spaceTotal:文件实际总长度<br>
-            usedSpace:,文件总占用空间<br>
-            costPerCycle:
-            每周期总费用    </p>
-        <pre class="content">
-{"_id":2,"costPerCycle":0,"spaceTotal":695685105,"fileTotal":31,"usedspace":370811034}
-        </pre>
-
-        <hr>
-        <p class="titlestyle">获取当前用户私钥:</p>
-        <p class="content">GET:http://152.136.18.185:8083/user/getPrivateKey</p>
-        <p class="content"> 返回</p>
-        <pre class="content">
-5JXZV8PBL5Zw87MG7GaBc6jVwzGxPQa7ZfwevN6dqLFpRNPhELw
-        </pre>
-
-        <p class="content">&nbsp;</p>
-        <p class="content">&nbsp;</p>
+        <div class="titlestyle"></div>
+<p class="content">&nbsp;</p>
     </body>
 </html>

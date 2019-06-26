@@ -20,8 +20,8 @@ import static com.ytfs.common.ServiceErrorCode.INVALID_VHB;
 import static com.ytfs.common.ServiceErrorCode.INVALID_VHP;
 import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.ObjectRefer;
-import com.ytfs.service.packet.SaveObjectMetaReq;
-import com.ytfs.service.packet.SaveObjectMetaResp;
+import com.ytfs.service.packet.bp.SaveObjectMetaReq;
+import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.VoidResp;
@@ -75,9 +75,11 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             int nid = doc.getInteger("nodeId");
             byte[] vhf = ((Binary) doc.get("VHF")).getData();
             byte[] vbi = Function.long2bytes(request.getVBI());
-            byte[] data = new byte[vhf.length + 8];
-            System.arraycopy(vbi, 0, data, 0, 8);
-            System.arraycopy(vhf, 0, data, 8, vhf.length);
+            byte[] data = new byte[vhf.length + 9];
+            byte snid = (byte) ServerConfig.superNodeID;
+            data[0] = snid;
+            System.arraycopy(vbi, 0, data, 1, 8);
+            System.arraycopy(vhf, 0, data, 9, vhf.length);
             try {
                 YottaNodeMgmt.addDNI(nid, data);
             } catch (NodeMgmtException ne) {

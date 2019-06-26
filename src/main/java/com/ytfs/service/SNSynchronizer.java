@@ -13,21 +13,25 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SNSynchronizer implements Runnable {
 
-    public static Object[] request(Object req, boolean noExecloacl) throws InterruptedException {
-        return request(req, null, noExecloacl);
-    }
-
-    public static Object[] request(Object req, String pubkey, boolean noExecloacl) throws InterruptedException {
+    /**
+     * 并行执行
+     *
+     * @param req
+     * @param exclude 该超级节点跳过
+     * @return Object[]
+     * @throws InterruptedException
+     */
+    public static Object[] request(Object req, int exclude) throws InterruptedException {
         SuperNode[] snlist = SuperNodeList.getSuperNodeList();
         Object[] res = new Object[snlist.length];
         AtomicInteger num = new AtomicInteger(0);
         for (SuperNode node : snlist) {
-            if (noExecloacl && node.getId() == ServerConfig.superNodeID) {
+            if (node.getId() == exclude) {
+                num.incrementAndGet();
                 continue;
             }
             SNSynchronizer sync = new SNSynchronizer(res, num);
             sync.req = req;
-            sync.pubkey = pubkey;
             sync.node = node;
             GlobleThreadPool.execute(sync);
         }
@@ -41,7 +45,6 @@ public class SNSynchronizer implements Runnable {
 
     private Object req;
     private SuperNode node;
-    private String pubkey;
     private final Object[] res;
     private final AtomicInteger count;
 
@@ -64,14 +67,9 @@ public class SNSynchronizer implements Runnable {
         try {
             if (node.getId() == ServerConfig.superNodeID) {
                 Handler handler = HandlerFactory.getHandler(req);
-                handler.setPubkey(pubkey);
                 resp = handler.handle();
             } else {
-                if (pubkey != null) {
-                    resp = P2PUtils.requestBPU(req, node);
-                } else {
-                    resp = P2PUtils.requestBP(req, node);
-                }
+                resp = P2PUtils.requestBP(req, node);
             }
         } catch (ServiceException se) {
             resp = se;

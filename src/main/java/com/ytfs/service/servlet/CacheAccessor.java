@@ -2,8 +2,8 @@ package com.ytfs.service.servlet;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.ytfs.service.packet.QueryObjectMetaReq;
-import com.ytfs.service.packet.QueryObjectMetaResp;
+import com.ytfs.service.packet.bp.QueryObjectMetaReq;
+import com.ytfs.service.packet.bp.QueryObjectMetaResp;
 import com.ytfs.service.servlet.bp.QueryObjectMetaHandler;
 import static com.ytfs.common.ServiceErrorCode.INVALID_UPLOAD_ID;
 import com.ytfs.common.ServiceException;

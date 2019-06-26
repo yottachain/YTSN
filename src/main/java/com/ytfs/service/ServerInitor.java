@@ -43,7 +43,7 @@ public class ServerInitor {
         try {
             String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "INFO");
             String path = WrapperManager.getProperties().getProperty("wrapper.log4j.logfile");
-            LogConfigurator.configPath(new File(path), level);
+            LogConfigurator.configPath(path == null ? null : new File(path), level);
             load();
             List<ServerAddress> addrs = MongoSource.getServerAddress();
             NodeManager.start(addrs, eosURI, BPAccount, BPPriKey, contractAccount, superNodeID);

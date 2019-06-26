@@ -12,19 +12,19 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public class NodeRegHandler extends Handler<NodeRegReq> {
-    
+
     private static final Logger LOG = Logger.getLogger(NodeRegHandler.class);
-    
+
     @Override
     public Object handle() throws Throwable {
         LOG.info("Reg Node:" + request.getNodeid());
         try {
-            Node node = YottaNodeMgmt.registerNode(request.getNodeid(),
+            Node node = YottaNodeMgmt.registerNode(request.getId(), request.getNodeid(),
                     this.getPublicKey(), request.getOwner(),
                     request.getMaxDataSpace(), request.getAddrs(), request.isRelay());
             NodeRegResp resp = new NodeRegResp();
             resp.setId(node.getId());
-            resp.setAssignedSpace(node.getAssignedSpace());            
+            resp.setAssignedSpace(node.getAssignedSpace());
             List<String> ls = node.getAddrs();
             if (ls != null && !ls.isEmpty()) {
                 resp.setRelayUrl(ls.get(0));
@@ -40,5 +40,5 @@ public class NodeRegHandler extends Handler<NodeRegReq> {
             }
         }
     }
-    
+
 }
