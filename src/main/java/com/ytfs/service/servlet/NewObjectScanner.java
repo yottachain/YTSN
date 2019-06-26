@@ -27,7 +27,7 @@ public class NewObjectScanner extends Thread {
         while (!this.isInterrupted()) {
             try {
                 boolean b = ObjectAccessor.listNewObject();
-                if (b) {
+                if (!b) {
                     Thread.sleep(1000 * 60 * 10);
                 }
             } catch (InterruptedException ex) {

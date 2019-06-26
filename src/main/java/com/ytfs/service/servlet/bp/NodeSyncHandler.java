@@ -13,7 +13,7 @@ public class NodeSyncHandler extends Handler<NodeSyncReq> {
 
     @Override
     public VoidResp handle() throws Throwable {
-        LOG.debug("Sync Node:" + request.getNode().getNodeid());
+        LOG.debug("Sync Node:" + request.getNode().getId());
         YottaNodeMgmt.syncNode(request.getNode());
         return new VoidResp();
     }

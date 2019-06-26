@@ -33,7 +33,7 @@ public class ObjectAccessor {
             Bson filter = Filters.eq("_id", doc.getObjectId("_id"));
             MongoSource.getObjectNewCollection().deleteOne(filter);
         }
-        return needDelete.size() >= 100;
+        return needDelete.size() > 0;
     }
     
     public static void addNewObject(ObjectId id, long costPerCycle, int userid, String username) {
