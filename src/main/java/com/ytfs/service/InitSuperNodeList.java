@@ -19,7 +19,7 @@ public class InitSuperNodeList {
 
     private static final Logger LOG = Logger.getLogger(InitSuperNodeList.class);
 
-    private static final String DATABASENAME = "yotta1";
+    private static final String DATABASENAME = "yotta";
     private static final String TABLE_NAME = "SuperNode";
     private static final String INDEX_NAME = "pubkey";
     private static MongoDatabase database;
