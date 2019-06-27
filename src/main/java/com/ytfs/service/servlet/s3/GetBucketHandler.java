@@ -8,17 +8,20 @@ import com.ytfs.service.packet.s3.GetBucketResp;
 import com.ytfs.service.servlet.Handler;
 import org.apache.log4j.Logger;
 
-public class GetBuckettHandler extends Handler<GetBucketReq> {
+public class GetBucketHandler extends Handler<GetBucketReq> {
 
-    private static final Logger LOG = Logger.getLogger(GetBuckettHandler.class);
+    private static final Logger LOG = Logger.getLogger(GetBucketHandler.class);
 
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
-        LOG.info("Delete bucket:" + user.getUserID() + "/" + request.getBucketName());
+        LOG.info("GET bucket::::::" + user.getUserID() + "/" + request.getBucketName());
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(),new byte[0]);
         GetBucketResp resp = new GetBucketResp();
         resp.setBucketName(meta.getBucketName());
+        LOG.info("aaaaaa====bucketname====="+resp.getBucketName());
+        LOG.info("aaaaaa====metalength====="+resp.getMeta().length);
+        resp.setMeta(meta.getMeta());
         return resp;
     }
 
