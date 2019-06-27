@@ -57,9 +57,11 @@ public class SendSpotCheckTask extends Thread {
                     }
                     LOG.info("Query returns " + sc.size() + " tasks.");
                 }
-                SpotCheckList scheck = sc.get(0);
-                sendTask(scheck);
-                sc.remove(scheck);
+                if (!sc.isEmpty()) {
+                    SpotCheckList scheck = sc.get(0);
+                    sendTask(scheck);
+                    sc.remove(scheck);
+                }
                 if (sc.isEmpty()) {
                     sleep(inteval);
                 }

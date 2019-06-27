@@ -1,27 +1,98 @@
-1.安装mongodb单机版
+﻿1.安装mongodb单机版
 https://blog.csdn.net/hellboy0621/article/details/80332667
-下载4.0.9版
+下载最新稳定版即可
 
-2.解压ytsn.tar.gz
+2.配置Mongo连接
+解压ytsn.tar.gz
+如果Mongo使用的默认端口可不用配置
+
+编辑: %ytsn%/conf/mongo.properties
+修改对应的mongo端口
+
+
+3.初始化超级节点列表
+编辑: %ytsn%/conf/snlist.properties
+
+Number:表示超级节点编号(0-20)
+PrivateKey,ID 不要做改动
+Addrs:将localhost改为将要部署的SN对应的外网IP地址
+如下:
+
+    [
+    {
+      "Number":0,
+      "PrivateKey":"5KFe8EEG4rkWveXgw21sruT4ZFF5NqicUc8CtY4HUBRkznpBx7Y",
+      "ID": "16Uiu2HAmTT47W5sBd2oF6MMwft8GAqDyZJFXc2HVit3oQ8p4jijh",
+      "Addrs": ["/ip4/localhost/tcp/9999"]
+    },
+    {
+      "Number":1,
+      "PrivateKey":"5JdwcYJdMN7eUUDb6GnUEgtoWrNUDzqPpUd8ZCqLazoqzqNyyxN",
+      "ID": "16Uiu2HAm3Rea9AGSJYZLgU3ZqdzNoZfb5UUmYF8SAN7FH97HNauq",
+      "Addrs": ["/ip4/localhost/tcp/9999"]
+    }
+    ........................
+
+
+如果要部署21个SN,按Number需要将对应的IP地址填好后
+执行:%ytsn%/bin/init.sh
+终端可以看出是不是执行成功,如果不成功可能是
+1.mongodb 安装配置有问题
+2.或者snlist.properties的json格式编辑的出了问题
+3.或者已经执行过一次初始化
+
+
+注意:部署每台SN都需要执行一次初始化
+
+4.配置sn服务运行参数
 编辑: %ytsn%/conf/server.properties
 
-#超级节点编号 ，如果部署三台，就按 0，1，2进行编号
-superNodeID=0
-privateKey=5JvCxXLSLzihWdXT7C9mtQkfLFHJZPdX1hxQo6su7dNt28mZ5W2
-BPAccount=producer2
-BPPriKey=5J9bzuUBmq4JK1bdp7BB9Um2TyKpfKeqJ6uSEvvYKRN1nGVLhp8
+#当前超级节点服务的编号,本机IP必须和上面初始化文件(snlist.properties)对应的IP一致
+superNodeID=2
 
-下面默认
-eosURI=http://localhost:8888/
+#当前节点的BP帐号与私钥
+BPAccount=producer3
+BPPriKey=5KYpTLUmohnEuQamSuSB3ARHwUY6MyrtDS64StrWdaLBXGfBr9Z
+
+下面参数默认不用编辑
+
+contractAccount=hddpool12345
 port=9999
+eosURI=http://127.0.0.1:8888
 httpPort=8082
-httpBindip=localhost
 
-3.安装服务
-cd %ytsn%/bin
-运行
-./ytsnd.sh install
+5.调试SN服务
+执行%ytsn%/bin/ytsn.sh
+终端显示如下类似日志,说明配置没问题了
 
-4.启动服务
+    .....................
+    [16:01:34.945][INFO ][com.ytfs.service.ServerInitor:67]P2P initialization completed, port 9999
+    [16:01:35.052][INFO ][org.glassfish.grizzly.http.server.HttpServer:277]Started listener bound to [0.0.0.0:8082]
+    [16:01:35.053][INFO ][com.ytfs.service.http.HttpServerBoot:35][HttpServer] Started.
+    .....................
+ctrl+c退出终端程序
+
+6.安装SN服务
+执行
+.%ytsn%/bin/ytsnd.sh install
+启动关闭服务
 service ytsnd start
-日志：%ytsn%/log/log
+
+7.日志：%ytsn%/log/log
+默认的日志级别是DEBUG,
+需要的时候可编辑%ytsn%/bin/ytsn.conf
+wrapper.log4j.loglevel=INFO
+
+8.测试阶段,可能会更新服务
+
+一般只要替换  %ytsn%/target/  下面对应3个文件
+MsgDef-1.0-SNAPSHOT.jar
+nodemgmt-java-binding-1.0.jar
+YTSN-1.0-SNAPSHOT.jar
+
+替换完重启服务即可
+service ytsnd restart
+
+
+
+

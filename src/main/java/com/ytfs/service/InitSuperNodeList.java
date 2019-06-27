@@ -19,7 +19,7 @@ public class InitSuperNodeList {
 
     private static final Logger LOG = Logger.getLogger(InitSuperNodeList.class);
 
-    private static final String DATABASENAME = "yotta";
+    private static final String DATABASENAME = "yotta1";
     private static final String TABLE_NAME = "SuperNode";
     private static final String INDEX_NAME = "pubkey";
     private static MongoDatabase database;
@@ -32,11 +32,15 @@ public class InitSuperNodeList {
         String path = System.getProperty("snlist.conf", "conf/snlist.properties");
         ObjectMapper mapper = new ObjectMapper();
         List ls = mapper.readValue(new File(path), List.class);
-        for (Object obj : ls) {
-            Map map = (Map) obj;
-            writeNode(map);
+        try {
+            for (Object obj : ls) {
+                Map map = (Map) obj;
+                writeNode(map);
+            }
+            LOG.info("OK! Insert count:" + ls.size());
+        } catch (Exception r) {
+            LOG.error("ERR! " + r.getMessage());
         }
-        LOG.info("Insert count:" + ls.size());
     }
 
     private static void writeNode(Map map) throws Exception {
@@ -52,8 +56,11 @@ public class InitSuperNodeList {
             sn_collection.insertOne(update);
             LOG.info("Insert OK:" + update);
         } catch (Exception r) {
-            LOG.error("Insert ERR:" + update);
-            throw r;
+            if (r.getMessage().contains("duplicate key")) {
+                throw new Exception("Repeated execution initialization.");
+            } else {
+                throw r;
+            }
         }
     }
 
