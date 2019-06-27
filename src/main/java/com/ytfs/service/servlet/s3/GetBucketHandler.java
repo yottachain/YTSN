@@ -1,6 +1,6 @@
 package com.ytfs.service.servlet.s3;
 
-import com.ytfs.service.dao.BucketCache;
+import com.ytfs.service.dao.BucketAccessor;
 import com.ytfs.service.dao.BucketMeta;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.packet.s3.GetBucketReq;
@@ -16,11 +16,10 @@ public class GetBucketHandler extends Handler<GetBucketReq> {
     public Object handle() throws Throwable {
         User user = this.getUser();
         LOG.info("GET bucket::::::" + user.getUserID() + "/" + request.getBucketName());
-        BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(),new byte[0]);
+//        BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(),new byte[0]);
+        BucketMeta meta = BucketAccessor.getBucketMeta(user.getUserID(), request.getBucketName());
         GetBucketResp resp = new GetBucketResp();
         resp.setBucketName(meta.getBucketName());
-        LOG.info("aaaaaa====bucketname====="+resp.getBucketName());
-        LOG.info("aaaaaa====metalength====="+resp.getMeta().length);
         resp.setMeta(meta.getMeta());
         return resp;
     }

@@ -3,15 +3,16 @@ package com.ytfs.service.dao;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
-import static com.ytfs.common.ServiceErrorCode.BUCKET_ALREADY_EXISTS;
-import static com.ytfs.common.ServiceErrorCode.TOO_MANY_BUCKETS;
 import com.ytfs.common.ServiceException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.ytfs.common.ServiceErrorCode.BUCKET_ALREADY_EXISTS;
+import static com.ytfs.common.ServiceErrorCode.TOO_MANY_BUCKETS;
 
 public class BucketAccessor {
     private static final Logger LOG = Logger.getLogger(BucketAccessor.class);
@@ -30,6 +31,18 @@ public class BucketAccessor {
                 throw new ServiceException(BUCKET_ALREADY_EXISTS);
             }
         }
+    }
+
+    public static void updateBucketMeta(BucketMeta meta) throws ServiceException {
+
+        Bson bson1 = Filters.eq("_id", meta.getBucketId());
+        Bson bson2 = Filters.eq("userId", meta.getUserId());
+        Bson filter = Filters.and(bson1, bson2);
+        LOG.info("bucketId======"+meta.getBucketId());
+
+        Document data = meta.toDocument();
+        Document update = new Document("$set",data);
+        MongoSource.getBucketCollection().updateOne(filter,update);
     }
 
     public static BucketMeta getBucketMeta(int userid, String bucketname) {
