@@ -14,6 +14,7 @@ import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.servlet.FromBPMsgDispatcher;
 import com.ytfs.service.servlet.FromNodeMsgDispatcher;
 import com.ytfs.service.servlet.FromUserMsgDispatcher;
+import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.p2phost.interfaces.BPNodeCallback;
 import io.yottachain.p2phost.interfaces.NodeCallback;
@@ -47,6 +48,9 @@ public class ServerInitor {
             load();
             List<ServerAddress> addrs = MongoSource.getServerAddress();
             NodeManager.start(addrs, eosURI, BPAccount, BPPriKey, contractAccount, superNodeID);
+            NodeManager.getSuperNode();
+            privateKey = YottaNodeMgmt.getSuperNodePrivateKey(superNodeID);
+            SNDSP = Base58.decode(privateKey);
             SuperNodeList.isServer = true;
         } catch (NodeMgmtException | IOException e) {
             LOG.error("Init err.", e);
@@ -95,15 +99,6 @@ public class ServerInitor {
             }
         } catch (Exception d) {
             throw new IOException("The 'superNodeID' parameter is not configured.");
-        }
-        privateKey = p.getProperty("privateKey");
-        if (privateKey == null || privateKey.trim().isEmpty()) {
-            throw new IOException("The 'privateKey' parameter is not configured.");
-        }
-        try {
-            SNDSP = Base58.decode(privateKey);
-        } catch (Exception d) {
-            throw new IOException("The 'privateKey' parameter is not configured.");
         }
         try {
             String ss = p.getProperty("port", "9999").trim();

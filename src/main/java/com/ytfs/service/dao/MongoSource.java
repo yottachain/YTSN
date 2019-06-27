@@ -15,6 +15,7 @@ import org.bson.conversions.Bson;
 public class MongoSource {
 
     private static final String DATABASENAME = "metabase";
+
     //自增编号生成器
     private static final String SEQ_TABLE_NAME = "sequence";
     public static final int SEQ_UID_VAR = 0;
@@ -114,6 +115,11 @@ public class MongoSource {
     static MongoCollection<Document> getFileCollection() {
         newInstance();
         return source.file_collection;
+    }
+
+    public static MongoClient getMongoClient() {
+        newInstance();
+        return source.client;
     }
 
     public static void terminate() {

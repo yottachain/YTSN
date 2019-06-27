@@ -33,7 +33,7 @@ do
     fi 
 done < ytsn.conf
  
-mainclass="com.ytfs.service.ServiceWrapper"
+mainclass="com.ytfs.service.InitSuperNodeList"
 
 cmd="$java_cmd $java_opts -classpath $classpath $mainclass"
 echo "cmd: $cmd"
