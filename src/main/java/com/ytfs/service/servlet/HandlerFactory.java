@@ -32,7 +32,7 @@ public class HandlerFactory {
     public static Handler getHandler(Object command) throws Throwable {
         Class cls = classMap.get(command.getClass());
         if (cls == null) {
-            throw new IOException("Invalid instruction.");
+            throw new IOException("Invalid instruction:" + command.getClass().getName());
         } else {
             Handler handler = (Handler) cls.getConstructor().newInstance();
             handler.setRequest(command);

@@ -12,7 +12,7 @@ import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 
 public class ObjectAccessor {
-    
+
     public static boolean listNewObject() throws Throwable {
         long curtime = System.currentTimeMillis();
         Document sort = new Document("_id", 1);
@@ -27,15 +27,16 @@ public class ObjectAccessor {
             }
         }
         for (Document doc : needDelete) {
+            int userid = doc.getInteger("userid");
             long cost = doc.getLong("costPerCycle");
-            EOSClient.setUserFee(cost, doc.getString("username"));
-            UserAccessor.updateUser(doc.getInteger("userid"),cost);
+            EOSClient.setUserFee(cost, doc.getString("username"), userid);
+            UserAccessor.updateUser(userid, cost);
             Bson filter = Filters.eq("_id", doc.getObjectId("_id"));
             MongoSource.getObjectNewCollection().deleteOne(filter);
         }
         return needDelete.size() > 0;
     }
-    
+
     public static void addNewObject(ObjectId id, long costPerCycle, int userid, String username) {
         Document update = new Document("_id", id);
         update.append("costPerCycle", costPerCycle);
@@ -44,7 +45,7 @@ public class ObjectAccessor {
         update.append("username", username);
         MongoSource.getObjectNewCollection().insertOne(update);
     }
-    
+
     public static void incObjectNLINK(ObjectMeta meta) {
         if (meta.getNLINK() >= 255) {
             return;
@@ -53,7 +54,7 @@ public class ObjectAccessor {
         Document update = new Document("$inc", new Document("NLINK", 1));
         MongoSource.getObjectCollection().updateOne(filter, update);
     }
-    
+
     public static void getObjectAndUpdateNLINK(ObjectMeta meta) {
         Bson filter = Filters.eq("_id", new Binary(meta.getId()));
         Document data = new Document("NLINK", 1);
@@ -67,7 +68,7 @@ public class ObjectAccessor {
             meta.setUsedspace(doc.getLong("usedspace"));
         }
     }
-    
+
     public static void decObjectNLINK(ObjectMeta meta) {
         if (meta.getNLINK() >= 255) {
             return;
@@ -76,7 +77,7 @@ public class ObjectAccessor {
         Document update = new Document("$inc", new Document("NLINK", -1));
         MongoSource.getObjectCollection().updateOne(filter, update);
     }
-    
+
     public static void insertOrUpdate(ObjectMeta meta) {
         Bson filter = Filters.eq("VNU", meta.getVNU());
         Document fields = new Document("length", 1);
@@ -92,7 +93,7 @@ public class ObjectAccessor {
             }
         }
     }
-    
+
     public static boolean isObjectExists(ObjectMeta meta) {
         Bson filter = Filters.eq("_id", new Binary(meta.getId()));
         Document fields = new Document("NLINK", 1);
@@ -108,7 +109,7 @@ public class ObjectAccessor {
             return true;
         }
     }
-    
+
     public static void updateObject(ObjectId VNU, byte[] blocks, long usedSpace) {
         Bson filter = Filters.eq("VNU", VNU);
         Document data = new Document("blocks", new Binary(blocks));
@@ -116,7 +117,7 @@ public class ObjectAccessor {
         update.append("$inc", new Document("usedspace", usedSpace));
         MongoSource.getObjectCollection().updateOne(filter, update);
     }
-    
+
     public static ObjectMeta getObject(ObjectId VNU) {
         Bson filter = Filters.eq("VNU", VNU);
         Document doc = MongoSource.getObjectCollection().find(filter).first();
@@ -126,7 +127,7 @@ public class ObjectAccessor {
             return new ObjectMeta(doc);
         }
     }
-    
+
     public static ObjectMeta getObject(int uid, byte[] VHW) {
         ObjectMeta meta = new ObjectMeta(uid, VHW);
         Bson filter = Filters.eq("_id", new Binary(meta.getId()));
