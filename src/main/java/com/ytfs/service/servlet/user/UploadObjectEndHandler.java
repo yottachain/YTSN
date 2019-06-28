@@ -14,9 +14,9 @@ import com.ytfs.service.servlet.Handler;
 import org.apache.log4j.Logger;
 
 public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
-
+    
     private static final Logger LOG = Logger.getLogger(UploadObjectEndHandler.class);
-
+    
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
@@ -24,7 +24,7 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         ObjectMeta meta = new ObjectMeta(userid, request.getVHW());
         ObjectAccessor.getObjectAndUpdateNLINK(meta);
         long usedspace = meta.getUsedspace() + ServerConfig.PCM;
-        EOSClient.addUsedSpace(usedspace, user.getUsername(),userid);
+        EOSClient.addUsedSpace(usedspace, user.getUsername(), userid);
         long count = usedspace / UserConfig.Default_Shard_Size
                 + (usedspace % UserConfig.Default_Shard_Size > 0 ? 1 : 0);
         long costPerCycle = count * ServerConfig.unitcost;
@@ -36,6 +36,7 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         resp.setFirstCost(firstCost);
         resp.setSignArg(signarg);
         resp.setUserid(userid);
+        resp.setContractAccount(ServerConfig.contractAccount);
         LOG.info("Upload object " + user.getUserID() + "/" + meta.getVNU() + " OK.");
         return resp;
     }

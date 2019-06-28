@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.user;
 
+import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.eos.EOSRequest;
 import com.ytfs.service.packet.user.PreRegUserReq;
 import com.ytfs.service.packet.user.PreRegUserResp;
@@ -12,6 +13,7 @@ public class PreRegUserHandler extends Handler<PreRegUserReq> {
         byte[] signarg = EOSRequest.createEosClient(this.getPublicKey());
         PreRegUserResp resp = new PreRegUserResp();
         resp.setSignArg(signarg);
+        resp.setContractAccount(ServerConfig.contractAccount);
         return resp;
     }
 }
