@@ -47,7 +47,7 @@ public class ServerInitor {
             LogConfigurator.configPath(path == null ? null : new File(path), level);
             load();
             List<ServerAddress> addrs = MongoSource.getServerAddress();
-            NodeManager.start(addrs, eosURI, BPAccount, BPPriKey, contractAccount, superNodeID);
+            NodeManager.start(addrs, eosURI, BPAccount, BPPriKey, contractAccount, contractOwnerD, superNodeID);
             NodeManager.getSuperNode();
             privateKey = YottaNodeMgmt.getSuperNodePrivateKey(superNodeID);
             SNDSP = Base58.decode(privateKey);
@@ -128,6 +128,10 @@ public class ServerInitor {
         contractAccount = p.getProperty("contractAccount");
         if (contractAccount == null || contractAccount.trim().isEmpty()) {
             throw new IOException("The 'contractAccount' parameter is not configured.");
+        }
+        contractOwnerD = p.getProperty("contractOwnerD");
+        if (contractOwnerD == null || contractOwnerD.trim().isEmpty()) {
+            throw new IOException("The 'contractOwnerD' parameter is not configured.");
         }
     }
 }
