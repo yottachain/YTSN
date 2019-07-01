@@ -5,6 +5,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.*;
 import com.mongodb.client.model.*;
 import com.ytfs.common.conf.ServerConfig;
+import com.ytfs.common.node.SuperNodeList;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
@@ -51,6 +52,11 @@ public class MongoSource {
     public static List<ServerAddress> getServerAddress() {
         newInstance();
         return source.serverAddress;
+    }
+
+    public static MongoSource getMongoSource() {
+        newInstance();
+        return source;
     }
 
     private static void newInstance() {
@@ -152,7 +158,6 @@ public class MongoSource {
             Properties p = new Properties();
             p.load(inStream);
             init(p);
-            init_seq_collection();
             init_user_collection();
             init_object_collection();
             init_block_collection();
@@ -230,7 +235,7 @@ public class MongoSource {
         database = client.getDatabase(DATABASENAME);
     }
 
-    private void init_seq_collection() {
+    public void init_seq_collection(int sncount) {
         seq_collection = database.getCollection(SEQ_TABLE_NAME);
         Bson bson = Filters.eq("_id", SEQ_UID_VAR); //为生成userID 
         Document doc = seq_collection.find(bson).first();
@@ -239,6 +244,19 @@ public class MongoSource {
             doc.append("_id", SEQ_UID_VAR);
             doc.append("seq", (int) ServerConfig.superNodeID);
             seq_collection.insertOne(doc);
+            LOG.info("User sequence:" + ServerConfig.superNodeID);
+        } else {
+            int curid = doc.getInteger("seq");
+            int mod = curid % sncount;
+            if (mod != ServerConfig.superNodeID) {
+                int inc = ServerConfig.superNodeID > mod ? (ServerConfig.superNodeID - mod)
+                        : (sncount - mod + ServerConfig.superNodeID);
+                Document update = new Document("$inc", new Document("seq", (int) inc));
+                seq_collection.updateOne(bson, update);
+                LOG.warn("User sequence reset:" + curid + "-->" + (inc + curid));
+            } else {
+                LOG.info("User sequence:" + curid);
+            }
         }
         bson = Filters.eq("_id", SEQ_BLKID_VAR); //为生成blockID
         doc = seq_collection.find(bson).first();

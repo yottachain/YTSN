@@ -1,5 +1,7 @@
 package com.ytfs.service.dao;
 
+import com.ytfs.common.LogConfigurator;
+import com.ytfs.common.conf.ServerConfig;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import java.util.List;
@@ -8,13 +10,16 @@ import org.bson.types.ObjectId;
 public class Test {
 
     public static void main(String[] a) throws Exception {
+        
 
-        //LogConfigurator.configPath();
+        LogConfigurator.configPath(null,"EDBUG");
+        ServerConfig.superNodeID=3;
+        MongoSource.getMongoSource().init_seq_collection(21);
         //UserAccessor.total();
         //testRedis();
         //testSeq();     
         //testObjectLs();
-        testFile();
+        //testFile();
     }
 
     private static void testFile() throws Exception {

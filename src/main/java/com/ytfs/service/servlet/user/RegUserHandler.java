@@ -39,6 +39,7 @@ public class RegUserHandler extends Handler<RegUserReq> {
             resp = (QueryUserResp) P2PUtils.requestBP(req, sn);
         }
         req.setUserId(resp.getUserId());
+        LOG.info("[" + request.getUsername() + "] is registered @ SN-" + sn.getId() + ",userID:" + resp.getUserId());
         Object[] obs = SNSynchronizer.request(req, sn.getId());
         for (Object o : obs) {
             if (o != null) {
@@ -51,7 +52,7 @@ public class RegUserHandler extends Handler<RegUserReq> {
         RegUserResp regUserResp = new RegUserResp();
         SuperNode ressn = SuperNodeList.getUserSuperNode(resp.getUserId());
         if (ressn.getId() != sn.getId()) {
-            LOG.error("SuperID inconsistency.");
+            LOG.error("SuperID inconsistency[" + ressn.getId() + "!=" + sn.getId() + "]");
             return new ServiceException(SERVER_ERROR);
         }
         regUserResp.setSuperNodeAddrs(ressn.getAddrs());

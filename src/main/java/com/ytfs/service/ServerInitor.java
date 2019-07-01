@@ -48,10 +48,11 @@ public class ServerInitor {
             load();
             List<ServerAddress> addrs = MongoSource.getServerAddress();
             NodeManager.start(addrs, eosURI, BPAccount, BPPriKey, contractAccount, contractOwnerD, superNodeID);
-            NodeManager.getSuperNode();
             privateKey = YottaNodeMgmt.getSuperNodePrivateKey(superNodeID);
             SNDSP = Base58.decode(privateKey);
             SuperNodeList.isServer = true;
+            int sncount = SuperNodeList.getSuperNodeCount();
+            MongoSource.getMongoSource().init_seq_collection(sncount);
         } catch (NodeMgmtException | IOException e) {
             LOG.error("Init err.", e);
             System.exit(0);
