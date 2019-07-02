@@ -37,6 +37,10 @@ public class CacheAccessor {
         return cache;
     }
 
+    public static void delUploadObjectCache(ObjectId VNU) {
+        uploadObjects.invalidate(VNU);
+    }
+
     private static final Cache<Long, UploadBlockCache> uploadBlocks = CacheBuilder.newBuilder()
             .expireAfterWrite(EXPIRED_TIME, TimeUnit.MINUTES)
             .expireAfterAccess(EXPIRED_TIME, TimeUnit.MINUTES)

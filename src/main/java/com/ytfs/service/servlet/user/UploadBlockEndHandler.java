@@ -65,6 +65,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             throw r;
         }
         sendDNI(ls);
+        CacheAccessor.delUploadBlockCache(request.getVBI());
         LOG.info("Upload block:/" + cache.getVNU() + "/" + request.getVBI() + " OK!");
         return new VoidResp();
     }

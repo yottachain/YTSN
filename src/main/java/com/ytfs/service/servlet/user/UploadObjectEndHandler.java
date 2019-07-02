@@ -10,6 +10,7 @@ import com.ytfs.service.dao.UserAccessor;
 import com.ytfs.common.eos.EOSRequest;
 import com.ytfs.service.packet.UploadObjectEndReq;
 import com.ytfs.service.packet.UploadObjectEndResp;
+import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.Handler;
 import org.apache.log4j.Logger;
 
@@ -38,6 +39,7 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         resp.setUserid(userid);
         resp.setContractAccount(ServerConfig.contractAccount);
         LOG.info("Upload object " + user.getUserID() + "/" + meta.getVNU() + " OK.");
+        CacheAccessor.delUploadObjectCache(meta.getVNU());
         return resp;
     }
 }
