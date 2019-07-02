@@ -1,5 +1,7 @@
 package com.ytfs.service.servlet.bp;
 
+import com.ytfs.common.ServiceErrorCode;
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.packet.bp.AddDNIReq;
 import com.ytfs.service.servlet.Handler;
@@ -14,6 +16,12 @@ public class AddDNIHandler extends Handler<AddDNIReq> {
 
     @Override
     public Object handle() throws Throwable {
+        try {
+            getSuperNodeId();
+        } catch (NodeMgmtException e) {
+            LOG.error("Invalid super node pubkey:" + this.getPublicKey());
+            return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
+        }
         try {
             YottaNodeMgmt.addDNI(request.getNodeid(), request.getDni());
         } catch (NodeMgmtException ne) {

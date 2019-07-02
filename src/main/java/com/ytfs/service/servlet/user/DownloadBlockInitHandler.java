@@ -19,6 +19,7 @@ public class DownloadBlockInitHandler extends Handler<DownloadBlockInitReq> {
 
     @Override
     public Object handle() throws Throwable {
+        this.getUser();
         int vnf = BlockAccessor.getBlockMetaVNF(request.getVBI());
         LOG.info("Download block:" + request.getVBI() + " ,VNF " + vnf);
         if (vnf == 0) {//存储在数据库

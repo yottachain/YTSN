@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.bp;
 
+import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.INVALID_UPLOAD_ID;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.dao.ObjectAccessor;
@@ -11,6 +12,7 @@ import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.servlet.ReferCache;
+import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -37,6 +39,12 @@ public class SaveObjectMetaHandler extends Handler<SaveObjectMetaReq> {
 
     @Override
     public Object handle() throws Throwable {
+        try {
+            getSuperNodeId();
+        } catch (NodeMgmtException e) {
+            LOG.error("Invalid super node pubkey:" + this.getPublicKey());
+            return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
+        }
         return saveObjectMeta(request);
     }
 

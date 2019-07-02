@@ -70,6 +70,7 @@ public class SNSynchronizer implements Runnable {
         try {
             if (node.getId() == ServerConfig.superNodeID) {
                 Handler handler = HandlerFactory.getHandler(req);
+                handler.setPubkey(node.getPubkey());               
                 resp = handler.handle();
             } else {
                 resp = P2PUtils.requestBP(req, node);

@@ -31,10 +31,14 @@ public abstract class Handler<T> {
     protected final User getUser() throws ServiceException {
         User user = UserCache.getUser(Base58.decode(pubkey));
         if (user == null) {
-            LOG.warn("Invalid public key:" + pubkey);
+            LOG.warn("Invalid user public key:" + pubkey);
             throw new ServiceException(ServiceErrorCode.INVALID_USER_ID);
         }
         return user;
+    }
+
+    protected final int getSuperNodeId() throws NodeMgmtException {
+        return NodeCache.getSuperNodeId(pubkey);
     }
 
     protected final int getNodeId() throws NodeMgmtException {
