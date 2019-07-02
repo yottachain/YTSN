@@ -27,6 +27,7 @@ import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.bp.DNISender;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -112,49 +113,45 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         return meta;
     }
 
-    private List<Document> verify(UploadBlockEndReq req, Map<Integer, UploadShardCache> caches, int shardCount, long vbi) throws ServiceException {
-        try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
-            byte[] vhf = null;
-            List<Document> ls = new ArrayList();
-            for (int ii = 0; ii < shardCount; ii++) {
-                UploadShardCache cache = caches.get(ii);
-                if (cache == null || !(cache.getRes() == UploadShardRes.RES_OK
-                        || cache.getRes() == UploadShardRes.RES_VNF_EXISTS)) {
-                    throw new ServiceException(INVALID_SHARD);
-                }
-                if (req.isRsShard()) {
+    private List<Document> verify(UploadBlockEndReq req, Map<Integer, UploadShardCache> caches, int shardCount, long vbi) throws ServiceException, NoSuchAlgorithmException {
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        byte[] vhf = null;
+        List<Document> ls = new ArrayList();
+        for (int ii = 0; ii < shardCount; ii++) {
+            UploadShardCache cache = caches.get(ii);
+            if (cache == null || !(cache.getRes() == UploadShardRes.RES_OK
+                    || cache.getRes() == UploadShardRes.RES_VNF_EXISTS)) {
+                throw new ServiceException(INVALID_SHARD);
+            }
+            if (req.isRsShard()) {
+                md5.update(cache.getVHF());
+            } else {
+                if (ii == 0) {
                     md5.update(cache.getVHF());
+                    vhf = cache.getVHF();
                 } else {
-                    if (ii == 0) {
-                        md5.update(cache.getVHF());
-                        vhf = cache.getVHF();
-                    } else {
-                        if (!Arrays.equals(cache.getVHF(), vhf)) {
-                            throw new ServiceException(INVALID_SHARD);
-                        }
+                    if (!Arrays.equals(cache.getVHF(), vhf)) {
+                        throw new ServiceException(INVALID_SHARD);
                     }
                 }
-                ShardMeta meta = new ShardMeta(vbi + ii, cache.getNodeid(), cache.getVHF());
-                ls.add(meta.toDocument());
             }
-            byte[] vhb = md5.digest();
-            if (!Arrays.equals(vhb, req.getVHB())) {
-                throw new ServiceException(INVALID_VHB);
-            }
-            if (req.getVHP() == null || req.getVHP().length != 32) {
-                throw new ServiceException(INVALID_VHP);
-            }
-            if (req.getKEU() == null || req.getKEU().length != 32) {
-                throw new ServiceException(INVALID_KEU);
-            }
-            if (req.getKED() == null || req.getKED().length != 32) {
-                throw new ServiceException(INVALID_KED);
-            }
-            return ls;
-        } catch (Exception r) {
-            throw new IllegalArgumentException(r.getMessage());
+            ShardMeta meta = new ShardMeta(vbi + ii, cache.getNodeid(), cache.getVHF());
+            ls.add(meta.toDocument());
         }
+        byte[] vhb = md5.digest();
+        if (!Arrays.equals(vhb, req.getVHB())) {
+            throw new ServiceException(INVALID_VHB);
+        }
+        if (req.getVHP() == null || req.getVHP().length != 32) {
+            throw new ServiceException(INVALID_VHP);
+        }
+        if (req.getKEU() == null || req.getKEU().length != 32) {
+            throw new ServiceException(INVALID_KEU);
+        }
+        if (req.getKED() == null || req.getKED().length != 32) {
+            throw new ServiceException(INVALID_KED);
+        }
+        return ls;
     }
 
 }
