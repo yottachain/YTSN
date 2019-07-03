@@ -26,6 +26,7 @@ import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.bp.DNISender;
+import io.yottachain.p2phost.utils.Base58;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -120,8 +121,12 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         List<Document> ls = new ArrayList();
         for (int ii = 0; ii < shardCount; ii++) {
             UploadShardCache cache = caches.get(ii);
-            if (cache == null || !(cache.getRes() == UploadShardRes.RES_OK
-                    || cache.getRes() == UploadShardRes.RES_VNF_EXISTS)) {
+            if (cache == null) {
+                LOG.error("Verify ERR:" + request.getVBI() + " cache expired");
+                throw new ServiceException(INVALID_SHARD);
+            }
+            if (!(cache.getRes() == UploadShardRes.RES_OK || cache.getRes() == UploadShardRes.RES_VNF_EXISTS)) {
+                LOG.error("Verify ERR:" + request.getVBI() + "/" + ii + " RES:" + cache.getRes());
                 throw new ServiceException(INVALID_SHARD);
             }
             if (req.isRsShard()) {
@@ -132,6 +137,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
                     vhf = cache.getVHF();
                 } else {
                     if (!Arrays.equals(cache.getVHF(), vhf)) {
+                        LOG.error("Verify ERR:" + request.getVBI() + "/" + ii + " HASH:" + Base58.encode(cache.getVHF()));
                         throw new ServiceException(INVALID_SHARD);
                     }
                 }

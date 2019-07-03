@@ -30,9 +30,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
-    
+
     private static final Logger LOG = Logger.getLogger(UploadBlockInitHandler.class);
-    
+
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
@@ -107,9 +107,10 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
             UploadBlockCache cache = new UploadBlockCache(nodes, req.getShardCount(), req.getVNU());
             cache.setUserKey(userkey);
             CacheAccessor.addUploadBlockCache(blockid, cache);
+            LOG.info("Create block cache:" + request.getVNU() + "/" + request.getId() + "/" + blockid);
         }
     }
-    
+
     private void setNodes(UploadBlockInitResp resp, Node[] ns, long VBI) throws NodeMgmtException {
         resp.setVBI(VBI);
         ShardNode[] nodes = new ShardNode[ns.length];
