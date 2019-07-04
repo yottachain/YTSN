@@ -35,7 +35,7 @@ public class Sequence {
      * @param inc
      * @return
      */
-    public static int getSequence(int inc) {
+    private static int getSequence(int inc) {
         Bson filter = Filters.eq("_id", SEQ_BLKID_VAR);
         Document update = new Document("$inc", new Document("seq", (int) inc));
         Document doc = MongoSource.getSeqCollection().findOneAndUpdate(filter, update);

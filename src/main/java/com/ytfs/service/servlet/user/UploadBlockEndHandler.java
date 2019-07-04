@@ -122,7 +122,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         for (int ii = 0; ii < shardCount; ii++) {
             UploadShardCache cache = caches.get(ii);
             if (cache == null) {
-                LOG.error("Verify ERR:" + request.getVBI() + " cache expired");
+                LOG.error("Verify ERR:" + request.getVBI() + "/" + ii + " not Uploaded");
                 throw new ServiceException(INVALID_SHARD);
             }
             if (!(cache.getRes() == UploadShardRes.RES_OK || cache.getRes() == UploadShardRes.RES_VNF_EXISTS)) {
