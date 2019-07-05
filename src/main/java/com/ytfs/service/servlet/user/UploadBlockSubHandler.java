@@ -32,6 +32,7 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
         LOG.info("Upload block " + user.getUserID() + "/" + cache.getVNU() + ",Err count:" + ress.length + ",retry...");
         List<UploadShardRes> fails = new ArrayList();
         Map<Integer, UploadShardCache> caches = cache.getShardCaches();
+        List<Integer> errid = new ArrayList();
         for (UploadShardRes res : ress) {
             if (res.getRES() == UploadShardRes.RES_OK) {
                 continue;
@@ -43,6 +44,9 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
                         //NodeManager.punishNode(res.getNODEID());
                     }
                 }
+                if (!errid.contains(res.getNODEID())) {
+                    errid.add(res.getNODEID());
+                }
                 fails.add(res);
             } else {
                 if (ca.getRes() == UploadShardRes.RES_OK) {
@@ -52,18 +56,27 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
                     //NodeManager.noSpace(res.getNODEID());
                 }
                 fails.add(res);
+                if (!errid.contains(res.getNODEID())) {
+                    errid.add(res.getNODEID());
+                }
             }
         }
         UploadBlockSubResp resp = new UploadBlockSubResp();
         if (fails.isEmpty()) {
             return resp;
         }
-        Node[] nodes = NodeManager.getNode(fails.size());
+        int[] errids = new int[errid.size()];
+        String erridstr = null;
+        for (int ii = 0; ii < errid.size(); ii++) {
+            errids[ii] = errid.get(ii);
+            erridstr = erridstr == null ? ("ERRIDS:" + errids[ii]) : ("," + errids[ii]);
+        }
+        Node[] nodes = NodeManager.getNode(fails.size(), errids);
         if (nodes.length != fails.size()) {
             LOG.warn("No enough data nodes:" + nodes.length + "/" + fails.size());
             throw new ServiceException(NO_ENOUGH_NODE);
         } else {
-            LOG.info("Assigned node:" + getAssignedNodeIDs(nodes));
+            LOG.info("Assigned node:" + getAssignedNodeIDs(nodes) + (erridstr == null ? "" : erridstr));
         }
         setNodes(resp, nodes, fails, request.getVBI(), cache);
         return resp;

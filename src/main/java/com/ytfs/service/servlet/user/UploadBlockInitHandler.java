@@ -97,7 +97,7 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
      */
     private void distributeNode(UploadBlockInitReq req, UploadBlockInitResp resp, byte[] userkey) throws Exception {
         if (req.getShardCount() > 0) {//需要数据库
-            Node[] nodes = NodeManager.getNode(req.getShardCount());
+            Node[] nodes = NodeManager.getNode(req.getShardCount(),new int[0]);
             if (nodes.length != req.getShardCount()) {
                 LOG.warn("No enough data nodes:" + nodes.length + "/" + req.getShardCount());
                 throw new ServiceException(NO_ENOUGH_NODE);
