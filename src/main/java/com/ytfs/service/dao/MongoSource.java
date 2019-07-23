@@ -122,6 +122,11 @@ public class MongoSource {
         return source.file_collection;
     }
 
+    static Proxy getProxy() {
+        newInstance();
+        return source.proxy;
+    }
+
     public static MongoClient getMongoClient() {
         newInstance();
         return source.client;
@@ -137,6 +142,7 @@ public class MongoSource {
     }
 
     private static final Logger LOG = Logger.getLogger(MongoSource.class);
+    private Proxy proxy = null;
     private MongoClient client = null;
     private MongoDatabase database;
     private MongoCollection<Document> seq_collection;
@@ -187,6 +193,10 @@ public class MongoSource {
         String hostlist = p.getProperty("serverlist");
         if (hostlist == null || hostlist.trim().isEmpty()) {
             throw new MongoException("No serverlist is specified in the MongoSource.properties file.");
+        }
+        String proxyuri = p.getProperty("proxy");
+        if (!(proxyuri == null || proxyuri.trim().isEmpty())) {
+            proxy = new Proxy(proxyuri.trim());
         }
         String[] hosts = hostlist.trim().split(",");
         List<ServerAddress> addrs = new ArrayList<>();

@@ -45,11 +45,18 @@ public class SendSpotCheckTask extends Thread {
         } catch (InterruptedException ex) {
             return;
         }
+        List<Node> nlist = null;
         while (!exit) {
             try {
                 if (sc == null || sc.isEmpty()) {
                     try {
                         sc = YottaNodeMgmt.getSpotCheckList();
+                        if (!(sc == null || sc.isEmpty())) {
+                            nlist = YottaNodeMgmt.getSTNodes(sc.size());
+                            if (nlist.size() != sc.size()) {
+                                throw new Exception("getSTNodes ERR!");
+                            }
+                        }
                     } catch (Throwable t) {
                         LOG.error("Get SpotCheckList ERR:" + t.getMessage());
                         sleep(60000);
@@ -59,8 +66,9 @@ public class SendSpotCheckTask extends Thread {
                 }
                 if (!sc.isEmpty()) {
                     SpotCheckList scheck = sc.get(0);
-                    sendTask(scheck);
+                    sendTask(scheck, nlist.get(0));
                     sc.remove(scheck);
+                    nlist.remove(0);
                 }
                 if (sc.isEmpty()) {
                     sleep(inteval);
@@ -78,7 +86,7 @@ public class SendSpotCheckTask extends Thread {
         }
     }
 
-    private void sendTask(SpotCheckList scheck) throws NodeMgmtException, ServiceException {
+    private void sendTask(SpotCheckList scheck, Node n) throws NodeMgmtException, ServiceException {
         SpotCheckTaskList mytask = new SpotCheckTaskList();
         mytask.setSnid(ServerConfig.superNodeID);
         mytask.setTaskId(scheck.getTaskID());
@@ -99,7 +107,6 @@ public class SendSpotCheckTask extends Thread {
             }
             mytask.getTaskList().add(myst);
         }
-        Node n = YottaNodeMgmt.getSTNode();
         LOG.info("Send task [" + mytask.getTaskId() + "] to " + P2PUtils.getAddrString(n.getAddrs()));
         P2PUtils.requestNode(mytask, n);
     }

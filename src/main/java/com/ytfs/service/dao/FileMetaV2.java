@@ -11,6 +11,7 @@ public class FileMetaV2 {
     private ObjectId bucketId;
     private String fileName;
     private ObjectId versionId;//对应上传文件ID:VNU
+    private boolean latest;
     private byte[] meta;
     private byte[] acl;
 
@@ -151,6 +152,20 @@ public class FileMetaV2 {
      */
     public void setAcl(byte[] acl) {
         this.acl = acl;
+    }
+
+    /**
+     * @return the latest
+     */
+    public boolean isLatest() {
+        return latest;
+    }
+
+    /**
+     * @param latest the latest to set
+     */
+    public void setLatest(boolean latest) {
+        this.latest = latest;
     }
 
 }

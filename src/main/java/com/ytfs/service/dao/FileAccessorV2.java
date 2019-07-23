@@ -108,6 +108,7 @@ public class FileAccessorV2 {
             FileMetaV2 res = new FileMetaV2(doc);
             res.setBucketId(bucketid);
             res.setFileName(filename);
+            res.setLatest(true);
             return res;
         }
     }
@@ -219,10 +220,13 @@ public class FileAccessorV2 {
                 : MongoSource.getFileCollection().find(filter).projection(fields).sort(sort).limit(limit);
         for (Document doc : it) {
             List ls = (List) doc.get("version");
+            int vercount = 0, versize = ls.size();
             for (Object obj : ls) {
+                vercount++;
                 Document verdoc = (Document) obj;
                 if (!toFindNextVersionId) {
                     FileMetaV2 meta = new FileMetaV2(doc, verdoc);
+                    meta.setLatest(vercount == versize);
                     res.add(meta);
                     count++;
                 } else {

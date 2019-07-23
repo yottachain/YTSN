@@ -24,13 +24,13 @@ public class SpotCheckRepHandler extends Handler<SpotCheckStatus> {
         }
         try {
             String taskid = request.getTaskId();
-            LOG.info("SpotCheckTaskStatus:" + taskid + "," + request.getPercent());
+            LOG.info("SpotCheckTaskStatus:" + taskid);
             List<Integer> ls = request.getInvalidNodeList();
             int[] nodes = new int[ls.size()];
             for (int ii = 0; ii < nodes.length; ii++) {
                 nodes[ii] = ls.get(ii);
             }
-            YottaNodeMgmt.UpdateTaskStatus(taskid, request.getPercent(), nodes);
+            YottaNodeMgmt.updateTaskStatus(taskid, nodes);
         } catch (NodeMgmtException e) {
             LOG.error("", e);
         }
