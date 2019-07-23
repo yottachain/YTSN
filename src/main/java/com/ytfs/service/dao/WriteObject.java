@@ -1,15 +1,20 @@
 package com.ytfs.service.dao;
 
+import io.yottachain.p2phost.utils.Base58;
 import java.util.ArrayList;
 import java.util.List;
 
 public class WriteObject {
-    
-    
-    
 
-    private String opName;
+    private int opName;
     private List<String> params;
+
+    public void addParam(byte[] param) {
+        if (params == null) {
+            params = new ArrayList();
+        }
+        params.add(Base58.encode(param));
+    }
 
     public void addParam(String param) {
         if (params == null) {
@@ -21,14 +26,14 @@ public class WriteObject {
     /**
      * @return the opName
      */
-    public String getOpName() {
+    public int getOpName() {
         return opName;
     }
 
     /**
      * @param opName the opName to set
      */
-    public void setOpName(String opName) {
+    public void setOpName(int opName) {
         this.opName = opName;
     }
 
