@@ -1,26 +1,41 @@
 package com.ytfs.service.dao;
 
-import io.yottachain.p2phost.utils.Base58;
+import com.ytfs.common.Function;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 public class WriteObject {
 
     private int opName;
-    private List<String> params;
+    private List<byte[]> params;
+
+    public void addParam(long param) {
+        if (params == null) {
+            params = new ArrayList();
+        }
+        params.add(Function.long2bytes(param));
+    }
+
+    public void addParam(int param) {
+        if (params == null) {
+            params = new ArrayList();
+        }
+        params.add(Function.int2bytes(param));
+    }
 
     public void addParam(byte[] param) {
         if (params == null) {
             params = new ArrayList();
         }
-        params.add(Base58.encode(param));
+        params.add(param);
     }
 
     public void addParam(String param) {
         if (params == null) {
             params = new ArrayList();
         }
-        params.add(param);
+        params.add(param.getBytes(Charset.forName("UTF-8")));
     }
 
     /**
@@ -40,14 +55,14 @@ public class WriteObject {
     /**
      * @return the params
      */
-    public List<String> getParams() {
+    public List<byte[]> getParams() {
         return params;
     }
 
     /**
      * @param params the params to set
      */
-    public void setParams(List<String> params) {
+    public void setParams(List<byte[]> params) {
         this.params = params;
     }
 

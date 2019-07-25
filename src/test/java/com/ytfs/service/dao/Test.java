@@ -2,23 +2,12 @@ package com.ytfs.service.dao;
 
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import org.bson.types.ObjectId;
 
 public class Test {
 
     public static void main(String[] a) throws Exception {
-        Date date = new Date();
-
-        System.out.println(date.toString());
-              //SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-        sdf1.setTimeZone(TimeZone.getTimeZone("UTC"));
-        String str = sdf1.format(date);
-        System.out.println(str);
 
         // LogConfigurator.configPath(null,"EDBUG");
         //ServerConfig.superNodeID=3;

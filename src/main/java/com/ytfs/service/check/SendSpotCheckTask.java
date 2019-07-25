@@ -1,5 +1,6 @@
 package com.ytfs.service.check;
 
+import com.ytfs.common.SerializationUtil;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.net.P2PUtils;
@@ -9,6 +10,7 @@ import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SpotCheckList;
 import io.yottachain.nodemgmt.core.vo.SpotCheckTask;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.codec.binary.Base64;
@@ -17,10 +19,8 @@ import org.apache.log4j.Logger;
 public class SendSpotCheckTask extends Thread {
 
     private static final Logger LOG = Logger.getLogger(SendSpotCheckTask.class);
-    private List<SpotCheckList> sc;
-    private boolean exit = false;
-    private final long inteval = 1000 * 60 * 60;
 
+    private boolean exit = false;
     private static SendSpotCheckTask instance;
 
     public static synchronized void startUp() {
@@ -40,43 +40,44 @@ public class SendSpotCheckTask extends Thread {
     @Override
     public void run() {
         LOG.info("SpotCheckTask distributor startup...");
-        try {
-            sleep(1000 * 60);
-        } catch (InterruptedException ex) {
-            return;
-        }
         List<Node> nlist = null;
+        List<SpotCheckList> sc = null;
         while (!exit) {
             try {
-                if (sc == null || sc.isEmpty()) {
-                    try {
+                long time = System.currentTimeMillis();
+                long min = time % 3600000L;
+                try {
+                 //   if (min < 60000 * 3) {
                         sc = YottaNodeMgmt.getSpotCheckList();
-                        if (!(sc == null || sc.isEmpty())) {
+                        if (!sc.isEmpty()) {
                             nlist = YottaNodeMgmt.getSTNodes(sc.size());
                             if (nlist.size() != sc.size()) {
-                                throw new Exception("getSTNodes ERR!");
+                                throw new Exception("getSTNodes return count:" + nlist.size() + "!=" + sc.size());
                             }
                         }
-                    } catch (Throwable t) {
-                        LOG.error("Get SpotCheckList ERR:" + t.getMessage());
-                        sleep(60000);
-                        continue;
-                    }
-                    LOG.info("Query returns " + sc.size() + " tasks.");
+                        LOG.info("Query returns " + sc.size() + " tasks.");
+                 //   }
+                } catch (Throwable t) {
+                    LOG.error("Get SpotCheckList ERR:" + t.getMessage());
+                    sleep(30000);
+                    continue;
                 }
                 if (!sc.isEmpty()) {
-                    SpotCheckList scheck = sc.get(0);
-                    sendTask(scheck, nlist.get(0));
-                    sc.remove(scheck);
-                    nlist.remove(0);
+                    for (SpotCheckList scheck : sc) {
+                        try {
+                            sendTask(scheck, nlist.remove(0));
+                        } catch (Throwable t) {
+                            LOG.error("Send task [" + scheck.getTaskID() + "] err: " + t.getMessage());
+                        }
+                    }
+                    sc.clear();
+                    sleep(60000 * 3);
                 }
-                if (sc.isEmpty()) {
-                    sleep(inteval);
-                }
+               // sleep(30000);
+                sleep(60000*20);
             } catch (InterruptedException ex) {
                 break;
             } catch (Throwable ne) {
-                LOG.error("ERR:", ne);
                 try {
                     sleep(15000);
                 } catch (InterruptedException ex) {
@@ -107,7 +108,15 @@ public class SendSpotCheckTask extends Thread {
             }
             mytask.getTaskList().add(myst);
         }
-        LOG.info("Send task [" + mytask.getTaskId() + "] to " + P2PUtils.getAddrString(n.getAddrs()));
+        try {
+            byte[] data = SerializationUtil.serialize(mytask);
+            FileOutputStream f = new FileOutputStream("/" + mytask.getTaskId() + ".dat."+n.getId());
+            f.write(data);
+            f.close();
+        } catch (Exception e) {
+        }
+        LOG.info("Send task [" + mytask.getTaskId() + "] to " + n.getId() + ":" + P2PUtils.getAddrString(n.getAddrs()));
         P2PUtils.requestNode(mytask, n);
+        LOG.info("Send task [" + mytask.getTaskId() + "] OK!");
     }
 }
