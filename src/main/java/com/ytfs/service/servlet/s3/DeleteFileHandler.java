@@ -6,6 +6,7 @@ import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.packet.s3.DeleteFileReq;
 import com.ytfs.service.servlet.Handler;
 import org.apache.log4j.Logger;
+import org.bson.types.ObjectId;
 
 import static com.ytfs.common.ServiceErrorCode.INVALID_OBJECT_NAME;
 
@@ -19,12 +20,17 @@ public class DeleteFileHandler extends Handler<DeleteFileReq> {
         LOG.info("Delete object:" + "/" + request.getBucketName() + "/" + request.getFileName());
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(),request.getMeta());
 
-        FileMeta fileMeta = FileAccessor.getFileMeta(meta.getBucketId(),request.getFileName());
+        FileMetaV2 fileMeta = FileAccessorV2.getFileMeta(meta.getBucketId(),request.getFileName());
         if(fileMeta == null) {
             throw new ServiceException(INVALID_OBJECT_NAME);
         }
+        ObjectId versionId = request.getVNU();
 
-        FileAccessor.deleteFileMeta(fileMeta);
+        if(versionId == null) {
+            FileAccessorV2.deleteFileMeta(fileMeta.getBucketId(),request.getFileName());
+        } else {
+            FileAccessorV2.deleteFileMeta(fileMeta.getBucketId(),request.getFileName(),versionId);
+        }
         return new VoidResp();
     }
 

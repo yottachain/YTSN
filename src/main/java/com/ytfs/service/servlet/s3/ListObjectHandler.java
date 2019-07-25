@@ -6,6 +6,7 @@ import com.ytfs.service.packet.s3.ListObjectResp;
 import com.ytfs.service.packet.s3.entities.FileMetaMsg;
 import com.ytfs.service.servlet.Handler;
 import org.apache.log4j.Logger;
+import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +21,10 @@ public class ListObjectHandler extends Handler<ListObjectReq> {
         LOG.info("LIST object:" + user.getUserID());
         int limit = request.getLimit();
         String prefix = request.getPrefix();
+        ObjectId nextVersionId = request.getNextVersionId();
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(),null);
         String fileName = request.getFileName();
-        LOG.info("fileName======"+fileName);
-        LOG.info("bucketId======"+meta.getBucketId());
-        List<FileMetaV2> fileMetaV2s =  FileAccessorV2.listBucket(meta.getBucketId(), fileName, null,  prefix,  limit);
+        List<FileMetaV2> fileMetaV2s =  FileAccessorV2.listBucket(meta.getBucketId(), fileName,nextVersionId,  prefix,  limit);
         List<FileMetaMsg> fileMetaMsgs = new ArrayList<>();
         if(fileMetaV2s.size()>0) {
             for(FileMetaV2 fileMetaV2 : fileMetaV2s) {
@@ -35,6 +35,8 @@ public class ListObjectHandler extends Handler<ListObjectReq> {
                 fileMetaMsg.setFileName(fileMetaV2.getFileName());
                 fileMetaMsg.setMeta(fileMetaV2.getMeta());
                 fileMetaMsg.setVersionId(fileMetaV2.getVersionId());
+                LOG.info("IsLastest ===========" + fileMetaV2.isLatest());
+                fileMetaMsg.setLatest(fileMetaV2.isLatest());
                 fileMetaMsgs.add(fileMetaMsg);
             }
         }
