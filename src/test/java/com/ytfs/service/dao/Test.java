@@ -8,7 +8,16 @@ import org.bson.types.ObjectId;
 public class Test {
 
     public static void main(String[] a) throws Exception {
-
+        int shardcount = 30;
+        long l = Sequence.generateBlockID(shardcount);
+        for (long ii = 0; ii < shardcount; ii++) {
+            System.out.println(Long.toHexString(l++));
+        }
+        
+        Sequence.initUserID_seq();
+        
+        int newid=Sequence.generateUserID();
+         System.out.println(newid);
         // LogConfigurator.configPath(null,"EDBUG");
         //ServerConfig.superNodeID=3;
         // MongoSource.getMongoSource().init_seq_collection(21);

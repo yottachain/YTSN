@@ -47,7 +47,7 @@ public class SendSpotCheckTask extends Thread {
                 long time = System.currentTimeMillis();
                 long min = time % 3600000L;
                 try {
-                 //   if (min < 60000 * 3) {
+                    if (min < 60000 * 3) {
                         sc = YottaNodeMgmt.getSpotCheckList();
                         if (!sc.isEmpty()) {
                             nlist = YottaNodeMgmt.getSTNodes(sc.size());
@@ -56,7 +56,7 @@ public class SendSpotCheckTask extends Thread {
                             }
                         }
                         LOG.info("Query returns " + sc.size() + " tasks.");
-                 //   }
+                    }
                 } catch (Throwable t) {
                     LOG.error("Get SpotCheckList ERR:" + t.getMessage());
                     sleep(30000);
@@ -73,8 +73,7 @@ public class SendSpotCheckTask extends Thread {
                     sc.clear();
                     sleep(60000 * 3);
                 }
-               // sleep(30000);
-                sleep(60000*20);
+                sleep(30000);
             } catch (InterruptedException ex) {
                 break;
             } catch (Throwable ne) {
@@ -108,13 +107,14 @@ public class SendSpotCheckTask extends Thread {
             }
             mytask.getTaskList().add(myst);
         }
+        /*
         try {
             byte[] data = SerializationUtil.serialize(mytask);
-            FileOutputStream f = new FileOutputStream("/" + mytask.getTaskId() + ".dat."+n.getId());
+            FileOutputStream f = new FileOutputStream("/" + mytask.getTaskId() + ".dat." + n.getId());
             f.write(data);
             f.close();
         } catch (Exception e) {
-        }
+        }*/
         LOG.info("Send task [" + mytask.getTaskId() + "] to " + n.getId() + ":" + P2PUtils.getAddrString(n.getAddrs()));
         P2PUtils.requestNode(mytask, n);
         LOG.info("Send task [" + mytask.getTaskId() + "] OK!");

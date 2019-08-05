@@ -40,7 +40,7 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
             resp.setVNU(meta.getVNU());
             int nlink = meta.getNLINK();
             if (nlink == 0) {//正在上传               
-                List<ObjectRefer> refers = ObjectRefer.parse(meta.getBlocks());
+                List<ObjectRefer> refers = ObjectRefer.parse(meta.getBlocks(), meta.getBlockList());
                 short[] blocks = new short[refers.size()];
                 for (int ii = 0; ii < blocks.length; ii++) {
                     blocks[ii] = refers.get(ii).getId();
@@ -55,8 +55,8 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
             meta.setVNU(new ObjectId());
             resp.setVNU(meta.getVNU());
         }
-        boolean has= EOSClient.hasSpace(request.getLength(),user.getUsername());      
-        if (has) {           
+        boolean has = EOSClient.hasSpace(request.getLength(), user.getUsername());
+        if (has) {
             meta.setLength(request.getLength());
             meta.setNLINK(0);
             ObjectAccessor.insertOrUpdate(meta);

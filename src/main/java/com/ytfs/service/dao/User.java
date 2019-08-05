@@ -6,12 +6,12 @@ import org.bson.types.Binary;
 public class User {
 
     private int userID;
-    private String username;
     private byte[] KUEp;    //用户公钥
-    private long usedSpace;  //占用空间
-    private long costPerCycle;//每周期总费用
-    private long fileTotal;   //文件数
+    private long usedspace;  //占用空间
     private long spaceTotal;  //文件总量
+    private long fileTotal;   //文件数
+    private long costPerCycle;//每周期总费用
+    private String username;
 
     public User(int userid) {
         this.userID = userid;
@@ -24,8 +24,8 @@ public class User {
         if (doc.containsKey("KUEp")) {
             this.KUEp = ((Binary) doc.get("KUEp")).getData();
         }
-        if (doc.containsKey("usedSpace")) {
-            this.usedSpace = doc.getLong("usedSpace");
+        if (doc.containsKey("usedspace")) {
+            this.usedspace = doc.getLong("usedspace");
         }
         if (doc.containsKey("costPerCycle")) {
             this.costPerCycle = doc.getLong("costPerCycle");
@@ -45,7 +45,7 @@ public class User {
         Document doc = new Document();
         doc.append("_id", userID);
         doc.append("KUEp", new Binary(KUEp));
-        doc.append("usedSpace", usedSpace);
+        doc.append("usedspace", usedspace);
         doc.append("costPerCycle", costPerCycle);
         doc.append("spaceTotal", spaceTotal);
         doc.append("fileTotal", fileTotal);
@@ -84,15 +84,15 @@ public class User {
     /**
      * @return the usedSpace
      */
-    public long getUsedSpace() {
-        return usedSpace;
+    public long getUsedspace() {
+        return usedspace;
     }
 
     /**
      * @param usedSpace the usedSpace to set
      */
-    public void setUsedSpace(long usedSpace) {
-        this.usedSpace = usedSpace;
+    public void setUsedspace(long usedSpace) {
+        this.usedspace = usedSpace;
     }
 
     /**

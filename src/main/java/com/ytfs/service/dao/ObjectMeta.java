@@ -1,6 +1,8 @@
 package com.ytfs.service.dao;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import org.bson.Document;
 import org.bson.types.Binary;
 import org.bson.types.ObjectId;
@@ -14,6 +16,7 @@ public class ObjectMeta {
     private long length;
     private long usedspace;
     private byte[] blocks;
+    private byte[][] blockList;
 
     private final byte[] _id;
 
@@ -39,6 +42,10 @@ public class ObjectMeta {
         } else {
             _id = null;
         }
+        fill(doc);
+    }
+
+    public final void fill(Document doc) {
         if (doc.containsKey("VNU")) {
             this.VNU = doc.getObjectId("VNU");
         }
@@ -51,8 +58,17 @@ public class ObjectMeta {
         if (doc.containsKey("usedspace")) {
             this.usedspace = doc.getLong("usedspace");
         }
-        if (doc.containsKey("blocks")) {
-            this.blocks = ((Binary) doc.get("blocks")).getData();
+        if (doc.get("blocks") != null) {
+            if (doc.get("blocks") instanceof List) {
+                List ls = (List) doc.get("blocks");
+                this.blockList = new byte[ls.size()][];
+                int index = 0;
+                for (Object obj : ls) {
+                    this.blockList[index++] = ((Binary) obj).getData();
+                }
+            } else {
+                this.blocks = ((Binary) doc.get("blocks")).getData();
+            }
         }
     }
 
@@ -63,10 +79,16 @@ public class ObjectMeta {
         doc.append("usedspace", this.usedspace);
         doc.append("VNU", VNU);
         doc.append("NLINK", NLINK);
-        if (blocks == null) {
-            doc.append("blocks", new Binary(new byte[0]));
-        } else {
+        if (blocks != null) {
             doc.append("blocks", new Binary(blocks));
+        } else {
+            List<Binary> blks = new ArrayList();
+            if (blockList != null) {
+                for (byte[] bs : blockList) {
+                    blks.add(new Binary(bs));
+                }
+            }
+            doc.append("blocks", blks);
         }
         return doc;
     }
@@ -174,5 +196,19 @@ public class ObjectMeta {
      */
     public void setUsedspace(long usedspace) {
         this.usedspace = usedspace;
+    }
+
+    /**
+     * @return the blockList
+     */
+    public byte[][] getBlockList() {
+        return blockList;
+    }
+
+    /**
+     * @param blockList the blockList to set
+     */
+    public void setBlockList(byte[][] blockList) {
+        this.blockList = blockList;
     }
 }

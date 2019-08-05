@@ -66,8 +66,8 @@ public class SaveObjectMetaHandler extends Handler<SaveObjectMetaReq> {
             }
             if (!resp.isExists()) {
                 long usedspace = sumUsedSpace(request.getRefer().getRealSize(), request.getNlink());
-                refers.add(request.getRefer());
-                byte[] bs = ObjectRefer.merge(refers);
+                refers.add(request.getRefer());                
+                byte[] bs =request.getRefer().toBytes();
                 ObjectAccessor.updateObject(request.getVNU(), bs, usedspace);
             }
         }

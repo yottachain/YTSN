@@ -11,6 +11,7 @@ import com.ytfs.service.http.HttpServerBoot;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.NodeManager;
 import com.ytfs.common.node.SuperNodeList;
+import com.ytfs.service.dao.Sequence;
 import com.ytfs.service.servlet.FromBPMsgDispatcher;
 import com.ytfs.service.servlet.FromNodeMsgDispatcher;
 import com.ytfs.service.servlet.FromUserMsgDispatcher;
@@ -51,8 +52,7 @@ public class ServerInitor {
             privateKey = YottaNodeMgmt.getSuperNodePrivateKey(superNodeID);
             SNDSP = Base58.decode(privateKey);
             SuperNodeList.isServer = true;
-            int sncount = SuperNodeList.getSuperNodeCount();
-            MongoSource.getMongoSource().init_seq_collection(sncount);
+            Sequence.initUserID_seq();
         } catch (NodeMgmtException | IOException e) {
             LOG.error("Init err.", e);
             System.exit(0);

@@ -34,8 +34,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
-import org.bson.Document;
-import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 
 public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
@@ -49,7 +47,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         UploadBlockCache cache = CacheAccessor.getUploadBlockCache(request.getVBI());
         UploadObjectCache progress = CacheAccessor.getUploadObjectCache(userid, cache.getVNU());
         Map<Integer, UploadShardCache> caches = cache.getShardCaches();
-        List<Document> ls = verify(request, caches, cache.getShardcount(), request.getVBI());
+        List<ShardMeta> ls = verify(request, caches, cache.getShardcount(), request.getVBI());
         ShardAccessor.saveShardMetas(ls);
         BlockMeta meta = makeBlockMeta(request, request.getVBI(), cache.getShardcount());
         BlockAccessor.saveBlockMeta(meta);
@@ -59,10 +57,9 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
             progress.setBlockNum(request.getId());
             if (resp.isExists()) {
-                BlockAccessor.decBlockNLINK(meta);//-1
+                LOG.warn("Block " + user.getUserID() + "/" + cache.getVNU() + "/" + request.getId() + " has been uploaded.");
             }
         } catch (ServiceException r) {
-            BlockAccessor.decBlockNLINK(meta);//-1
             throw r;
         }
         sendDNI(ls);
@@ -71,16 +68,16 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         return new VoidResp();
     }
 
-    private void sendDNI(List<Document> ls) {
-        for (Document doc : ls) {
-            int nid = doc.getInteger("nodeId");
-            byte[] vhf = ((Binary) doc.get("VHF")).getData();
+    private void sendDNI(List<ShardMeta> ls) {
+        for (ShardMeta doc : ls) {
+            int nid = doc.getNodeId();
+            byte[] vhf = doc.getVHF();
             byte[] vbi = Function.long2bytes(request.getVBI());
-            byte[] data = new byte[vhf.length + 9];
-            byte snid = (byte) ServerConfig.superNodeID;
-            data[0] = snid;
-            System.arraycopy(vbi, 0, data, 1, 8);
-            System.arraycopy(vhf, 0, data, 9, vhf.length);
+            byte[] data = new byte[vhf.length + 10];
+            data[0] = (byte) ServerConfig.superNodeID;
+            data[1] = (byte) ls.size();
+            System.arraycopy(vbi, 0, data, 2, 8);
+            System.arraycopy(vhf, 0, data, 10, vhf.length);
             DNISender.startSender(data, nid);
         }
     }
@@ -115,10 +112,10 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         return meta;
     }
 
-    private List<Document> verify(UploadBlockEndReq req, Map<Integer, UploadShardCache> caches, int shardCount, long vbi) throws ServiceException, NoSuchAlgorithmException {
+    private List<ShardMeta> verify(UploadBlockEndReq req, Map<Integer, UploadShardCache> caches, int shardCount, long vbi) throws ServiceException, NoSuchAlgorithmException {
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         byte[] vhf = null;
-        List<Document> ls = new ArrayList();
+        List<ShardMeta> ls = new ArrayList();
         for (int ii = 0; ii < shardCount; ii++) {
             UploadShardCache cache = caches.get(ii);
             if (cache == null) {
@@ -143,7 +140,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
                 }
             }
             ShardMeta meta = new ShardMeta(vbi + ii, cache.getNodeid(), cache.getVHF());
-            ls.add(meta.toDocument());
+            ls.add(meta);
         }
         byte[] vhb = md5.digest();
         if (!Arrays.equals(vhb, req.getVHB())) {

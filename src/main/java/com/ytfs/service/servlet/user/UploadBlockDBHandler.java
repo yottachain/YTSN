@@ -35,7 +35,7 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
     public Object handle() throws Throwable {
         User user = this.getUser();
         int userid = user.getUserID();
-        LOG.info("Upload block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " to DB...");
+        LOG.info("Save block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " to DB...");
         UploadObjectCache progress = CacheAccessor.getUploadObjectCache(userid, request.getVNU());
         if (progress.exists(request.getId())) {
             return new VoidResp();
@@ -56,10 +56,9 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
             progress.setBlockNum(request.getId());
             if (resp.isExists()) {
-                BlockAccessor.decBlockNLINK(meta);//-1
+                LOG.warn("Block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " has been uploaded.");
             }
-        } catch (ServiceException r) {
-            BlockAccessor.decBlockNLINK(meta);//-1
+        } catch (ServiceException r) {            
             throw r;
         }
         return new VoidResp();

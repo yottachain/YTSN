@@ -1,25 +1,20 @@
 package com.ytfs.service.dao;
 
+import com.ytfs.service.dao.sync.Proxy;
 import com.mongodb.*;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.*;
 import com.mongodb.client.model.*;
-import com.ytfs.common.conf.ServerConfig;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
 import org.apache.log4j.Logger;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 
 public class MongoSource {
 
     private static final String DATABASENAME = "metabase";
 
-    //自增编号生成器
-    private static final String SEQ_TABLE_NAME = "sequence";
-    public static final int SEQ_UID_VAR = 0;
-    public static final int SEQ_BLKID_VAR = 1;
     //用户表
     public static final String USER_TABLE_NAME = "users";
     private static final String USER_INDEX_NAME = "KUEp";
@@ -75,11 +70,6 @@ public class MongoSource {
             }
             throw new MongoException(r.getMessage());
         }
-    }
-
-    static MongoCollection<Document> getSeqCollection() {
-        newInstance();
-        return source.seq_collection;
     }
 
     static MongoCollection<Document> getUserCollection() {
@@ -145,7 +135,6 @@ public class MongoSource {
     private Proxy proxy = null;
     private MongoClient client = null;
     private MongoDatabase database;
-    private MongoCollection<Document> seq_collection;
     private MongoCollection<Document> user_collection = null;
     private MongoCollection<Document> object_collection = null;
     private MongoCollection<Document> object_new_collection = null;
@@ -242,39 +231,6 @@ public class MongoSource {
         client = MongoClients.create(settings);
         LOG.info("Successful connection to Mongo server.");
         database = client.getDatabase(DATABASENAME);
-    }
-
-    public void init_seq_collection(int sncount) {
-        seq_collection = database.getCollection(SEQ_TABLE_NAME);
-        Bson bson = Filters.eq("_id", SEQ_UID_VAR); //为生成userID 
-        Document doc = seq_collection.find(bson).first();
-        if (doc == null) {
-            doc = new Document();
-            doc.append("_id", SEQ_UID_VAR);
-            doc.append("seq", (int) ServerConfig.superNodeID);
-            seq_collection.insertOne(doc);
-            LOG.info("User sequence:" + ServerConfig.superNodeID);
-        } else {
-            int curid = doc.getInteger("seq");
-            int mod = curid % sncount;
-            if (mod != ServerConfig.superNodeID) {
-                int inc = ServerConfig.superNodeID > mod ? (ServerConfig.superNodeID - mod)
-                        : (sncount - mod + ServerConfig.superNodeID);
-                Document update = new Document("$inc", new Document("seq", (int) inc));
-                seq_collection.updateOne(bson, update);
-                LOG.warn("User sequence reset:" + curid + "-->" + (inc + curid));
-            } else {
-                LOG.info("User sequence:" + curid);
-            }
-        }
-        bson = Filters.eq("_id", SEQ_BLKID_VAR); //为生成blockID
-        doc = seq_collection.find(bson).first();
-        if (doc == null) {
-            doc = new Document();
-            doc.append("_id", SEQ_BLKID_VAR);
-            doc.append("seq", (int) 0);
-            seq_collection.insertOne(doc);
-        }
     }
 
     private void init_user_collection() {

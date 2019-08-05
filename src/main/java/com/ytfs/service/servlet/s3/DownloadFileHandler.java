@@ -19,18 +19,18 @@ public class DownloadFileHandler extends Handler<DownloadFileReq> {
         User user = this.getUser();
         LOG.info("Read object:" + user.getUserID() + "/" + request.getBucketname() + "/" + request.getFileName());
         ObjectId versionId = request.getVersionId();
-        LOG.info("versionId====="+versionId);
-        BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketname(),new byte[0]);
+        BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketname(), new byte[0]);
         if (meta == null) {
             throw new ServiceException(INVALID_BUCKET_NAME);
         }
-        FileMetaV2 fmeta = FileAccessorV2.getFileMeta(meta.getBucketId(), request.getFileName(),versionId);
+        FileMetaV2 fmeta = FileAccessorV2.getFileMeta(meta.getBucketId(), request.getFileName(), versionId);
         if (fmeta == null) {
             throw new ServiceException(INVALID_OBJECT_NAME);
         }
         ObjectMeta ometa = ObjectAccessor.getObject(fmeta.getVersionId());
         DownloadObjectInitResp resp = new DownloadObjectInitResp();
-        resp.setRefers(ometa.getBlocks());
+        resp.setOldRefers(ometa.getBlocks());
+        resp.setRefers(ometa.getBlockList());
         resp.setLength(ometa.getLength());
         return resp;
     }

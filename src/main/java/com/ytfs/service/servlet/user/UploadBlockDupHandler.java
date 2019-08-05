@@ -43,10 +43,9 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
             progress.setBlockNum(request.getId());
             if (resp.isExists()) {
-                BlockAccessor.decBlockNLINK(meta);//-1
+                LOG.warn("Block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " has been uploaded.");
             }
         } catch (ServiceException r) {
-            BlockAccessor.decBlockNLINK(meta);//-1
             throw r;
         }
         return new VoidResp();

@@ -34,7 +34,7 @@ public class ReferCache {
         ObjectMeta meta = queryObjectMeta(VNU, userid);
         Refer cache = new Refer();
         cache.length = meta.getLength();
-        cache.objRefers = ObjectRefer.parse(meta.getBlocks());
+        cache.objRefers = ObjectRefer.parse(meta.getBlocks(),meta.getBlockList());
         refers.put(VNU, cache);
         return cache;
     }
