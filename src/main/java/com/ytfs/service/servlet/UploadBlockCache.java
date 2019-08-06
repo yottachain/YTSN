@@ -2,6 +2,7 @@ package com.ytfs.service.servlet;
 
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.bson.types.ObjectId;
 
 public class UploadBlockCache {
@@ -11,7 +12,7 @@ public class UploadBlockCache {
     private int shardcount;//该数据块分片数 
     private ObjectId VNU;
     private int errTimes = 0;
-    private final Map<Integer, UploadShardCache> shardCaches = new java.util.concurrent.ConcurrentHashMap();
+    private final Map<Integer, UploadShardCache> shardCaches = new ConcurrentHashMap();
 
     public UploadBlockCache(Node[] nodes, int shardcount, ObjectId VNU) {
         this.shardcount = shardcount;
@@ -111,5 +112,4 @@ public class UploadBlockCache {
     public void setVNU(ObjectId VNU) {
         this.VNU = VNU;
     }
-
 }

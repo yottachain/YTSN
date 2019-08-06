@@ -21,6 +21,7 @@ import com.ytfs.service.packet.UploadBlockInit2Req;
 import com.ytfs.service.packet.UploadBlockInitReq;
 import com.ytfs.service.packet.UploadBlockInitResp;
 import com.ytfs.service.packet.VoidResp;
+import com.ytfs.service.servlet.ErrorNodeCache;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
@@ -97,7 +98,7 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
      */
     private void distributeNode(UploadBlockInitReq req, UploadBlockInitResp resp, byte[] userkey) throws Exception {
         if (req.getShardCount() > 0) {//需要数据库
-            Node[] nodes = NodeManager.getNode(req.getShardCount(),new int[0]);
+            Node[] nodes = NodeManager.getNode(req.getShardCount(),ErrorNodeCache.getErrorIds());
             if (nodes.length != req.getShardCount()) {
                 LOG.warn("No enough data nodes:" + nodes.length + "/" + req.getShardCount());
                 throw new ServiceException(NO_ENOUGH_NODE);

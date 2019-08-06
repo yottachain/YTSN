@@ -13,6 +13,7 @@ import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadBlockSubReq;
 import com.ytfs.service.packet.UploadBlockSubResp;
 import com.ytfs.service.packet.UploadShardRes;
+import com.ytfs.service.servlet.ErrorNodeCache;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.util.ArrayList;
@@ -32,51 +33,27 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
         LOG.info("Upload block " + user.getUserID() + "/" + cache.getVNU() + ",Err count:" + ress.length + ",retry...");
         List<UploadShardRes> fails = new ArrayList();
         Map<Integer, UploadShardCache> caches = cache.getShardCaches();
-        List<Integer> errid = new ArrayList();
         for (UploadShardRes res : ress) {
             if (res.getRES() == UploadShardRes.RES_OK) {
                 continue;
             }
             UploadShardCache ca = caches.get(res.getSHARDID());
-            if (ca == null) {
-                if (res.getRES() == UploadShardRes.RES_NETIOERR) {//需要惩罚节点
-                    if (cache.getNodes()[res.getSHARDID()] == res.getNODEID()) {
-                        //NodeManager.punishNode(res.getNODEID());
-                    }
-                }
-                if (!errid.contains(res.getNODEID())) {
-                    errid.add(res.getNODEID());
-                }
-                fails.add(res);
-            } else {
-                if (ca.getRes() == UploadShardRes.RES_OK) {
-                    continue;
-                }
-                if (res.getRES() == UploadShardRes.RES_NO_SPACE && res.getRES() == ca.getRes()) {
-                    //NodeManager.noSpace(res.getNODEID());
-                }
-                fails.add(res);
-                if (!errid.contains(res.getNODEID())) {
-                    errid.add(res.getNODEID());
-                }
+            if (ca != null && ca.getRes() == UploadShardRes.RES_OK) {
+                continue;
             }
+            fails.add(res);
+            ErrorNodeCache.addErrorNode(res.getNODEID());
         }
         UploadBlockSubResp resp = new UploadBlockSubResp();
         if (fails.isEmpty()) {
             return resp;
         }
-        int[] errids = new int[errid.size()];
-        String erridstr = null;
-        for (int ii = 0; ii < errid.size(); ii++) {
-            errids[ii] = errid.get(ii);
-            erridstr = erridstr == null ? ("ERRIDS:" + errids[ii]) : ("," + errids[ii]);
-        }
-        Node[] nodes = NodeManager.getNode(fails.size(), errids);
+        Node[] nodes = NodeManager.getNode(fails.size(), ErrorNodeCache.getErrorIds());
         if (nodes.length != fails.size()) {
             LOG.warn("No enough data nodes:" + nodes.length + "/" + fails.size());
             throw new ServiceException(NO_ENOUGH_NODE);
         } else {
-            LOG.info("Assigned node:" + getAssignedNodeIDs(nodes) + (erridstr == null ? "" : erridstr));
+            LOG.info("Assigned node:" + getAssignedNodeIDs(nodes));
         }
         setNodes(resp, nodes, fails, request.getVBI(), cache);
         return resp;
