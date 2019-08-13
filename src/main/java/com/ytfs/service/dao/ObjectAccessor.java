@@ -59,10 +59,25 @@ public class ObjectAccessor {
         }
     }
 
+    public static void getObjectAndUpdateNLINK(ObjectMeta meta) {
+        Bson filter = Filters.eq("_id", new Binary(meta.getId()));
+        Document data = new Document("NLINK", 1);
+        Document update = new Document("$set", data);
+        Document doc = MongoSource.getObjectCollection().findOneAndUpdate(filter, update);
+        if (doc != null) {
+            meta.fill(doc);
+            if (MongoSource.getProxy() != null) {
+                LogMessage log = new LogMessage(Op_Object_NLINK_INC, meta.getId());
+                MongoSource.getProxy().post(log);
+                LOG.debug("DBlog: sync object NLINK");
+            }
+        }
+    }
+
     public static void updateObject(ObjectId VNU, byte[] block, long usedSpace) {
         Bson filter = Filters.eq("VNU", VNU);
         Document update = new Document("$inc", new Document("usedspace", usedSpace));
-        update.append("$addToSet", new Document("blocks", new Binary(block)));
+        update.append("$push", new Document("blocks", new Binary(block)));//$addToSet
         UpdateOptions updateOptions = new UpdateOptions();
         updateOptions.upsert(true);
         MongoSource.getObjectCollection().updateOne(filter, update, updateOptions);
@@ -108,25 +123,6 @@ public class ObjectAccessor {
         update.append("time", System.currentTimeMillis());
         update.append("username", username);
         MongoSource.getObjectNewCollection().insertOne(update);
-    }
-
-    public static void getObjectAndUpdateNLINK(ObjectMeta meta) {
-        Bson filter = Filters.eq("_id", new Binary(meta.getId()));
-        Document data = new Document("NLINK", 1);
-        Document update = new Document("$set", data);
-        Document doc = MongoSource.getObjectCollection().findOneAndUpdate(filter, update);
-        if (doc != null) {
-            meta.fill(doc);
-        }
-    }
-
-    public static void decObjectNLINK(ObjectMeta meta) {
-        if (meta.getNLINK() >= 255) {
-            return;
-        }
-        Bson filter = Filters.eq("_id", new Binary(meta.getId()));
-        Document update = new Document("$inc", new Document("NLINK", -1));
-        MongoSource.getObjectCollection().updateOne(filter, update);
     }
 
     public static boolean isObjectExists(ObjectMeta meta) {

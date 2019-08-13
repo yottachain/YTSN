@@ -4,20 +4,20 @@ import org.bson.Document;
 import org.bson.types.Binary;
 
 public class ShardMeta {
-
+    
     private long VFI;
     private int nodeId;
     private byte[] VHF;
-
+    
     public ShardMeta() {
     }
-
+    
     public ShardMeta(long VFI, int nodeId, byte[] VHF) {
         this.VFI = VFI;
         this.nodeId = nodeId;
         this.VHF = VHF;
     }
-
+    
     public ShardMeta(Document doc) {
         if (doc.containsKey("_id")) {
             this.VFI = doc.getLong("_id");
@@ -28,8 +28,8 @@ public class ShardMeta {
         if (doc.containsKey("VHF")) {
             this.VHF = ((Binary) doc.get("VHF")).getData();
         }
-    }
-
+    }    
+    
     public Document toDocument() {
         Document doc = new Document();
         doc.append("_id", VFI);
@@ -79,5 +79,5 @@ public class ShardMeta {
     public void setVHF(byte[] VHF) {
         this.VHF = VHF;
     }
-
+    
 }

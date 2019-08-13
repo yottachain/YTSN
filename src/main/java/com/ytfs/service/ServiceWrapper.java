@@ -1,5 +1,6 @@
 package com.ytfs.service;
 
+import com.ytfs.service.check.QueryRebuildNode;
 import com.ytfs.service.check.SendSpotCheckTask;
 import com.ytfs.service.servlet.NewObjectScanner;
 import org.tanukisoftware.wrapper.WrapperListener;
@@ -15,7 +16,8 @@ public class ServiceWrapper implements WrapperListener {
     public Integer start(String[] strings) {
         ServerInitor.init();
         NewObjectScanner.startUp();
-        SendSpotCheckTask.startUp();
+        //QueryRebuildNode.startUp();
+        //SendSpotCheckTask.startUp();
         return null;
     }
 
@@ -23,6 +25,7 @@ public class ServiceWrapper implements WrapperListener {
     public int stop(int exitCode) {
         NewObjectScanner.shutdown();
         SendSpotCheckTask.shutdown();
+        QueryRebuildNode.shutdown();
         ServerInitor.stop();
         return exitCode;
     }

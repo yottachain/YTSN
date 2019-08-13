@@ -16,7 +16,6 @@ import com.ytfs.service.servlet.FromBPMsgDispatcher;
 import com.ytfs.service.servlet.FromNodeMsgDispatcher;
 import com.ytfs.service.servlet.FromUserMsgDispatcher;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
-import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.p2phost.interfaces.BPNodeCallback;
 import io.yottachain.p2phost.interfaces.NodeCallback;
 import io.yottachain.p2phost.interfaces.UserCallback;
@@ -47,17 +46,30 @@ public class ServerInitor {
             String path = WrapperManager.getProperties().getProperty("wrapper.log4j.logfile");
             LogConfigurator.configPath(path == null ? null : new File(path), level);
             load();
-            List<ServerAddress> addrs = MongoSource.getServerAddress();
-            NodeManager.start(addrs, eosURI, BPAccount, BPPriKey, contractAccount, contractOwnerD, superNodeID);
-            privateKey = YottaNodeMgmt.getSuperNodePrivateKey(superNodeID);
-            SNDSP = Base58.decode(privateKey);
-            SuperNodeList.isServer = true;
-            Sequence.initUserID_seq();
-        } catch (NodeMgmtException | IOException e) {
+        } catch (IOException e) {
             LOG.error("Init err.", e);
             System.exit(0);
         }
-        for (int ii = 0; ii < 10; ii++) {
+        for (int ii = 0; ii < 1000; ii++) {
+            try {
+                List<ServerAddress> addrs = MongoSource.getServerAddress();
+                NodeManager.start(addrs, eosURI, BPAccount, BPPriKey, contractAccount, contractOwnerD, superNodeID);
+                privateKey = YottaNodeMgmt.getSuperNodePrivateKey(superNodeID);
+                SNDSP = Base58.decode(privateKey);
+                SuperNodeList.isServer = true;
+                Sequence.initUserID_seq();
+                break;
+            } catch (Exception r) {
+                LOG.error("Mongo client initialization failed:" + r.getMessage());
+                try {
+                    Thread.sleep(30000);
+                } catch (InterruptedException ex) {
+                    System.exit(0);
+                }
+                MongoSource.terminate();
+            }
+        }
+        for (int ii = 0; ii < 100; ii++) {
             try {
                 int port = ServerConfig.port + ii;
                 P2PUtils.start(port, ServerConfig.privateKey);
@@ -70,8 +82,9 @@ public class ServerInitor {
             } catch (Exception r) {
                 LOG.error("P2P initialization failed!", r);
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(15000);
                 } catch (InterruptedException ex) {
+                    System.exit(0);
                 }
                 P2PUtils.stop();
             }

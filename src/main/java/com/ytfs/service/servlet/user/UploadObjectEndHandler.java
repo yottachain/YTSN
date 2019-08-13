@@ -12,6 +12,7 @@ import com.ytfs.service.packet.UploadObjectEndReq;
 import com.ytfs.service.packet.UploadObjectEndResp;
 import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.Handler;
+import com.ytfs.service.servlet.ReferCache;
 import org.apache.log4j.Logger;
 
 public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
@@ -40,6 +41,7 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         resp.setContractAccount(ServerConfig.contractAccount);
         LOG.info("Upload object " + user.getUserID() + "/" + meta.getVNU() + " OK.");
         CacheAccessor.delUploadObjectCache(meta.getVNU());
+        ReferCache.delRefersCache(meta.getVNU());
         return resp;
     }
 }

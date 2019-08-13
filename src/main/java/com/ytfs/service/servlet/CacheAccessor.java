@@ -12,13 +12,13 @@ import org.bson.types.ObjectId;
 
 public class CacheAccessor {
 
-    private static final long MAX_SIZE = 100000;
-    private static final long EXPIRED_TIME = 10;
+    private static final long OBJ_MAX_SIZE = 500000;
+    private static final long OBJ_EXPIRED_TIME = 3;
 
     private static final Cache<ObjectId, UploadObjectCache> uploadObjects = CacheBuilder.newBuilder()
-            .expireAfterWrite(EXPIRED_TIME * 3, TimeUnit.MINUTES)
-            .expireAfterAccess(EXPIRED_TIME * 3, TimeUnit.MINUTES)
-            .maximumSize(MAX_SIZE)
+            .expireAfterWrite(OBJ_EXPIRED_TIME, TimeUnit.MINUTES)
+            .expireAfterAccess(OBJ_EXPIRED_TIME, TimeUnit.MINUTES)
+            .maximumSize(OBJ_MAX_SIZE)
             .build();
 
     public static UploadObjectCache getUploadObjectCache(int userid, ObjectId VNU) throws ServiceException {
@@ -41,10 +41,12 @@ public class CacheAccessor {
         uploadObjects.invalidate(VNU);
     }
 
+    private static final long BLK_MAX_SIZE = 500000;
+    private static final long BLK_EXPIRED_TIME = 1;
     private static final Cache<Long, UploadBlockCache> uploadBlocks = CacheBuilder.newBuilder()
-            .expireAfterWrite(EXPIRED_TIME, TimeUnit.MINUTES)
-            .expireAfterAccess(EXPIRED_TIME, TimeUnit.MINUTES)
-            .maximumSize(MAX_SIZE)
+            .expireAfterWrite(BLK_EXPIRED_TIME, TimeUnit.MINUTES)
+            .expireAfterAccess(BLK_EXPIRED_TIME, TimeUnit.MINUTES)
+            .maximumSize(BLK_MAX_SIZE)
             .build();
 
     public static void addUploadBlockCache(long VBI, UploadBlockCache cache) {

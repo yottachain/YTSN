@@ -38,9 +38,10 @@ public class ShardAccessor {
         ShardMeta[] metas = new ShardMeta[shardCount];
         Bson bson = Filters.in("_id", VFI);
         FindIterable<Document> documents = MongoSource.getShardCollection().find(bson).batchSize(shardCount);
-        int count = 0;
         for (Document document : documents) {
-            metas[count++] = new ShardMeta(document);
+            ShardMeta meta = new ShardMeta(document);
+            long index = meta.getVFI() - VBI;
+            metas[(int) index] = meta;
         }
         return metas;
     }

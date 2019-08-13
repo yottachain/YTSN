@@ -1479,6 +1479,9 @@ docommand() {
     
         'start')
             ulimit -n 65535
+            export P2PHOST_CONNECTTIMEOUT=60
+            export P2PHOST_READTIMEOUT=60
+            export P2PHOST_WRITETIMEOUT=60
             if [ "$DIST_OS" = "macosx" -a -f "/Library/LaunchDaemons/${APP_PLIST}" ] ; then
                 macosxstart
             elif [ "$DIST_OS" = "linux" -a -f "/etc/init/${APP_NAME}.conf" ] ; then
@@ -1499,6 +1502,9 @@ docommand() {
     
         'restart')
             ulimit -n 65535
+            export P2PHOST_CONNECTTIMEOUT=60
+            export P2PHOST_READTIMEOUT=60
+            export P2PHOST_WRITETIMEOUT=60
             checkUser touchlock "$COMMAND"
             if [ ! -n "$FIXED_COMMAND" ] ; then
                 shift

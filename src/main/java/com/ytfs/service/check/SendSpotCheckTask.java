@@ -1,6 +1,5 @@
 package com.ytfs.service.check;
 
-import com.ytfs.common.SerializationUtil;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.net.P2PUtils;
@@ -10,7 +9,6 @@ import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SpotCheckList;
 import io.yottachain.nodemgmt.core.vo.SpotCheckTask;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.codec.binary.Base64;
@@ -49,7 +47,7 @@ public class SendSpotCheckTask extends Thread {
                 try {
                     if (min < 60000 * 3) {
                         sc = YottaNodeMgmt.getSpotCheckList();
-                        if (!sc.isEmpty()) {
+                        if (sc != null && !sc.isEmpty()) {
                             nlist = YottaNodeMgmt.getSTNodes(sc.size());
                             if (nlist.size() != sc.size()) {
                                 throw new Exception("getSTNodes return count:" + nlist.size() + "!=" + sc.size());
@@ -62,7 +60,7 @@ public class SendSpotCheckTask extends Thread {
                     sleep(30000);
                     continue;
                 }
-                if (!sc.isEmpty()) {
+                if (sc != null && !sc.isEmpty()) {
                     for (SpotCheckList scheck : sc) {
                         try {
                             sendTask(scheck, nlist.remove(0));
@@ -107,14 +105,6 @@ public class SendSpotCheckTask extends Thread {
             }
             mytask.getTaskList().add(myst);
         }
-        /*
-        try {
-            byte[] data = SerializationUtil.serialize(mytask);
-            FileOutputStream f = new FileOutputStream("/" + mytask.getTaskId() + ".dat." + n.getId());
-            f.write(data);
-            f.close();
-        } catch (Exception e) {
-        }*/
         LOG.info("Send task [" + mytask.getTaskId() + "] to " + n.getId() + ":" + P2PUtils.getAddrString(n.getAddrs()));
         P2PUtils.requestNode(mytask, n);
         LOG.info("Send task [" + mytask.getTaskId() + "] OK!");

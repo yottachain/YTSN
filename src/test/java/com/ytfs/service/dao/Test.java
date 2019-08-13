@@ -1,31 +1,47 @@
 package com.ytfs.service.dao;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.ytfs.service.servlet.UploadBlockCache;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import org.bson.types.ObjectId;
 
 public class Test {
 
     public static void main(String[] a) throws Exception {
-        int shardcount = 30;
-        long l = Sequence.generateBlockID(shardcount);
-        for (long ii = 0; ii < shardcount; ii++) {
-            System.out.println(Long.toHexString(l++));
+        Cache<Long, Long> uploadBlocks = CacheBuilder.newBuilder()
+                .expireAfterWrite(5, TimeUnit.SECONDS)
+                .expireAfterAccess(5, TimeUnit.SECONDS)
+                .maximumSize(10)
+                .build();
+        long l = 0;
+        for (;;) {
+            uploadBlocks.put(l, l);
+            System.out.println(uploadBlocks.size());
+            
+           
+            l++;
+            if(l>1000000L){
+                return;
+            }
         }
-        
-        Sequence.initUserID_seq();
-        
-        int newid=Sequence.generateUserID();
-         System.out.println(newid);
-        // LogConfigurator.configPath(null,"EDBUG");
-        //ServerConfig.superNodeID=3;
-        // MongoSource.getMongoSource().init_seq_collection(21);
-        //UserAccessor.total();
-        //testRedis();
-        //testSeq();     
-        //testObjectLs();
-        //testFile();
+
+    }
+
+    public static byte[] makeBytes(int length) {
+        Random ran = new Random();
+        ByteBuffer buf = ByteBuffer.allocate(length);
+        for (int ii = 0; ii < length / 8; ii++) {
+            long l = ran.nextLong();
+            buf.putLong(l);
+        }
+        return buf.array();
     }
 
     private static void testFile() throws Exception {
