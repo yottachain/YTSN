@@ -16,7 +16,8 @@ public class GetObjectHandler extends Handler<GetObjectReq> {
         User user = this.getUser();
         LOG.info("Delete bucket:" + user.getUserID() + "/" + request.getBucketName());
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(),new byte[0]);
-        FileMeta fileMeta = FileAccessor.getFileMeta(meta.getBucketId(),request.getFileName());
+//        FileMeta fileMeta = FileAccessor.getFileMeta(meta.getBucketId(),request.getFileName());
+        FileMetaV2 fileMeta = FileAccessorV2.getFileMeta(meta.getBucketId(),request.getFileName());
         GetObjectResp resp = new GetObjectResp();
         if(fileMeta != null) {
             resp.setFileName(fileMeta.getFileName());
