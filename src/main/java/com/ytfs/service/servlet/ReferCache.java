@@ -13,7 +13,7 @@ import org.bson.types.ObjectId;
 
 public class ReferCache {
 
-    private static final long MAX_SIZE = 500000;
+    private static final long MAX_SIZE = 100000;
     private static final long EXPIRED_TIME = 3;
 
     private static final Cache<ObjectId, Refer> refers = CacheBuilder.newBuilder()
