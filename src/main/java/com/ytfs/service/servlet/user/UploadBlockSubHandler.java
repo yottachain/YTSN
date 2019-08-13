@@ -33,6 +33,7 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
         LOG.info("Upload block " + user.getUserID() + "/" + cache.getVNU() + ",Err count:" + ress.length + ",retry...");
         List<UploadShardRes> fails = new ArrayList();
         Map<Integer, UploadShardCache> caches = cache.getShardCaches();
+        List<Integer> errid = new ArrayList();
         for (UploadShardRes res : ress) {
             if (res.getRES() == UploadShardRes.RES_OK) {
                 continue;
@@ -42,13 +43,21 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
                 continue;
             }
             fails.add(res);
-            ErrorNodeCache.addErrorNode(res.getNODEID());
+            if (res.getRES() == UploadShardRes.RES_NETIOERR
+                    || res.getRES() == UploadShardRes.RES_NO_SPACE) {
+                ErrorNodeCache.addErrorNode(res.getNODEID());
+            }
+            if (res.getRES() == UploadShardRes.RES_REP_ERR) {
+                if (!errid.contains(res.getNODEID())) {
+                    errid.add(res.getNODEID());
+                }
+            }
         }
         UploadBlockSubResp resp = new UploadBlockSubResp();
         if (fails.isEmpty()) {
             return resp;
         }
-        Node[] nodes = NodeManager.getNode(fails.size(), ErrorNodeCache.getErrorIds());
+        Node[] nodes = NodeManager.getNode(fails.size(), ErrorNodeCache.getErrorIds(errid));
         if (nodes.length != fails.size()) {
             LOG.warn("No enough data nodes:" + nodes.length + "/" + fails.size());
             throw new ServiceException(NO_ENOUGH_NODE);

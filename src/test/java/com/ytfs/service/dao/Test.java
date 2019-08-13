@@ -1,35 +1,28 @@
 package com.ytfs.service.dao;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.ytfs.service.servlet.UploadBlockCache;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import org.bson.types.ObjectId;
 
 public class Test {
 
     public static void main(String[] a) throws Exception {
-        Cache<Long, Long> uploadBlocks = CacheBuilder.newBuilder()
-                .expireAfterWrite(5, TimeUnit.SECONDS)
-                .expireAfterAccess(5, TimeUnit.SECONDS)
-                .maximumSize(10)
-                .build();
-        long l = 0;
+ 
+        long old=0;
         for (;;) {
-            uploadBlocks.put(l, l);
-            System.out.println(uploadBlocks.size());
-            
-           
-            l++;
-            if(l>1000000L){
-                return;
+            long ll=Sequence.generateBlockID(160);
+           // System.out.println(ll);
+            if(ll-old!=160){
+                System.out.println("err");
+                System.out.println(Long.toHexString(ll));
+                System.out.println(Long.toHexString(old));
+                
             }
+            old=ll;
+                     
         }
 
     }
