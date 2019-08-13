@@ -8,19 +8,21 @@ import com.ytfs.service.servlet.bp.QueryObjectMetaHandler;
 import static com.ytfs.common.ServiceErrorCode.INVALID_UPLOAD_ID;
 import com.ytfs.common.ServiceException;
 import java.util.concurrent.TimeUnit;
+import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
 public class CacheAccessor {
-
+    
+    private static final Logger LOG = Logger.getLogger(CacheAccessor.class);
     private static final long OBJ_MAX_SIZE = 500000;
-    private static final long OBJ_EXPIRED_TIME = 6;
-
+    private static final long OBJ_EXPIRED_TIME = 9;
+    
     private static final Cache<ObjectId, UploadObjectCache> uploadObjects = CacheBuilder.newBuilder()
             .expireAfterWrite(OBJ_EXPIRED_TIME, TimeUnit.MINUTES)
             .expireAfterAccess(OBJ_EXPIRED_TIME, TimeUnit.MINUTES)
             .maximumSize(OBJ_MAX_SIZE)
             .build();
-
+    
     public static UploadObjectCache getUploadObjectCache(int userid, ObjectId VNU) throws ServiceException {
         UploadObjectCache cache = uploadObjects.getIfPresent(VNU);
         if (cache == null) {
@@ -36,33 +38,34 @@ public class CacheAccessor {
         }
         return cache;
     }
-
+    
     public static void delUploadObjectCache(ObjectId VNU) {
         uploadObjects.invalidate(VNU);
     }
-
+    
     private static final long BLK_MAX_SIZE = 500000;
-    private static final long BLK_EXPIRED_TIME = 90;
+    private static final long BLK_EXPIRED_TIME = 3;
     private static final Cache<Long, UploadBlockCache> uploadBlocks = CacheBuilder.newBuilder()
-            .expireAfterWrite(BLK_EXPIRED_TIME, TimeUnit.SECONDS)
-            .expireAfterAccess(BLK_EXPIRED_TIME, TimeUnit.SECONDS)
+            .expireAfterWrite(BLK_EXPIRED_TIME, TimeUnit.MINUTES)
+            .expireAfterAccess(BLK_EXPIRED_TIME, TimeUnit.MINUTES)
             .maximumSize(BLK_MAX_SIZE)
             .build();
-
+    
     public static void addUploadBlockCache(long VBI, UploadBlockCache cache) {
         uploadBlocks.put(VBI, cache);
     }
-
+    
     public static UploadBlockCache getUploadBlockCache(long VBI) throws ServiceException {
         UploadBlockCache cache = uploadBlocks.getIfPresent(VBI);
         if (cache == null) {
+            LOG.error("Block cache invalid:" + VBI);
             throw new ServiceException(INVALID_UPLOAD_ID);
         }
         return cache;
     }
-
+    
     public static void delUploadBlockCache(long VBI) {
         uploadBlocks.invalidate(VBI);
     }
-
+    
 }

@@ -22,9 +22,9 @@ import java.security.SignatureException;
 import org.apache.log4j.Logger;
 
 public class UploadShardHandler extends Handler<UploadShardResp> {
-
+    
     private static final Logger LOG = Logger.getLogger(UploadShardHandler.class);
-
+    
     @Override
     public Object handle() throws Throwable {
         int nodeid;
@@ -48,6 +48,7 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
             if (request.getRES() == RES_BAD_REQUEST) {
                 long failtimes = cache.errInc();
                 if (failtimes >= ServerConfig.PNF) {
+                    LOG.warn("Bad request,clear block cache " + request.getVBI());
                     CacheAccessor.delUploadBlockCache(request.getVBI());//清除缓存
                     return new VoidResp();
                 }
@@ -59,11 +60,11 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
             shardCache.setShardid(request.getSHARDID());
             cache.addUploadShardCache(shardCache);
         } catch (Exception e) {
-            LOG.error("", e);
+            LOG.error("Unknown ERR:"+e.getMessage());
         }
         return new VoidResp();
     }
-
+    
     private void verify(UploadShardResp resp, byte[] key, int maxshardCount, int nodeid) throws ServiceException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         if (resp.getSHARDID() >= maxshardCount) {
             throw new ServiceException(TOO_MANY_SHARDS);
@@ -80,5 +81,5 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
         // throw new ServiceException(INVALID_SIGNATURE);
         //}
     }
-
+    
 }

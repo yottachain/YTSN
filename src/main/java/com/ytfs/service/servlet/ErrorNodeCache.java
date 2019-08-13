@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ErrorNodeCache {
 
-    private static final long EXPIRED_TIME = 1000 * 60;
+    private static final long EXPIRED_TIME = 1000 * 180;
 
     private static final Map<Integer, Long> errIds = new ConcurrentHashMap<>();
 
@@ -24,7 +24,7 @@ public class ErrorNodeCache {
         }
         List<Integer> idlist = new ArrayList(errIds.keySet());
         int[] ids = new int[idlist.size()];
-        for (int ii = 0; ii < ids.length; ii++) {
+        for (int ii = 0; ii < ids.length && ii < 100; ii++) {
             ids[ii] = idlist.get(ii);
         }
         return ids;
