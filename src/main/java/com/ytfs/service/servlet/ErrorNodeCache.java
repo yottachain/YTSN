@@ -1,6 +1,5 @@
 package com.ytfs.service.servlet;
 
-import com.ytfs.service.check.SendSpotCheckTask;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
