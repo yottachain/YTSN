@@ -4,8 +4,6 @@ import com.mongodb.client.model.Filters;
 import com.ytfs.common.Function;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.node.SuperNodeList;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.log4j.Logger;
 import org.bson.Document;

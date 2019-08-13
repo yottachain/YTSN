@@ -13,7 +13,7 @@ import org.bson.types.ObjectId;
 public class CacheAccessor {
 
     private static final long OBJ_MAX_SIZE = 500000;
-    private static final long OBJ_EXPIRED_TIME = 3;
+    private static final long OBJ_EXPIRED_TIME = 6;
 
     private static final Cache<ObjectId, UploadObjectCache> uploadObjects = CacheBuilder.newBuilder()
             .expireAfterWrite(OBJ_EXPIRED_TIME, TimeUnit.MINUTES)
@@ -42,10 +42,10 @@ public class CacheAccessor {
     }
 
     private static final long BLK_MAX_SIZE = 500000;
-    private static final long BLK_EXPIRED_TIME = 1;
+    private static final long BLK_EXPIRED_TIME = 90;
     private static final Cache<Long, UploadBlockCache> uploadBlocks = CacheBuilder.newBuilder()
-            .expireAfterWrite(BLK_EXPIRED_TIME, TimeUnit.MINUTES)
-            .expireAfterAccess(BLK_EXPIRED_TIME, TimeUnit.MINUTES)
+            .expireAfterWrite(BLK_EXPIRED_TIME, TimeUnit.SECONDS)
+            .expireAfterAccess(BLK_EXPIRED_TIME, TimeUnit.SECONDS)
             .maximumSize(BLK_MAX_SIZE)
             .build();
 
