@@ -42,6 +42,8 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
 
     @Override
     public Object handle() throws Throwable {
+        long starttime = System.currentTimeMillis();
+        long l = starttime;
         User user = this.getUser();
         int userid = user.getUserID();
         UploadBlockCache cache = CacheAccessor.getUploadBlockCache(request.getVBI());
@@ -49,8 +51,12 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         Map<Integer, UploadShardCache> caches = cache.getShardCaches();
         List<ShardMeta> ls = verify(request, caches, cache.getShardcount(), request.getVBI());
         ShardAccessor.saveShardMetas(ls);
+        LOG.info("Save shards:/" + cache.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
+        starttime = System.currentTimeMillis();
         BlockMeta meta = makeBlockMeta(request, request.getVBI(), cache.getShardcount());
         BlockAccessor.saveBlockMeta(meta);
+        LOG.info("Save blockmeta:/" + cache.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
+        starttime = System.currentTimeMillis();
         SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(request, userid, meta.getVBI(), cache.getVNU());
         saveObjectMetaReq.setNlink(1);
         try {
@@ -62,9 +68,12 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         } catch (ServiceException r) {
             throw r;
         }
+        LOG.info("Save object refer:/" + cache.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
+        starttime = System.currentTimeMillis();
         sendDNI(ls);
+        LOG.info("Save DNI:/" + cache.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
         CacheAccessor.delUploadBlockCache(request.getVBI());
-        LOG.info("Upload block:/" + cache.getVNU() + "/" + request.getVBI() + " OK!");
+        LOG.info("Upload block:/" + cache.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");
         return new VoidResp();
     }
 

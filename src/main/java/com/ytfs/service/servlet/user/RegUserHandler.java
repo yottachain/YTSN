@@ -15,6 +15,7 @@ import com.ytfs.service.servlet.Handler;
 import static com.ytfs.service.servlet.user.QueryUserHandler.queryAndReg;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import io.yottachain.p2phost.utils.Base58;
+import java.io.IOException;
 import org.apache.log4j.Logger;
 
 public class RegUserHandler extends Handler<RegUserReq> {
@@ -25,7 +26,11 @@ public class RegUserHandler extends Handler<RegUserReq> {
     public Object handle() throws Throwable {
         String pubkey = this.getPublicKey();
         LOG.info("UserLogin:" + request.getUsername());
-        EOSRequest.request(request.getSigndata(), pubkey);
+        try {
+            EOSRequest.request(request.getSigndata(), pubkey);
+        } catch (IOException e) {
+            return new ServiceException(SERVER_ERROR);
+        }
         LOG.info("[" + request.getUsername() + "] Certification passed.");
         byte[] KUEp = Base58.decode(pubkey);
         SuperNode sn = SuperNodeList.getUserRegSuperNode(KUEp);

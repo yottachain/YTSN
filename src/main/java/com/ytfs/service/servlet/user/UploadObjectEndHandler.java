@@ -32,7 +32,7 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         long costPerCycle = count * ServerConfig.unitcost;
         ObjectAccessor.addNewObject(meta.getVNU(), costPerCycle, user.getUserID(), user.getUsername());
         UserAccessor.updateUser(userid, usedspace, 1, meta.getLength());
-        long firstCost = costPerCycle * ServerConfig.PMS;
+        long firstCost = costPerCycle * ServerConfig.PMS;                
         byte[] signarg = EOSRequest.createEosClient(meta.getVNU());
         UploadObjectEndResp resp = new UploadObjectEndResp();
         resp.setFirstCost(firstCost);
