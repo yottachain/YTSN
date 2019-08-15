@@ -29,7 +29,7 @@ public abstract class Handler<T> {
     }
 
     protected final User getUser() throws ServiceException {
-        User user = UserCache.getUser(Base58.decode(pubkey));
+        User user = UserCache.getUser(pubkey);
         if (user == null) {
             LOG.warn("Invalid user public key:" + pubkey);
             throw new ServiceException(ServiceErrorCode.INVALID_USER_ID);

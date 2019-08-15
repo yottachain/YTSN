@@ -1,29 +1,35 @@
 package com.ytfs.service.dao;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import org.bson.types.ObjectId;
 
 public class Test {
+    private static final long MAX_SIZE = 100000;
+    private static final long WRITE_EXPIRED_TIME = 10;
+    private static final long READ_EXPIRED_TIME = 10;
 
+    private static final Cache<ObjectId, String > users = CacheBuilder.newBuilder()
+            .expireAfterWrite(WRITE_EXPIRED_TIME, TimeUnit.MINUTES)
+            .expireAfterAccess(READ_EXPIRED_TIME, TimeUnit.MINUTES)
+            .maximumSize(MAX_SIZE)
+            .build();
     public static void main(String[] a) throws Exception {
- 
-        long old=0;
-        for (;;) {
-            long ll=Sequence.generateBlockID(160);
-           // System.out.println(ll);
-            if(ll-old!=160){
-                System.out.println("err");
-                System.out.println(Long.toHexString(ll));
-                System.out.println(Long.toHexString(old));
-                
-            }
-            old=ll;
-                     
-        }
+         ObjectId ss=new ObjectId("000000000000000000000001");        
+         users.put(ss, "ss");
+         
+         ObjectId ss1=new ObjectId("000000000000000000000002");
+         
+        
+         String aa=users.getIfPresent(ss1);
+         
+         System.out.println(aa);
 
     }
 

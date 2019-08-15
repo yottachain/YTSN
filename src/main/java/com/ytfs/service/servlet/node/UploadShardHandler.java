@@ -22,11 +22,12 @@ import java.security.SignatureException;
 import org.apache.log4j.Logger;
 
 public class UploadShardHandler extends Handler<UploadShardResp> {
-    
+
     private static final Logger LOG = Logger.getLogger(UploadShardHandler.class);
-    
+
     @Override
     public Object handle() throws Throwable {
+        long l = System.currentTimeMillis();
         int nodeid;
         try {
             nodeid = this.getNodeId();
@@ -35,7 +36,6 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
         }
         try {
-            LOG.debug("Upload shard " + request.getVBI() + "/" + request.getSHARDID() + "/" + request.getRES());
             UploadBlockCache cache = CacheAccessor.getUploadBlockCache(request.getVBI());
             User user = UserCache.getUser(cache.getUserKey());
             if (user == null) {
@@ -60,11 +60,13 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
             shardCache.setShardid(request.getSHARDID());
             cache.addUploadShardCache(shardCache);
         } catch (Exception e) {
-            LOG.error("Unknown ERR:"+e.getMessage());
+            LOG.error("Unknown ERR:" + e.getMessage());
         }
+        LOG.debug("Upload shard " + request.getVBI() + "/" + request.getSHARDID() + "/"
+                + request.getRES() + ",take times " + (System.currentTimeMillis() - l) + "ms");
         return new VoidResp();
     }
-    
+
     private void verify(UploadShardResp resp, byte[] key, int maxshardCount, int nodeid) throws ServiceException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         if (resp.getSHARDID() >= maxshardCount) {
             throw new ServiceException(TOO_MANY_SHARDS);
@@ -81,5 +83,5 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
         // throw new ServiceException(INVALID_SIGNATURE);
         //}
     }
-    
+
 }

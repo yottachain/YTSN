@@ -7,7 +7,7 @@ import org.bson.types.ObjectId;
 
 public class UploadBlockCache {
 
-    private byte[] userKey;
+    private String userKey;
     private int[] nodes;//为该块分配的节点
     private int shardcount;//该数据块分片数 
     private ObjectId VNU;
@@ -74,14 +74,14 @@ public class UploadBlockCache {
     /**
      * @return the userid
      */
-    public byte[] getUserKey() {
+    public String getUserKey() {
         return userKey;
     }
 
     /**
      * @param userKey the userid to set
      */
-    public void setUserKey(byte[] userKey) {
+    public void setUserKey(String userKey) {
         this.userKey = userKey;
     }
 

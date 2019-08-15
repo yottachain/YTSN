@@ -52,12 +52,12 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
             return new VoidResp();
         }
         if (request instanceof UploadBlockInit2Req) {
-            distributeNode(request, resp, user.getKUEp());
+            distributeNode(request, resp, this.getPublicKey());
             return resp;
         }
         List<BlockMeta> ls = BlockAccessor.getBlockMeta(request.getVHP());
         if (ls.isEmpty()) {
-            distributeNode(request, resp, user.getKUEp());
+            distributeNode(request, resp, this.getPublicKey());
             return resp;
         } else {
             UploadBlockDupResp resp2 = new UploadBlockDupResp();
@@ -96,7 +96,7 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
      * @param userkey
      * @throws Exception
      */
-    private void distributeNode(UploadBlockInitReq req, UploadBlockInitResp resp, byte[] userkey) throws Exception {
+    private void distributeNode(UploadBlockInitReq req, UploadBlockInitResp resp, String userkey) throws Exception {
         if (req.getShardCount() > 0) {//需要数据库
             Node[] nodes = NodeManager.getNode(req.getShardCount(), ErrorNodeCache.getErrorIds(null));
             if (nodes.length != req.getShardCount()) {
