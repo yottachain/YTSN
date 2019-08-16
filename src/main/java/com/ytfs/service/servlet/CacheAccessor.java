@@ -7,6 +7,7 @@ import com.ytfs.service.packet.bp.QueryObjectMetaResp;
 import com.ytfs.service.servlet.bp.QueryObjectMetaHandler;
 import static com.ytfs.common.ServiceErrorCode.INVALID_UPLOAD_ID;
 import com.ytfs.common.ServiceException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
@@ -24,6 +25,18 @@ public class CacheAccessor {
             .build();
     
     public static UploadObjectCache getUploadObjectCache(int userid, ObjectId VNU) throws ServiceException {
+        
+     /*
+        try{
+        UploadObjectCache cache = uploadObjects.get(VNU, new Callable() {
+            @Override
+            public Object call() throws Exception {
+                  return null;
+            }
+        });
+        
+        */
+        
         UploadObjectCache cache = uploadObjects.getIfPresent(VNU);
         if (cache == null) {
             QueryObjectMetaReq req = new QueryObjectMetaReq();

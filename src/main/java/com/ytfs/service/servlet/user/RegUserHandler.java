@@ -45,7 +45,7 @@ public class RegUserHandler extends Handler<RegUserReq> {
         }
         req.setUserId(resp.getUserId());
         LOG.info("[" + request.getUsername() + "] is registered @ SN-" + sn.getId() + ",userID:" + resp.getUserId());
-        Object[] obs = SNSynchronizer.request(req, sn.getId());
+        Object[] obs = SNSynchronizer.syncRequest(req, sn.getId());
         for (Object o : obs) {
             if (o != null) {
                 if (o instanceof ServiceException) {

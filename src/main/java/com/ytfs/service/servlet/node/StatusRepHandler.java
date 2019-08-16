@@ -21,22 +21,22 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
 
     @Override
     public Object handle() throws Throwable {
+        int nodeid;
         try {
-            int nodeid;
-            try {
-                nodeid = this.getNodeId();
-            } catch (NodeMgmtException e) {
-                LOG.error("Invalid node pubkey:" + this.getPublicKey());
-                return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
-            }
-            if (nodeid != request.getId()) {
-                LOG.error("StatusRep Nodeid ERR:" + nodeid + "!=" + request.getId());
-                return new ServiceException(ServiceErrorCode.INVALID_NODE_ID);
-            } else {
-                LOG.debug("StatusRep Node:" + nodeid);
-            }
+            nodeid = this.getNodeId();
+        } catch (NodeMgmtException e) {
+            LOG.error("Invalid node pubkey:" + this.getPublicKey());
+            return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
+        }
+        if (nodeid != request.getId()) {
+            LOG.error("StatusRep Nodeid ERR:" + nodeid + "!=" + request.getId());
+            return new ServiceException(ServiceErrorCode.INVALID_NODE_ID);
+        } else {
+            LOG.debug("StatusRep Node:" + nodeid);
+        }
+        try {
             Node node = YottaNodeMgmt.updateNodeStatus(nodeid, request.getCpu(), request.getMemory(), request.getBandwidth(),
-                    request.getMaxDataSpace(), request.getAddrs(), request.isRelay(),request.getVersion());
+                    request.getMaxDataSpace(), request.getAddrs(), request.isRelay(), request.getVersion());
             StatusRepResp resp = new StatusRepResp();
             resp.setProductiveSpace(node.getProductiveSpace());
             List<String> ls = node.getAddrs();
@@ -47,21 +47,11 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
             node.setAddrs(addrs);
             NodeSyncReq req = new NodeSyncReq();
             req.setNode(node);
-            SNSynchronizer.request(req, ServerConfig.superNodeID);
+            SNSynchronizer.ayncRequest(req, ServerConfig.superNodeID);
             return resp;
         } catch (NodeMgmtException e) {
-            if (e.getMessage().contains("please register this node first")) {
-                LOG.warn("Please register this node first,ID:" + request.getId());
-                return new ServiceException(INVALID_NODE_ID);
-            } else if (e.getMessage().contains("No result")) {
-                LOG.warn("No result,ID:" + request.getId());
-                return new ServiceException(INVALID_NODE_ID);
-            } else if (e.getMessage().contains("node do not belong to this SN")) {
-                LOG.warn("Node do not belong to this SN,ID:" + request.getId());
-                return new ServiceException(INVALID_NODE_ID);
-            } else {
-                throw e;
-            }
+            LOG.error("UpdateNodeStatus ERR:" + e.getMessage() + ",ID:" + request.getId());
+            return new ServiceException(INVALID_NODE_ID);
         }
     }
 

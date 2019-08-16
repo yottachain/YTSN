@@ -16,6 +16,22 @@ public class SNSynchronizer implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(SNSynchronizer.class);
 
+    public static void ayncRequest(Object req, int exclude) throws InterruptedException {
+        SuperNode[] snlist = SuperNodeList.getSuperNodeList();
+        Object[] res = new Object[snlist.length];
+        AtomicInteger num = new AtomicInteger(0);
+        for (SuperNode node : snlist) {
+            if (node.getId() == exclude) {
+                num.incrementAndGet();
+                continue;
+            }
+            SNSynchronizer sync = new SNSynchronizer(res, num);
+            sync.req = req;
+            sync.node = node;
+            GlobleThreadPool.execute(sync);
+        }
+    }
+
     /**
      * 并行执行
      *
@@ -24,7 +40,7 @@ public class SNSynchronizer implements Runnable {
      * @return Object[]
      * @throws InterruptedException
      */
-    public static Object[] request(Object req, int exclude) throws InterruptedException {
+    public static Object[] syncRequest(Object req, int exclude) throws InterruptedException {
         SuperNode[] snlist = SuperNodeList.getSuperNodeList();
         Object[] res = new Object[snlist.length];
         AtomicInteger num = new AtomicInteger(0);
@@ -70,7 +86,7 @@ public class SNSynchronizer implements Runnable {
         try {
             if (node.getId() == ServerConfig.superNodeID) {
                 Handler handler = HandlerFactory.getHandler(req);
-                handler.setPubkey(node.getPubkey());               
+                handler.setPubkey(node.getPubkey());
                 resp = handler.handle();
             } else {
                 resp = P2PUtils.requestBP(req, node);

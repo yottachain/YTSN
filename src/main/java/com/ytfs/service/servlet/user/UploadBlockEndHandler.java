@@ -42,21 +42,18 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
 
     @Override
     public Object handle() throws Throwable {
-        long starttime = System.currentTimeMillis();
-        long l = starttime;
+        long l = System.currentTimeMillis();
         User user = this.getUser();
         int userid = user.getUserID();
         UploadBlockCache cache = CacheAccessor.getUploadBlockCache(request.getVBI());
+        LOG.debug("Receive UploadBlockEnd request:/" + cache.getVNU() + "/" + request.getVBI());
         UploadObjectCache progress = CacheAccessor.getUploadObjectCache(userid, cache.getVNU());
         Map<Integer, UploadShardCache> caches = cache.getShardCaches();
         List<ShardMeta> ls = verify(request, caches, cache.getShardcount(), request.getVBI());
         ShardAccessor.saveShardMetas(ls);
-        LOG.info("Save shards:/" + cache.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
-        starttime = System.currentTimeMillis();
         BlockMeta meta = makeBlockMeta(request, request.getVBI(), cache.getShardcount());
         BlockAccessor.saveBlockMeta(meta);
-        LOG.info("Save blockmeta:/" + cache.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
-        starttime = System.currentTimeMillis();
+        long starttime = System.currentTimeMillis();
         SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(request, userid, meta.getVBI(), cache.getVNU());
         saveObjectMetaReq.setNlink(1);
         try {

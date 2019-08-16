@@ -41,6 +41,7 @@ public class ServerInitor {
     }
 
     public static void init() {
+        System.out.println("SN is starting......");
         try {
             String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "INFO");
             String path = WrapperManager.getProperties().getProperty("wrapper.log4j.logfile");

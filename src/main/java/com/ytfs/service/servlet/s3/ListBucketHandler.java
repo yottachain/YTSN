@@ -14,7 +14,7 @@ public class ListBucketHandler extends Handler<ListBucketReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
-        LOG.info("LIST bucket:" + user.getUserID());
+        LOG.debug("LIST bucket:" + user.getUserID());
         String[] names = BucketAccessor.listBucket(user.getUserID());
         ListBucketResp resp = new ListBucketResp();
         resp.setNames(names);
