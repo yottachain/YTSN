@@ -9,6 +9,7 @@ import com.ytfs.service.servlet.UploadBlockCache;
 import com.ytfs.service.servlet.UploadShardCache;
 import static com.ytfs.service.servlet.user.UploadBlockInitHandler.sign;
 import com.ytfs.common.ServiceException;
+import static com.ytfs.common.conf.ServerConfig.Excess_Shard_Index;
 import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadBlockSubReq;
 import com.ytfs.service.packet.UploadBlockSubResp;
@@ -30,10 +31,14 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
         User user = this.getUser();
         UploadBlockCache cache = CacheAccessor.getUploadBlockCache(request.getVBI());
         UploadShardRes[] ress = request.getRes();
-        LOG.info("Upload block " + user.getUserID() + "/" + cache.getVNU() + ",Err count:" + ress.length + ",retry...");
+        int needExcess = 0;
+        if (ress[0] != null && ress[0].getSHARDID() == Excess_Shard_Index) {
+            needExcess = 1;
+        }
+        LOG.info("Upload block " + user.getUserID() + "/" + cache.getVNU() + ",Err count:" + (ress.length - needExcess) + ",retry...");
         List<UploadShardRes> fails = new ArrayList();
         Map<Integer, UploadShardCache> caches = cache.getShardCaches();
-        List<Integer> errid = new ArrayList();
+        List<Integer> errid_104 = new ArrayList();
         for (UploadShardRes res : ress) {
             if (res.getRES() == UploadShardRes.RES_OK) {
                 continue;
@@ -48,8 +53,8 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
                 ErrorNodeCache.addErrorNode(res.getNODEID());
             }
             if (res.getRES() == UploadShardRes.RES_REP_ERR) {
-                if (!errid.contains(res.getNODEID())) {
-                    errid.add(res.getNODEID());
+                if (!errid_104.contains(res.getNODEID())) {
+                    errid_104.add(res.getNODEID());
                 }
             }
         }
@@ -57,14 +62,16 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
         if (fails.isEmpty()) {
             return resp;
         }
-        Node[] nodes = NodeManager.getNode(fails.size(), ErrorNodeCache.getErrorIds(errid));
-        if (nodes.length != fails.size()) {
+        int count = needExcess == 1 ? UploadBlockInitHandler.incExcessCount(fails.size()) : fails.size();
+        int[] errids = ErrorNodeCache.getErrorIds(errid_104);
+        Node[] nodes = NodeManager.getNode(count, errids);
+        if (nodes.length != count) {
             LOG.warn("No enough data nodes:" + nodes.length + "/" + fails.size());
             throw new ServiceException(NO_ENOUGH_NODE);
         } else {
-            LOG.info("Assigned node:" + getAssignedNodeIDs(nodes));
+            LOG.info("Assigned node:" + getAssignedNodeIDs(nodes) + ",Errid count:" + errids.length);
         }
-        setNodes(resp, nodes, fails, request.getVBI(), cache);
+        setNodes(resp, nodes, fails, request.getVBI(), fails.size());
         return resp;
     }
 
@@ -76,14 +83,17 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
         return res + "]";
     }
 
-    private void setNodes(UploadBlockSubResp resp, Node[] ns, List<UploadShardRes> fails, long VBI, UploadBlockCache cache) throws NodeMgmtException {
+    private void setNodes(UploadBlockSubResp resp, Node[] ns, List<UploadShardRes> fails, long VBI, int needcount) throws NodeMgmtException {
         ShardNode[] nodes = new ShardNode[ns.length];
         resp.setNodes(nodes);
         for (int ii = 0; ii < ns.length; ii++) {
             nodes[ii] = new ShardNode(ns[ii]);
-            nodes[ii].setShardid(fails.get(ii).getSHARDID());
+            if (ii >= needcount) {
+                nodes[ii].setShardid(Excess_Shard_Index);
+            } else {
+                nodes[ii].setShardid(fails.get(ii).getSHARDID());
+            }
             sign(nodes[ii], VBI);
-            cache.getNodes()[fails.get(ii).getSHARDID()] = nodes[ii].getNodeId();//更新缓存
         }
     }
 }

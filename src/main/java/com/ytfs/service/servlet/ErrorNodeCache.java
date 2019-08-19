@@ -4,15 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.log4j.Logger;
 
 public class ErrorNodeCache {
-
+    
     private static final long EXPIRED_TIME = 1000 * 180;
-
+    private static final Logger LOG = Logger.getLogger(ErrorNodeCache.class);
+    
     private static final Map<Integer, Long> errIds = new ConcurrentHashMap<>();
-
+    
     private static Thread instance;
-
+    
     public static synchronized void startUp() {
         if (instance == null) {
             instance = new Thread() {
@@ -37,25 +39,27 @@ public class ErrorNodeCache {
             instance.start();
         }
     }
-
+    
     public static synchronized void shutdown() {
         if (instance != null) {
             instance.interrupt();
         }
     }
-
+    
     public static void addErrorNode(Integer id) {
         errIds.put(id, System.currentTimeMillis());
     }
-
+    
     public static int[] getErrorIds(List<Integer> errid) {
         List<Integer> idlist = errid == null ? new ArrayList() : errid;
         idlist.addAll(errIds.keySet());
         int[] ids = new int[idlist.size()];
-        for (int ii = 0; ii < ids.length && ii < 200; ii++) {
+        if (ids.length > 200) {
+            LOG.warn("Error ids count exceed 300.");
+        }
+        for (int ii = 0; ii < ids.length && ii < 300; ii++) {
             ids[ii] = idlist.get(ii);
         }
         return ids;
     }
-
 }

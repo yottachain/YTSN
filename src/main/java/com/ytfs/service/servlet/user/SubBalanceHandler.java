@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.user;
 
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.User;
 import com.ytfs.common.eos.EOSClient;
 import com.ytfs.service.packet.SubBalanceReq;
@@ -14,8 +15,12 @@ public class SubBalanceHandler extends Handler<SubBalanceReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
-        LOG.info("Sub Balance:" + user.getUserID());
-        EOSClient.deductHDD(request.getSignData(), request.getVNU());
+        try {
+            EOSClient.deductHDD(request.getSignData(), request.getVNU());
+            LOG.info("Sub Balance:" + user.getUserID());
+        } catch (ServiceException e) {
+            LOG.error("Sub Balance ERR: session expires.");
+        }
         return new VoidResp();
     }
 

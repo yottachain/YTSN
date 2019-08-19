@@ -42,9 +42,6 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
                 throw new ServiceException(ServiceErrorCode.INVALID_USER_ID);
             }
             verify(request, user.getKUEp(), cache.getShardcount(), nodeid);
-            if (cache.getNodes()[request.getSHARDID()] != nodeid) {
-                throw new ServiceException(ServiceErrorCode.INVALID_NODE_ID);
-            }
             if (request.getRES() == RES_BAD_REQUEST) {
                 long failtimes = cache.errInc();
                 if (failtimes >= ServerConfig.PNF) {

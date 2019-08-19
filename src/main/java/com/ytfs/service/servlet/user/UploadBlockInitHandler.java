@@ -15,6 +15,7 @@ import static com.ytfs.common.ServiceErrorCode.ILLEGAL_VHP_NODEID;
 import static com.ytfs.common.ServiceErrorCode.NO_ENOUGH_NODE;
 import static com.ytfs.common.ServiceErrorCode.TOO_MANY_SHARDS;
 import com.ytfs.common.ServiceException;
+import static com.ytfs.common.conf.ServerConfig.Excess_Shard_Index;
 import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadBlockDupResp;
 import com.ytfs.service.packet.UploadBlockInit2Req;
@@ -88,6 +89,18 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
         resp.setKED(KED);
     }
 
+    public static int incExcessCount(int count) {
+        if (count > 100) {
+            return count + count * 20 / 100;
+        } else if (count > 50 && count <= 100) {
+            return count + count * 30 / 100;
+        } else if (count > 10 && count <= 50) {
+            return count + count * 40 / 100;
+        } else {
+            return count + count * 400 / 100;
+        }
+    }
+
     /**
      * 分配节点
      *
@@ -98,13 +111,14 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
      */
     private void distributeNode(UploadBlockInitReq req, UploadBlockInitResp resp, String userkey) throws Exception {
         if (req.getShardCount() > 0) {//需要数据库
-            Node[] nodes = NodeManager.getNode(req.getShardCount(), ErrorNodeCache.getErrorIds(null));
-            if (nodes.length != req.getShardCount()) {
-                LOG.warn("No enough data nodes:" + nodes.length + "/" + req.getShardCount());
+            int count = incExcessCount(req.getShardCount());
+            Node[] nodes = NodeManager.getNode(count, ErrorNodeCache.getErrorIds(null));
+            if (nodes.length != count) {
+                LOG.warn("No enough data nodes:" + nodes.length + "/" + count);
                 throw new ServiceException(NO_ENOUGH_NODE);
             }
             long blockid = Sequence.generateBlockID(req.getShardCount());
-            setNodes(resp, nodes, blockid);
+            setNodes(resp, nodes, blockid, req.getShardCount());
             UploadBlockCache cache = new UploadBlockCache(nodes, req.getShardCount(), req.getVNU());
             cache.setUserKey(userkey);
             CacheAccessor.addUploadBlockCache(blockid, cache);
@@ -112,12 +126,16 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
         }
     }
 
-    private void setNodes(UploadBlockInitResp resp, Node[] ns, long VBI) throws NodeMgmtException {
+    private void setNodes(UploadBlockInitResp resp, Node[] ns, long VBI, int shardCount) throws NodeMgmtException {
         resp.setVBI(VBI);
         ShardNode[] nodes = new ShardNode[ns.length];
         resp.setNodes(nodes);
         for (int ii = 0; ii < ns.length; ii++) {
-            nodes[ii] = new ShardNode(ii, ns[ii]);
+            if (ii >= shardCount) {
+                nodes[ii] = new ShardNode(Excess_Shard_Index, ns[ii]);               
+            } else {
+                nodes[ii] = new ShardNode(ii, ns[ii]);
+            }
             sign(nodes[ii], VBI);
         }
     }

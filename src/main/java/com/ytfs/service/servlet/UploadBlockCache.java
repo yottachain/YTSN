@@ -8,7 +8,6 @@ import org.bson.types.ObjectId;
 public class UploadBlockCache {
 
     private String userKey;
-    private int[] nodes;//为该块分配的节点
     private int shardcount;//该数据块分片数 
     private ObjectId VNU;
     private int errTimes = 0;
@@ -17,7 +16,6 @@ public class UploadBlockCache {
     public UploadBlockCache(Node[] nodes, int shardcount, ObjectId VNU) {
         this.shardcount = shardcount;
         this.VNU = VNU;
-        setNodes(nodes);
     }
 
     public void addUploadShardCache(UploadShardCache cache) {
@@ -29,28 +27,6 @@ public class UploadBlockCache {
      */
     public Map<Integer, UploadShardCache> getShardCaches() {
         return shardCaches;
-    }
-
-    private void setNodes(Node[] nodes) {
-        this.nodes = new int[nodes.length];
-        int ii = 0;
-        for (Node n : nodes) {
-            this.nodes[ii++] = n.getId();
-        }
-    }
-
-    /**
-     * @return the nodes
-     */
-    public int[] getNodes() {
-        return nodes;
-    }
-
-    /**
-     * @param nodes the nodes to set
-     */
-    public void setNodes(int[] nodes) {
-        this.nodes = nodes;
     }
 
     /**
