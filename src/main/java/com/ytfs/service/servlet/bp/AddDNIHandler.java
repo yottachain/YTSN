@@ -22,10 +22,18 @@ public class AddDNIHandler extends Handler<AddDNIReq> {
             LOG.error("Invalid super node pubkey:" + this.getPublicKey());
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
         }
-        try {
-            YottaNodeMgmt.addDNI(request.getNodeid(), request.getDni());
-        } catch (NodeMgmtException ne) {
-            LOG.error("PutDNI " + request.getNodeid() + "-[" + Hex.encodeHexString(request.getDni()) + "] ERR:" + ne.getMessage());
+        if (request.isDelete()) {
+            try {
+                YottaNodeMgmt.deleteDNI(request.getNodeid(), request.getDni());
+            } catch (NodeMgmtException ne) {
+                LOG.error("DeleteDNI " + request.getNodeid() + "-[" + Hex.encodeHexString(request.getDni()) + "] ERR:" + ne.getMessage());
+            }
+        } else {
+            try {
+                YottaNodeMgmt.addDNI(request.getNodeid(), request.getDni());
+            } catch (NodeMgmtException ne) {
+                LOG.error("PutDNI " + request.getNodeid() + "-[" + Hex.encodeHexString(request.getDni()) + "] ERR:" + ne.getMessage());
+            }
         }
         return new VoidResp();
     }

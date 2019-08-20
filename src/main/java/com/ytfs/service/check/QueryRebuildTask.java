@@ -6,6 +6,7 @@ import io.yottachain.nodemgmt.core.vo.RebuildItem;
 import io.yottachain.nodemgmt.core.vo.ShardCount;
 import static java.lang.Thread.sleep;
 import java.util.List;
+import java.util.Map;
 import org.apache.log4j.Logger;
 
 public class QueryRebuildTask implements Runnable {
@@ -13,9 +14,12 @@ public class QueryRebuildTask implements Runnable {
     private static final Logger LOG = Logger.getLogger(QueryRebuildTask.class);
     private static final int Max_Shard_Count = 1000;
     private final ShardCount shardCount;
+    private final Map<Integer, QueryRebuildTask> taskMap;
 
-    QueryRebuildTask(ShardCount shardCount) {
+    QueryRebuildTask(ShardCount shardCount, Map<Integer, QueryRebuildTask> taskMap) {
         this.shardCount = shardCount;
+        this.taskMap = taskMap;
+        this.taskMap.put(this.shardCount.getId(), this);
     }
 
     @Override
@@ -39,6 +43,7 @@ public class QueryRebuildTask implements Runnable {
                 }
             }
         }
+        taskMap.remove(shardCount.getId());
         LOG.info("Node " + shardCount.getId() + " has been reconstructed.");
     }
 

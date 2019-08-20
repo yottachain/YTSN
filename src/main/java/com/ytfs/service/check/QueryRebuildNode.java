@@ -5,6 +5,8 @@ import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.vo.ShardCount;
 import static java.lang.Thread.sleep;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 public class QueryRebuildNode extends Thread {
@@ -28,6 +30,8 @@ public class QueryRebuildNode extends Thread {
         }
     }
 
+    private final Map<Integer, QueryRebuildTask> taskMap = new ConcurrentHashMap<>();
+
     @Override
     public void run() {
         LOG.info("SendRebuildTask distributor startup...");
@@ -48,8 +52,12 @@ public class QueryRebuildNode extends Thread {
                 }
                 if (sc != null) {//分发
                     for (ShardCount shardcount : sc) {
-                        QueryRebuildTask sr = new QueryRebuildTask(shardcount);
-                        GlobleThreadPool.execute(sr);
+                        if (taskMap.containsKey(shardcount.getId())) {
+                            LOG.info("Node " + shardcount.getId() + " is already rebuilding.");
+                        } else {
+                            QueryRebuildTask sr = new QueryRebuildTask(shardcount, taskMap);
+                            GlobleThreadPool.execute(sr);
+                        }
                     }
                     sc.clear();
                     sleep(60000 * 3);

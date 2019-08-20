@@ -2,10 +2,9 @@ package com.ytfs.service.check;
 
 import com.ytfs.common.GlobleThreadPool;
 import static com.ytfs.common.conf.ServerConfig.REBULIDTHREAD;
-import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
-import com.ytfs.service.packet.TaskQueryReq;
-import com.ytfs.service.servlet.bp.TaskQueryHandler;
+import com.ytfs.service.packet.TaskDispatchReq;
+import com.ytfs.service.servlet.bp.TaskDispatchHandler;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
@@ -49,29 +48,18 @@ public class SendRebuildTask implements Runnable {
                 LOG.warn("DNI Length Less than 42.");
                 return;
             }
-            Object task = null;
             try {
                 int snnum = (int) DNI[0];
-                TaskQueryReq req = new TaskQueryReq();
+                TaskDispatchReq req = new TaskDispatchReq();
                 req.setDNI(DNI);
                 req.setNodeId(nodeid);
                 SuperNode sn = SuperNodeList.getSuperNode(snnum);
-                task = TaskQueryHandler.taskQueryCall(req, sn);
+                TaskDispatchHandler.taskDispatchCall(req, sn);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Query rebuild task " + Base58.encode(DNI));
                 }
             } catch (Throwable r) {
-                LOG.error("Query rebuild task " + Base58.encode(DNI) + " ERR:" + r.getMessage());
-            }
-            if (task != null) {
-                try {
-                    P2PUtils.requestNode(task, node);
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Send rebuild task " + Base58.encode(DNI) + " to " + node.getId());
-                    }
-                } catch (Throwable ex) {
-                    LOG.error("Send rebuild task " + Base58.encode(DNI) + " ERR:" + ex.getMessage());
-                }
+                LOG.error("Send rebuild task " + Base58.encode(DNI) + " ERR:" + r.getMessage());
             }
         } finally {
             queue.add(this);

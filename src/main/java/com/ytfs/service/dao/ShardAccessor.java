@@ -6,6 +6,7 @@ import com.ytfs.service.dao.sync.LogMessage;
 import static com.ytfs.service.dao.sync.LogMessageCode.Op_Shards_INS;
 import com.ytfs.service.dao.sync.ShardInsertLog;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.log4j.Logger;
 import org.bson.Document;
@@ -44,5 +45,23 @@ public class ShardAccessor {
             metas[(int) index] = meta;
         }
         return metas;
+    }
+
+    public static boolean updateShardMeta(long VFI, int nodeid, byte[] VHF) {
+        Bson bson = Filters.eq("_id", VFI);
+        Document document = MongoSource.getShardCollection().find(bson).first();
+        if (document == null) {
+            return false;
+        } else {
+            ShardMeta meta = new ShardMeta(document);
+            if (!Arrays.equals(VHF, meta.getVHF())) {
+                return false;
+            } else {
+                Document doc = new Document("nodeId", nodeid);
+                Document update = new Document("$set", doc);
+                MongoSource.getShardCollection().updateOne(bson, update);
+                return true;
+            }
+        }
     }
 }

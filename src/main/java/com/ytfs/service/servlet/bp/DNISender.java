@@ -18,11 +18,23 @@ public class DNISender implements Runnable {
     private static final ArrayBlockingQueue<DNISender> queue;
 
     static {
-        int num = SENDDNITHREAD > 255 ? 255 : SENDDNITHREAD;
+        int num = SENDDNITHREAD > 500 ? 500 : SENDDNITHREAD;
         num = num < 5 ? 5 : num;
         queue = new ArrayBlockingQueue(num);
         for (int ii = 0; ii < num; ii++) {
             queue.add(new DNISender());
+        }
+    }
+
+    public static void startDeleteSender(byte[] VHF, int nid) {
+        try {
+            DNISender sender = queue.take();
+            sender.nid = nid;
+            sender.VHF = VHF;
+            sender.delete = true;
+            GlobleThreadPool.execute(sender);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -31,6 +43,7 @@ public class DNISender implements Runnable {
             DNISender sender = queue.take();
             sender.nid = nid;
             sender.VHF = VHF;
+            sender.delete = false;
             GlobleThreadPool.execute(sender);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -39,6 +52,7 @@ public class DNISender implements Runnable {
 
     private byte[] VHF;
     private int nid;
+    private boolean delete = false;
 
     @Override
     public void run() {
@@ -47,13 +61,22 @@ public class DNISender implements Runnable {
             AddDNIReq req = new AddDNIReq();
             req.setDni(VHF);
             req.setNodeid(nid);
+            req.setDelete(delete);
             if (sn.getId() == ServerConfig.superNodeID) {
-                YottaNodeMgmt.addDNI(nid, VHF);
+                if (delete) {
+                    YottaNodeMgmt.deleteDNI(nid, VHF);
+                } else {
+                    YottaNodeMgmt.addDNI(nid, VHF);
+                }
             } else {
                 P2PUtils.requestBP(req, sn);
             }
         } catch (Throwable r) {
-            LOG.error("PutDNI " + nid + "-[" + Hex.encodeHexString(VHF) + "] ERR:" + r.getMessage());
+            if (delete) {
+                LOG.error("DeleteDNI " + nid + "-[" + Hex.encodeHexString(VHF) + "] ERR:" + r.getMessage());
+            } else {
+                LOG.error("PutDNI " + nid + "-[" + Hex.encodeHexString(VHF) + "] ERR:" + r.getMessage());
+            }
         } finally {
             queue.add(this);
         }

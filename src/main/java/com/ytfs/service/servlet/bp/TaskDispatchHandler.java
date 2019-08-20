@@ -13,11 +13,13 @@ import com.ytfs.service.dao.ShardMeta;
 import com.ytfs.service.packet.P2PLocation;
 import com.ytfs.service.packet.TaskDescription;
 import com.ytfs.service.packet.TaskDescriptionCP;
-import com.ytfs.service.packet.TaskQueryReq;
+import com.ytfs.service.packet.TaskDispatchReq;
+import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.Handler;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
+import io.yottachain.p2phost.utils.Base58;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,16 +27,15 @@ import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
 
-public class TaskQueryHandler extends Handler<TaskQueryReq> {
+public class TaskDispatchHandler extends Handler<TaskDispatchReq> {
 
-    private static final Logger LOG = Logger.getLogger(TaskQueryHandler.class);
+    private static final Logger LOG = Logger.getLogger(TaskDispatchHandler.class);
 
-    public static Object taskQueryCall(TaskQueryReq req, SuperNode node) throws ServiceException {
+    public static Object taskDispatchCall(TaskDispatchReq req, SuperNode node) throws ServiceException {
         if (node.getId() == ServerConfig.superNodeID) {
             try {
-                return query(req);
+                return dispatch(req);
             } catch (Throwable t) {
-                LOG.error("Query task ERR:", t);
                 throw t instanceof ServiceException ? (ServiceException) t : new ServiceException(SERVER_ERROR, t.getMessage());
             }
         } else {
@@ -42,7 +43,7 @@ public class TaskQueryHandler extends Handler<TaskQueryReq> {
         }
     }
 
-    private static Object query(TaskQueryReq req) throws Throwable {
+    private static VoidResp dispatch(TaskDispatchReq req) throws Throwable {
         byte[] DNI = req.getDNI();
         int shardCount = (int) DNI[1];
         long VBI = Function.bytes2Integer(DNI, 2, 8);
@@ -60,6 +61,9 @@ public class TaskQueryHandler extends Handler<TaskQueryReq> {
                 VFI = meta.getVFI();
             }
         }
+        if (!nodeidsls.contains(req.getExecNodeId())) {
+            nodeidsls.add(req.getExecNodeId());
+        }
         List<Node> ls = NodeManager.getNode(nodeidsls);
         if (ls.size() != nodeidsls.size()) {
             LOG.warn("Some Nodes have been cancelled.");
@@ -69,7 +73,7 @@ public class TaskQueryHandler extends Handler<TaskQueryReq> {
             map.put(n.getId(), n);
         }
         byte[] id = new byte[42 + 12];
-        System.arraycopy(Function.long2bytes(VFI), 0, id, 0, 8);
+        System.arraycopy(Function.long2bytes(VFI), 0, id, 0, 8); //VFI
         System.arraycopy(Function.int2bytes(req.getNodeId()), 0, id, 8, 4);
         System.arraycopy(DNI, 0, id, 12, 42);
         List<byte[]> hashs = new ArrayList();
@@ -82,21 +86,30 @@ public class TaskQueryHandler extends Handler<TaskQueryReq> {
             location.setNodeId(node.getNodeid());
             locations.add(location);
         }
+        Object task;
         if (shardCount > UserConfig.Default_PND) {
-            TaskDescription task = new TaskDescription();
-            task.setId(id);
-            task.setParityShardCount(UserConfig.Default_PND);
-            task.setRecoverId((int) (VFI - VBI));
-            task.setHashs(hashs);
-            task.setLocations(locations);
-            return task;
+            task = new TaskDescription();
+            ((TaskDescription) task).setId(id);
+            ((TaskDescription) task).setParityShardCount(UserConfig.Default_PND);
+            ((TaskDescription) task).setRecoverId((int) (VFI - VBI));
+            ((TaskDescription) task).setHashs(hashs);
+            ((TaskDescription) task).setLocations(locations);
+
         } else {
-            TaskDescriptionCP task = new TaskDescriptionCP();
-            task.setId(id);
-            task.setDataHash(VHF);
-            task.setLocations(locations);
-            return task;
+            task = new TaskDescriptionCP();
+            ((TaskDescriptionCP) task).setId(id);
+            ((TaskDescriptionCP) task).setDataHash(VHF);
+            ((TaskDescriptionCP) task).setLocations(locations);
         }
+        try {
+            P2PUtils.requestNode(task, map.get(req.getExecNodeId()));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Send rebuild task " + Base58.encode(id) + " to " + req.getExecNodeId());
+            }
+        } catch (Throwable ex) {
+            LOG.error("Send rebuild task " + Base58.encode(id) + " to " + req.getExecNodeId() + " ERR:" + ex.getMessage());
+        }
+        return new VoidResp();
     }
 
     @Override
@@ -107,6 +120,11 @@ public class TaskQueryHandler extends Handler<TaskQueryReq> {
             LOG.error("Invalid super node pubkey:" + this.getPublicKey());
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
         }
-        return query(request);
+        try {
+            return dispatch(request);
+        } catch (Throwable t) {
+            LOG.error("Query shards meta ERR:", t);
+            return t instanceof ServiceException ? (ServiceException) t : new ServiceException(SERVER_ERROR, t.getMessage());
+        }
     }
 }
