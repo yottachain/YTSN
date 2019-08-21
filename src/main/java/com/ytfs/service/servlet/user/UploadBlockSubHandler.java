@@ -29,7 +29,13 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
-        UploadBlockCache cache = CacheAccessor.getUploadBlockCache(request.getVBI());
+        UploadBlockCache cache;
+        try {
+            cache = CacheAccessor.getUploadBlockCache(request.getVBI());
+        } catch (ServiceException e) {
+            LOG.error(e.getMessage());
+            return e;
+        }
         UploadShardRes[] ress = request.getRes();
         int needExcess = 0;
         if (ress[0] != null && ress[0].getSHARDID() == Excess_Shard_Index) {

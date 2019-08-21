@@ -39,7 +39,7 @@ public class UploadShardHandler extends Handler<UploadShardResp> {
             UploadBlockCache cache = CacheAccessor.getUploadBlockCache(request.getVBI());
             User user = UserCache.getUser(cache.getUserKey());
             if (user == null) {
-                throw new ServiceException(ServiceErrorCode.INVALID_USER_ID);
+                throw new ServiceException(ServiceErrorCode.INVALID_USER_ID, "Userid invalid:" + cache.getUserKey());
             }
             verify(request, user.getKUEp(), cache.getShardcount(), nodeid);
             if (request.getRES() == RES_BAD_REQUEST) {

@@ -71,8 +71,7 @@ public class CacheAccessor {
     public static UploadBlockCache getUploadBlockCache(long VBI) throws ServiceException {
         UploadBlockCache cache = uploadBlocks.getIfPresent(VBI);
         if (cache == null) {
-            LOG.error("Block cache invalid:" + VBI);
-            throw new ServiceException(INVALID_UPLOAD_ID);
+            throw new ServiceException(INVALID_UPLOAD_ID,"Block cache invalid:" + VBI);
         }
         return cache;
     }
