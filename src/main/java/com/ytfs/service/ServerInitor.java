@@ -78,7 +78,6 @@ public class ServerInitor {
                 BPNodeCallback bPNodeCallback = new FromBPMsgDispatcher();
                 NodeCallback nodeCallback = new FromNodeMsgDispatcher();
                 P2PUtils.register(userCallback, bPNodeCallback, nodeCallback);
-                LOG.info("P2P initialization completed, port " + port);
                 break;
             } catch (Exception r) {
                 LOG.error("P2P initialization failed!", r);

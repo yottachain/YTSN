@@ -45,7 +45,13 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         long l = System.currentTimeMillis();
         User user = this.getUser();
         int userid = user.getUserID();
-        UploadBlockCache cache = CacheAccessor.getUploadBlockCache(request.getVBI());
+        UploadBlockCache cache;
+        try {
+            cache = CacheAccessor.getUploadBlockCache(request.getVBI());
+        } catch (ServiceException e) {
+            LOG.error(e.getMessage());
+            return e;
+        }
         LOG.debug("Receive UploadBlockEnd request:/" + cache.getVNU() + "/" + request.getVBI());
         UploadObjectCache progress = CacheAccessor.getUploadObjectCache(userid, cache.getVNU());
         Map<Integer, UploadShardCache> caches = cache.getShardCaches();

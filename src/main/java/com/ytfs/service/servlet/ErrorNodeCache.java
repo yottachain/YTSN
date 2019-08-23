@@ -54,7 +54,7 @@ public class ErrorNodeCache {
         List<Integer> idlist = errid == null ? new ArrayList() : errid;
         idlist.addAll(errIds.keySet());
         int[] ids = new int[idlist.size()];
-        if (ids.length > 200) {
+        if (ids.length > 300) {
             LOG.warn("Error ids count exceed 300.");
         }
         for (int ii = 0; ii < ids.length && ii < 300; ii++) {
