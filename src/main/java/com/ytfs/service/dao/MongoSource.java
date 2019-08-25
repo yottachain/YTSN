@@ -48,6 +48,14 @@ public class MongoSource {
         return source.serverAddress;
     }
 
+    /**
+     * @return the serverAddress
+     */
+    public static String getAuth() {
+        newInstance();
+        return source.authString;
+    }
+
     public static MongoSource getMongoSource() {
         newInstance();
         return source;
@@ -145,6 +153,7 @@ public class MongoSource {
     private MongoCollection<Document> file_collection = null;
 
     private List<ServerAddress> serverAddress;
+    private String authString = "";
 
     private MongoSource() throws MongoException {
         String path = System.getProperty("mongo.conf", "conf/mongo.properties");
@@ -205,6 +214,7 @@ public class MongoSource {
         if (!username.isEmpty()) {
             String password = p.getProperty("password", "").trim();
             credential = MongoCredential.createScramSha1Credential(username, "admin", password.toCharArray());
+            authString = username + ":" + password+"@";
         }
         MongoClientSettings.Builder builder = MongoClientSettings.builder();
         if (credential != null) {

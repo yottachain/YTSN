@@ -5,7 +5,6 @@ import com.ytfs.service.dao.UserCache;
 import com.ytfs.common.node.NodeCache;
 import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
-import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import org.apache.log4j.Logger;
 

@@ -132,7 +132,7 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
         resp.setNodes(nodes);
         for (int ii = 0; ii < ns.length; ii++) {
             if (ii >= shardCount) {
-                nodes[ii] = new ShardNode(Excess_Shard_Index, ns[ii]);               
+                nodes[ii] = new ShardNode(Excess_Shard_Index, ns[ii]);
             } else {
                 nodes[ii] = new ShardNode(ii, ns[ii]);
             }

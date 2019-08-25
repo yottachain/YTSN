@@ -54,7 +54,7 @@ public class ServerInitor {
         for (int ii = 0; ii < 1000; ii++) {
             try {
                 List<ServerAddress> addrs = MongoSource.getServerAddress();
-                NodeManager.start(addrs, eosURI, BPAccount, BPPriKey, contractAccount, contractOwnerD, superNodeID);
+                NodeManager.start(addrs, MongoSource.getAuth(), eosURI, BPAccount, BPPriKey, contractAccount, contractOwnerD, superNodeID);
                 privateKey = YottaNodeMgmt.getSuperNodePrivateKey(superNodeID);
                 SNDSP = Base58.decode(privateKey);
                 SuperNodeList.isServer = true;
