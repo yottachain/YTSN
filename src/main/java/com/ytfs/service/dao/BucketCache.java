@@ -8,11 +8,9 @@ import org.bson.types.ObjectId;
 public class BucketCache {
 
     private static final long MAX_SIZE = 100000;
-    private static final long WRITE_EXPIRED_TIME = 10;
     private static final long READ_EXPIRED_TIME = 10;
 
     private static final Cache<String, ObjectId> buckets = CacheBuilder.newBuilder()
-            .expireAfterWrite(WRITE_EXPIRED_TIME, TimeUnit.MINUTES)
             .expireAfterAccess(READ_EXPIRED_TIME, TimeUnit.MINUTES)
             .maximumSize(MAX_SIZE)
             .build();

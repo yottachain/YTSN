@@ -16,7 +16,6 @@ public class CacheAccessor {
     private static final long OBJ_EXPIRED_TIME = 9;
 
     private static final Cache<ObjectId, UploadObjectCache> uploadObjects = CacheBuilder.newBuilder()
-            .expireAfterWrite(OBJ_EXPIRED_TIME, TimeUnit.MINUTES)
             .expireAfterAccess(OBJ_EXPIRED_TIME, TimeUnit.MINUTES)
             .maximumSize(OBJ_MAX_SIZE)
             .build();
@@ -44,7 +43,6 @@ public class CacheAccessor {
     private static final long BLK_MAX_SIZE = 500000;
     private static final long BLK_EXPIRED_TIME = 3;
     private static final Cache<Long, UploadBlockCache> uploadBlocks = CacheBuilder.newBuilder()
-            .expireAfterWrite(BLK_EXPIRED_TIME, TimeUnit.MINUTES)
             .expireAfterAccess(BLK_EXPIRED_TIME, TimeUnit.MINUTES)
             .maximumSize(BLK_MAX_SIZE)
             .build();

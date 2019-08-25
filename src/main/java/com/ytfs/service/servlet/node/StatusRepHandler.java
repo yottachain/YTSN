@@ -21,6 +21,7 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
 
     @Override
     public Object handle() throws Throwable {
+        LOG.debug("StatusRep Node:" + request.getId());
         int nodeid;
         try {
             nodeid = this.getNodeId();
@@ -31,8 +32,6 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
         if (nodeid != request.getId()) {
             LOG.error("StatusRep Nodeid ERR:" + nodeid + "!=" + request.getId());
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID);
-        } else {
-            LOG.debug("StatusRep Node:" + nodeid);
         }
         try {
             Node node = YottaNodeMgmt.updateNodeStatus(nodeid, request.getCpu(), request.getMemory(), request.getBandwidth(),

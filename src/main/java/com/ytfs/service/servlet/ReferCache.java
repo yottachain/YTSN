@@ -17,7 +17,6 @@ public class ReferCache {
     private static final long EXPIRED_TIME = 3;
 
     private static final Cache<ObjectId, Refer> refers = CacheBuilder.newBuilder()
-            .expireAfterWrite(EXPIRED_TIME, TimeUnit.MINUTES)
             .expireAfterAccess(EXPIRED_TIME, TimeUnit.MINUTES)
             .maximumSize(MAX_SIZE)
             .build();
