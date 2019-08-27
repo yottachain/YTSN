@@ -16,7 +16,7 @@ public class FromUserMsgDispatcher implements UserCallback {
         try {
             message = SerializationUtil.deserialize(data);
         } catch (Throwable r) {
-            LOG.error("Deserialize ERR:" + r.getMessage());
+            LOG.error("Deserialize ERR:", r);
             return SerializationUtil.serialize(new ServiceException(ServiceErrorCode.SERVER_ERROR));
         }
         try {
