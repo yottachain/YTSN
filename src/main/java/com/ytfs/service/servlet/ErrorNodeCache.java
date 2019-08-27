@@ -7,14 +7,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 public class ErrorNodeCache {
-    
+
     private static final long EXPIRED_TIME = 1000 * 180;
     private static final Logger LOG = Logger.getLogger(ErrorNodeCache.class);
-    
+
     private static final Map<Integer, Long> errIds = new ConcurrentHashMap<>();
-    
+
     private static Thread instance;
-    
+
     public static synchronized void startUp() {
         if (instance == null) {
             instance = new Thread() {
@@ -39,20 +39,21 @@ public class ErrorNodeCache {
             instance.start();
         }
     }
-    
+
     public static synchronized void shutdown() {
         if (instance != null) {
             instance.interrupt();
         }
     }
-    
-    public static void addErrorNode(Integer id) {
-        errIds.put(id, System.currentTimeMillis());
+
+    public static void addErrorNode(List<Integer> errid) {
+        errid.stream().forEach((id) -> {
+            errIds.put(id, System.currentTimeMillis());
+        });
     }
-    
-    public static int[] getErrorIds(List<Integer> errid) {
-        List<Integer> idlist = errid == null ? new ArrayList() : errid;
-        idlist.addAll(errIds.keySet());
+
+    public static int[] getErrorIds() {
+        List<Integer> idlist = new ArrayList(errIds.keySet());
         int[] ids = new int[idlist.size()];
         if (ids.length > 300) {
             LOG.warn("Error ids count exceed 300.");

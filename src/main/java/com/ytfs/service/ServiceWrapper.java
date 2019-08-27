@@ -18,8 +18,8 @@ public class ServiceWrapper implements WrapperListener {
         ServerInitor.init();
         NewObjectScanner.startUp();
         ErrorNodeCache.startUp();
-        QueryRebuildNode.startUp();
-        SendSpotCheckTask.startUp();
+        //QueryRebuildNode.startUp();
+        //SendSpotCheckTask.startUp();
         return null;
     }
 

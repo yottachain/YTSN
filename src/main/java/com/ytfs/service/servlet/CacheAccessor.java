@@ -5,7 +5,6 @@ import com.google.common.cache.CacheBuilder;
 import com.ytfs.service.packet.bp.QueryObjectMetaReq;
 import com.ytfs.service.packet.bp.QueryObjectMetaResp;
 import com.ytfs.service.servlet.bp.QueryObjectMetaHandler;
-import static com.ytfs.common.ServiceErrorCode.INVALID_UPLOAD_ID;
 import com.ytfs.common.ServiceException;
 import java.util.concurrent.TimeUnit;
 import org.bson.types.ObjectId;
@@ -39,28 +38,4 @@ public class CacheAccessor {
     public static void delUploadObjectCache(ObjectId VNU) {
         uploadObjects.invalidate(VNU);
     }
-
-    private static final long BLK_MAX_SIZE = 500000;
-    private static final long BLK_EXPIRED_TIME = 3;
-    private static final Cache<Long, UploadBlockCache> uploadBlocks = CacheBuilder.newBuilder()
-            .expireAfterAccess(BLK_EXPIRED_TIME, TimeUnit.MINUTES)
-            .maximumSize(BLK_MAX_SIZE)
-            .build();
-
-    public static void addUploadBlockCache(long VBI, UploadBlockCache cache) {
-        uploadBlocks.put(VBI, cache);
-    }
-
-    public static UploadBlockCache getUploadBlockCache(long VBI) throws ServiceException {
-        UploadBlockCache cache = uploadBlocks.getIfPresent(VBI);
-        if (cache == null) {
-            throw new ServiceException(INVALID_UPLOAD_ID, "Block cache invalid:" + VBI);
-        }
-        return cache;
-    }
-
-    public static void delUploadBlockCache(long VBI) {
-        uploadBlocks.invalidate(VBI);
-    }
-
 }

@@ -9,13 +9,11 @@ import com.ytfs.service.dao.ShardMeta;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.Handler;
-import com.ytfs.service.servlet.UploadBlockCache;
 import com.ytfs.service.servlet.UploadObjectCache;
-import com.ytfs.service.servlet.UploadShardCache;
 import com.ytfs.service.servlet.bp.SaveObjectMetaHandler;
 import static com.ytfs.common.ServiceErrorCode.INVALID_KED;
 import static com.ytfs.common.ServiceErrorCode.INVALID_KEU;
-import static com.ytfs.common.ServiceErrorCode.INVALID_SHARD;
+import static com.ytfs.common.ServiceErrorCode.INVALID_SIGNATURE;
 import static com.ytfs.common.ServiceErrorCode.INVALID_VHB;
 import static com.ytfs.common.ServiceErrorCode.INVALID_VHP;
 import com.ytfs.common.ServiceException;
@@ -26,13 +24,11 @@ import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.bp.DNISender;
-import io.yottachain.p2phost.utils.Base58;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
@@ -45,38 +41,30 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         long l = System.currentTimeMillis();
         User user = this.getUser();
         int userid = user.getUserID();
-        UploadBlockCache cache;
-        try {
-            cache = CacheAccessor.getUploadBlockCache(request.getVBI());
-        } catch (ServiceException e) {
-            LOG.error(e.getMessage());
-            return e;
-        }
-        LOG.debug("Receive UploadBlockEnd request:/" + cache.getVNU() + "/" + request.getVBI());
-        UploadObjectCache progress = CacheAccessor.getUploadObjectCache(userid, cache.getVNU());
-        Map<Integer, UploadShardCache> caches = cache.getShardCaches();
-        List<ShardMeta> ls = verify(request, caches, cache.getShardcount(), request.getVBI());
+        LOG.debug("Receive UploadBlockEnd request:/" + request.getVNU() + "/" + request.getVBI());
+        UploadObjectCache progress = CacheAccessor.getUploadObjectCache(userid, request.getVNU());
+        List<UploadShardRes> res = request.getOkList();
+        List<ShardMeta> ls = verify(request, res);
         ShardAccessor.saveShardMetas(ls);
-        BlockMeta meta = makeBlockMeta(request, request.getVBI(), cache.getShardcount());
+        BlockMeta meta = makeBlockMeta(request, request.getVBI(), res.size());
         BlockAccessor.saveBlockMeta(meta);
         long starttime = System.currentTimeMillis();
-        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(request, userid, meta.getVBI(), cache.getVNU());
+        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(request, userid, meta.getVBI(), request.getVNU());
         saveObjectMetaReq.setNlink(1);
         try {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
             progress.setBlockNum(request.getId());
             if (resp.isExists()) {
-                LOG.warn("Block " + user.getUserID() + "/" + cache.getVNU() + "/" + request.getId() + " has been uploaded.");
+                LOG.warn("Block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " has been uploaded.");
             }
         } catch (ServiceException r) {
             throw r;
         }
-        LOG.info("Save object refer:/" + cache.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
+        LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
         starttime = System.currentTimeMillis();
         sendDNI(ls);
-        LOG.info("Save DNI:/" + cache.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
-        CacheAccessor.delUploadBlockCache(request.getVBI());
-        LOG.info("Upload block:/" + cache.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");
+        LOG.info("Save DNI:/" + request.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
+        LOG.info("Upload block:/" + request.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");
         return new VoidResp();
     }
 
@@ -124,34 +112,31 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         return meta;
     }
 
-    private List<ShardMeta> verify(UploadBlockEndReq req, Map<Integer, UploadShardCache> caches, int shardCount, long vbi) throws ServiceException, NoSuchAlgorithmException {
+    private boolean verifySign(UploadShardRes res) {
+        return true;
+    }
+
+    private List<ShardMeta> verify(UploadBlockEndReq req, List<UploadShardRes> resList) throws ServiceException, NoSuchAlgorithmException {
         MessageDigest md5 = MessageDigest.getInstance("MD5");
-        byte[] vhf = null;
         List<ShardMeta> ls = new ArrayList();
-        for (int ii = 0; ii < shardCount; ii++) {
-            UploadShardCache cache = caches.get(ii);
-            if (cache == null) {
-                LOG.error("Verify ERR:" + request.getVBI() + "/" + ii + " not Uploaded");
-                throw new ServiceException(INVALID_SHARD);
-            }
-            if (!(cache.getRes() == UploadShardRes.RES_OK || cache.getRes() == UploadShardRes.RES_VNF_EXISTS)) {
-                LOG.error("Verify ERR:" + request.getVBI() + "/" + ii + " RES:" + cache.getRes());
-                throw new ServiceException(INVALID_SHARD);
-            }
+        UploadShardRes[] shards = new UploadShardRes[resList.size()];
+        
+        resList.stream().forEach((res) -> {
+            shards[res.getSHARDID()] = res;
+        });
+        for (int ii = 0; ii < shards.length; ii++) {
+            UploadShardRes res = shards[ii];
             if (req.isRsShard()) {
-                md5.update(cache.getVHF());
+                md5.update(res.getVHF());
             } else {
                 if (ii == 0) {
-                    md5.update(cache.getVHF());
-                    vhf = cache.getVHF();
-                } else {
-                    if (!Arrays.equals(cache.getVHF(), vhf)) {
-                        LOG.error("Verify ERR:" + request.getVBI() + "/" + ii + " HASH:" + Base58.encode(cache.getVHF()));
-                        throw new ServiceException(INVALID_SHARD);
-                    }
+                    md5.update(res.getVHF());
                 }
             }
-            ShardMeta meta = new ShardMeta(vbi + ii, cache.getNodeid(), cache.getVHF());
+            if (!verifySign(res)) {
+                throw new ServiceException(INVALID_SIGNATURE);
+            }
+            ShardMeta meta = new ShardMeta(req.getVBI() + ii, res.getNODEID(), res.getVHF());
             ls.add(meta);
         }
         byte[] vhb = md5.digest();
