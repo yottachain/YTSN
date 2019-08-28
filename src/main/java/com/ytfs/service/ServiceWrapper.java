@@ -15,9 +15,9 @@ public class ServiceWrapper implements WrapperListener {
 
     @Override
     public Integer start(String[] strings) {
-        ServerInitor.init();
-        NewObjectScanner.startUp();
+        ServerInitor.init();       
         ErrorNodeCache.startUp();
+        //NewObjectScanner.startUp();
         //QueryRebuildNode.startUp();
         //SendSpotCheckTask.startUp();
         return null;
