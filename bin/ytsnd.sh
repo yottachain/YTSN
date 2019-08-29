@@ -1482,7 +1482,7 @@ docommand() {
             export P2PHOST_CONNECTTIMEOUT=60
             export P2PHOST_READTIMEOUT=60
             export P2PHOST_WRITETIMEOUT=60
-	    export IPFS_LOGGING=debug
+	    export IPFS_LOGGING=error
             export P2PHOST_ENABLEPPROF=true
             if [ "$DIST_OS" = "macosx" -a -f "/Library/LaunchDaemons/${APP_PLIST}" ] ; then
                 macosxstart
@@ -1507,7 +1507,7 @@ docommand() {
             export P2PHOST_CONNECTTIMEOUT=60
             export P2PHOST_READTIMEOUT=60
             export P2PHOST_WRITETIMEOUT=60
-            export IPFS_LOGGING=debug
+            export IPFS_LOGGING=error
             export P2PHOST_ENABLEPPROF=true
 	    checkUser touchlock "$COMMAND"
             if [ ! -n "$FIXED_COMMAND" ] ; then

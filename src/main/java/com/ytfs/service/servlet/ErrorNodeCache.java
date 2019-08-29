@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 
 public class ErrorNodeCache {
 
-    private static final long EXPIRED_TIME = 1000 * 180;
+    private static final long EXPIRED_TIME = 1000 * 15;
     private static final Logger LOG = Logger.getLogger(ErrorNodeCache.class);
 
     private static final Map<Integer, Long> errIds = new ConcurrentHashMap<>();
@@ -22,7 +22,7 @@ public class ErrorNodeCache {
                 public void run() {
                     while (!this.isInterrupted()) {
                         try {
-                            sleep(15000);
+                            sleep(5000);
                             List<Map.Entry<Integer, Long>> ents = new ArrayList(errIds.entrySet());
                             for (Map.Entry<Integer, Long> ent : ents) {
                                 if (System.currentTimeMillis() - ent.getValue() > EXPIRED_TIME) {
