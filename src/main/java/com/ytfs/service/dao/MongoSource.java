@@ -120,6 +120,11 @@ public class MongoSource {
         return source.file_collection;
     }
 
+    static MongoCollection<Document> getCollection(String tabname) {
+        newInstance();
+        return source.database.getCollection(tabname);
+    }
+
     static Proxy getProxy() {
         newInstance();
         return source.proxy;
@@ -214,7 +219,7 @@ public class MongoSource {
         if (!username.isEmpty()) {
             String password = p.getProperty("password", "").trim();
             credential = MongoCredential.createScramSha1Credential(username, "admin", password.toCharArray());
-            authString = username + ":" + password+"@";
+            authString = username + ":" + password + "@";
         }
         MongoClientSettings.Builder builder = MongoClientSettings.builder();
         if (credential != null) {
@@ -335,4 +340,5 @@ public class MongoSource {
         }
         LOG.info("Successful creation of user file table.");
     }
+
 }

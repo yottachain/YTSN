@@ -1,84 +1,38 @@
 package com.ytfs.service.servlet.bp;
 
-import com.ytfs.common.GlobleThreadPool;
-import com.ytfs.common.conf.ServerConfig;
-import static com.ytfs.common.conf.ServerConfig.SENDDNITHREAD;
-import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.packet.bp.AddDNIReq;
-import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
-import java.util.concurrent.ArrayBlockingQueue;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.log4j.Logger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-public class DNISender implements Runnable {
+public class DNISender {
 
-    private static final Logger LOG = Logger.getLogger(DNISender.class);
-    private static final ArrayBlockingQueue<DNISender> queue;
+    private static AddDNISender[] senders;
 
-    static {
-        int num = SENDDNITHREAD > 500 ? 500 : SENDDNITHREAD;
-        num = num < 5 ? 5 : num;
-        queue = new ArrayBlockingQueue(num);
-        for (int ii = 0; ii < num; ii++) {
-            queue.add(new DNISender());
+    public static final void start() {
+        int count = SuperNodeList.getSuperNodeCount();
+        senders = new AddDNISender[count];
+        for (int ii = 0; ii < count; ii++) {
+            AddDNISender sender = AddDNISender.startSender(ii);
+            senders[ii] = sender;
         }
     }
 
-    public static void startDeleteSender(byte[] VHF, int nid) {
-        try {
-            DNISender sender = queue.take();
-            sender.nid = nid;
-            sender.VHF = VHF;
-            sender.delete = true;
-            GlobleThreadPool.execute(sender);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
+    public static final void stop() {
+        List<AddDNISender> ls = new ArrayList(Arrays.asList(senders));
+        ls.stream().forEach((sender) -> {
+            sender.stopSend();
+        });
     }
 
     public static void startSender(byte[] VHF, int nid) {
-        try {
-            DNISender sender = queue.take();
-            sender.nid = nid;
-            sender.VHF = VHF;
-            sender.delete = false;
-            GlobleThreadPool.execute(sender);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
+        AddDNIReq req = new AddDNIReq();
+        req.setDni(VHF);
+        req.setNodeid(nid);
+        SuperNode sn = SuperNodeList.getDNISuperNode(nid);
+        senders[sn.getId()].putMessage(req);
     }
 
-    private byte[] VHF;
-    private int nid;
-    private boolean delete = false;
-
-    @Override
-    public void run() {
-        try {
-            SuperNode sn = SuperNodeList.getDNISuperNode(nid);
-            AddDNIReq req = new AddDNIReq();
-            req.setDni(VHF);
-            req.setNodeid(nid);
-            req.setDelete(delete);
-            if (sn.getId() == ServerConfig.superNodeID) {
-                if (delete) {
-                    YottaNodeMgmt.deleteDNI(nid, VHF);
-                } else {
-                    YottaNodeMgmt.addDNI(nid, VHF);
-                }
-            } else {
-                P2PUtils.requestBP(req, sn);
-            }
-        } catch (Throwable r) {
-            if (delete) {
-                LOG.error("DeleteDNI " + nid + "-[" + Hex.encodeHexString(VHF) + "] ERR:" + r.getMessage());
-            } else {
-                LOG.error("PutDNI " + nid + "-[" + Hex.encodeHexString(VHF) + "] ERR:" + r.getMessage());
-            }
-        } finally {
-            queue.add(this);
-        }
-    }
 }

@@ -46,7 +46,7 @@ public class TaskOpResultHandler extends Handler<TaskOpResult> {
             return new VoidResp();
         }
         DNISender.startSender(DNI, nodeid);
-        DNISender.startDeleteSender(DNI, rebuildNodeId);
+      //  DNISender.startDeleteSender(DNI, rebuildNodeId);
         return new VoidResp();
     }
 

@@ -62,16 +62,14 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         } catch (ServiceException r) {
             throw r;
         }
-        LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
-        starttime = System.currentTimeMillis();
+        LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");      
         sendDNI(ls);
-        LOG.info("Save DNI:/" + request.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
         LOG.info("Upload block:/" + request.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");
         return new VoidResp();
     }
     
     private void sendDNI(List<ShardMeta> ls) {
-        for (ShardMeta doc : ls) {
+        ls.stream().forEach((doc) -> {
             int nid = doc.getNodeId();
             byte[] vhf = doc.getVHF();
             byte[] vbi = Function.long2bytes(request.getVBI());
@@ -81,7 +79,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             System.arraycopy(vbi, 0, data, 2, 8);
             System.arraycopy(vhf, 0, data, 10, vhf.length);
             DNISender.startSender(data, nid);
-        }
+        });
     }
     
     private SaveObjectMetaReq makeSaveObjectMetaReq(UploadBlockEndReq req, int userid, long vbi, ObjectId VNU) {

@@ -4,6 +4,8 @@ import com.ytfs.service.check.QueryRebuildNode;
 import com.ytfs.service.check.SendSpotCheckTask;
 import com.ytfs.service.servlet.ErrorNodeCache;
 import com.ytfs.service.servlet.NewObjectScanner;
+import com.ytfs.service.servlet.bp.DNISender;
+import com.ytfs.service.servlet.bp.NodeStatSync;
 import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 
@@ -15,11 +17,13 @@ public class ServiceWrapper implements WrapperListener {
 
     @Override
     public Integer start(String[] strings) {
-        ServerInitor.init();       
+        ServerInitor.init();
         ErrorNodeCache.startUp();
         //NewObjectScanner.startUp();
         //QueryRebuildNode.startUp();
         //SendSpotCheckTask.startUp();
+        DNISender.start();
+        NodeStatSync.startup();
         return null;
     }
 
@@ -29,6 +33,8 @@ public class ServiceWrapper implements WrapperListener {
         ErrorNodeCache.shutdown();
         SendSpotCheckTask.shutdown();
         QueryRebuildNode.shutdown();
+        DNISender.stop();
+        NodeStatSync.terminate();
         ServerInitor.stop();
         return exitCode;
     }

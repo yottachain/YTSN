@@ -9,6 +9,7 @@ import com.ytfs.service.packet.StatusRepReq;
 import com.ytfs.service.packet.StatusRepResp;
 import com.ytfs.service.packet.bp.NodeSyncReq;
 import com.ytfs.service.servlet.Handler;
+import com.ytfs.service.servlet.bp.NodeStatSync;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
@@ -21,7 +22,6 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
 
     @Override
     public Object handle() throws Throwable {
-        LOG.debug("StatusRep Node:" + request.getId());
         int nodeid;
         try {
             nodeid = this.getNodeId();
@@ -33,6 +33,7 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
             LOG.error("StatusRep Nodeid ERR:" + nodeid + "!=" + request.getId());
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID);
         }
+        long l = System.currentTimeMillis();
         try {
             Node node = YottaNodeMgmt.updateNodeStatus(nodeid, request.getCpu(), request.getMemory(), request.getBandwidth(),
                     request.getMaxDataSpace(), request.getAddrs(), request.isRelay(), request.getVersion());
@@ -44,12 +45,11 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
             }
             List<String> addrs = request.getAddrs();
             node.setAddrs(addrs);
-            NodeSyncReq req = new NodeSyncReq();
-            req.setNode(node);
-            SNSynchronizer.ayncRequest(req, ServerConfig.superNodeID);
+            NodeStatSync.updateNode(node);
+            LOG.debug("StatusRep Node:" + request.getId() + ",take times " + (System.currentTimeMillis() - l) + " ms");
             return resp;
         } catch (NodeMgmtException e) {
-            LOG.error("UpdateNodeStatus ERR:" + e.getMessage() + ",ID:" + request.getId());
+            LOG.error("UpdateNodeStatus ERR:" + e.getMessage() + ",ID:" + request.getId() + ",take times " + (System.currentTimeMillis() - l) + " ms");
             return new ServiceException(INVALID_NODE_ID);
         }
     }
