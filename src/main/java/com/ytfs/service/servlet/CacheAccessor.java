@@ -12,7 +12,7 @@ import org.bson.types.ObjectId;
 public class CacheAccessor {
 
     private static final long OBJ_MAX_SIZE = 500000;
-    private static final long OBJ_EXPIRED_TIME = 9;
+    private static final long OBJ_EXPIRED_TIME = 5;
 
     private static final Cache<ObjectId, UploadObjectCache> uploadObjects = CacheBuilder.newBuilder()
             .expireAfterAccess(OBJ_EXPIRED_TIME, TimeUnit.MINUTES)

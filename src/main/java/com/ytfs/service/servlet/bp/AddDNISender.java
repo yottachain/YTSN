@@ -25,7 +25,7 @@ public class AddDNISender extends Thread {
     private final int snId;
 
     public AddDNISender(int snId) {
-        int num = SENDDNI_QUEUE > 500 ? 500 : SENDDNI_QUEUE;
+        int num = SENDDNI_QUEUE > 5000 ? 5000 : SENDDNI_QUEUE;
         num = num < 5 ? 5 : num;
         queue = new ArrayBlockingQueue(num);
         this.snId = snId;
