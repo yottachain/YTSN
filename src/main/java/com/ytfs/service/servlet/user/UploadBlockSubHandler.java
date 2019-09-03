@@ -27,7 +27,6 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
         if (request.getShardCount() > 255) {
             return new ServiceException(TOO_MANY_SHARDS);
         }
-        CacheAccessor.getUploadObjectCache(user.getUserID(), request.getVNU());
         LOG.info("Upload block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getVBI() + ",node count:" + request.getShardCount() + ",retry...");
         List<Integer> errid = request.getErrid();
         ErrorNodeCache.addErrorNode(errid);

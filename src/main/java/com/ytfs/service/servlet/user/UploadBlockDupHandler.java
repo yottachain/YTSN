@@ -4,9 +4,7 @@ import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.dao.BlockMeta;
 import com.ytfs.service.dao.User;
-import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.Handler;
-import com.ytfs.service.servlet.UploadObjectCache;
 import com.ytfs.service.servlet.bp.SaveObjectMetaHandler;
 import static com.ytfs.common.ServiceErrorCode.INVALID_KEU;
 import static com.ytfs.common.ServiceErrorCode.NO_SUCH_BLOCK;
@@ -27,10 +25,6 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
         User user = this.getUser();
         int userid = user.getUserID();
         LOG.info("Upload block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " exist...");
-        UploadObjectCache progress = CacheAccessor.getUploadObjectCache(userid, request.getVNU());
-        if (progress.exists(request.getId())) {
-            return new VoidResp();
-        }
         BlockMeta meta = BlockAccessor.getBlockMeta(request.getVHP(), request.getVHB());
         if (meta == null) {
             throw new ServiceException(NO_SUCH_BLOCK);
@@ -41,7 +35,6 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
         saveObjectMetaReq.setNlink(meta.getNLINK() + 1);
         try {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
-            progress.setBlockNum(request.getId());
             if (resp.isExists()) {
                 LOG.warn("Block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " has been uploaded.");
             }

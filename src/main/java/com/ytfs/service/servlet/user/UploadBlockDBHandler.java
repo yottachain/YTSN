@@ -7,9 +7,7 @@ import com.ytfs.service.dao.BlockMeta;
 import com.ytfs.service.dao.Sequence;
 import com.ytfs.service.dao.User;
 import com.ytfs.common.node.SuperNodeList;
-import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.Handler;
-import com.ytfs.service.servlet.UploadObjectCache;
 import com.ytfs.service.servlet.bp.SaveObjectMetaHandler;
 import static com.ytfs.common.ServiceErrorCode.ILLEGAL_VHP_NODEID;
 import static com.ytfs.common.ServiceErrorCode.INVALID_KED;
@@ -36,10 +34,6 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         User user = this.getUser();
         int userid = user.getUserID();
         LOG.info("Save block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " to DB...");
-        UploadObjectCache progress = CacheAccessor.getUploadObjectCache(userid, request.getVNU());
-        if (progress.exists(request.getId())) {
-            return new VoidResp();
-        }
         SuperNode n = SuperNodeList.getBlockSuperNode(request.getVHP());
         if (n.getId() != ServerConfig.superNodeID) {//验证数据块是否对应
             throw new ServiceException(ILLEGAL_VHP_NODEID);
@@ -54,7 +48,6 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         saveObjectMetaReq.setNlink(1);
         try {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
-            progress.setBlockNum(request.getId());
             if (resp.isExists()) {
                 LOG.warn("Block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " has been uploaded.");
             }

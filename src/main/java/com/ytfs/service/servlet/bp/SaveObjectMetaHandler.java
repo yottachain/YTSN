@@ -8,13 +8,12 @@ import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.servlet.Handler;
 import com.ytfs.common.ServiceException;
-import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
-import com.ytfs.service.servlet.ReferCache;
+import com.ytfs.service.servlet.CacheAccessor;
+import com.ytfs.service.servlet.UploadObjectCache;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
-import java.util.List;
 import org.apache.log4j.Logger;
 
 public class SaveObjectMetaHandler extends Handler<SaveObjectMetaReq> {
@@ -55,21 +54,15 @@ public class SaveObjectMetaHandler extends Handler<SaveObjectMetaReq> {
             throw new ServiceException(INVALID_UPLOAD_ID);
         }
         SaveObjectMetaResp resp = new SaveObjectMetaResp();
-        List<ObjectRefer> refers = ReferCache.getRefersCache(request.getVNU(), request.getUserID());
-        resp.setExists(false);
-        synchronized (refers) {
-            for (ObjectRefer refer : refers) {
-                if (refer.getId() == request.getRefer().getId()) {
-                    resp.setExists(true);
-                    break;
-                }
-            }
-            if (!resp.isExists()) {
-                long usedspace = sumUsedSpace(request.getRefer().getRealSize(), request.getNlink());
-                refers.add(request.getRefer());                
-                byte[] bs =request.getRefer().toBytes();
-                ObjectAccessor.updateObject(request.getVNU(), bs, usedspace);
-            }
+        UploadObjectCache cache = CacheAccessor.getUploadObjectCache1(request.getUserID(), request.getVNU());
+        if (cache.exists(request.getRefer().getId())) {
+            resp.setExists(true);
+        } else {
+            resp.setExists(false);
+            cache.setBlockNum(request.getRefer().getId());
+            long usedspace = sumUsedSpace(request.getRefer().getRealSize(), request.getNlink());
+            byte[] bs = request.getRefer().toBytes();
+            ObjectAccessor.updateObject(request.getVNU(), bs, usedspace);
         }
         return resp;
     }

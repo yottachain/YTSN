@@ -12,6 +12,8 @@ import com.ytfs.common.eos.EOSClient;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.UploadObjectInitReq;
 import com.ytfs.service.packet.UploadObjectInitResp;
+import com.ytfs.service.servlet.CacheAccessor;
+import com.ytfs.service.servlet.UploadObjectCache;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -36,6 +38,8 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
         ObjectMeta meta = new ObjectMeta(userid, request.getVHW());
         boolean exists = ObjectAccessor.isObjectExists(meta);
         UploadObjectInitResp resp = new UploadObjectInitResp(false);
+        UploadObjectCache cache = new UploadObjectCache();
+        cache.setUserid(userid);
         if (exists) {
             resp.setVNU(meta.getVNU());
             int nlink = meta.getNLINK();
@@ -43,7 +47,9 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
                 List<ObjectRefer> refers = ObjectRefer.parse(meta.getBlocks(), meta.getBlockList());
                 short[] blocks = new short[refers.size()];
                 for (int ii = 0; ii < blocks.length; ii++) {
-                    blocks[ii] = refers.get(ii).getId();
+                    short id = refers.get(ii).getId();
+                    blocks[ii] = id;
+                    cache.setBlockNum(id);
                 }
                 resp.setBlocks(blocks);
             } else {
@@ -63,6 +69,8 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
         } else {
             throw new ServiceException(ServiceErrorCode.NOT_ENOUGH_DHH);
         }
+        cache.setFilesize(meta.getLength());
+        CacheAccessor.putUploadObjectCache(meta.getVNU(), cache);
         return resp;
     }
 

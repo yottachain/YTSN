@@ -12,13 +12,12 @@ import com.ytfs.service.packet.UploadObjectEndReq;
 import com.ytfs.service.packet.UploadObjectEndResp;
 import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.Handler;
-import com.ytfs.service.servlet.ReferCache;
 import org.apache.log4j.Logger;
 
 public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
-    
+
     private static final Logger LOG = Logger.getLogger(UploadObjectEndHandler.class);
-    
+
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
@@ -32,7 +31,7 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         long costPerCycle = count * ServerConfig.unitcost;
         ObjectAccessor.addNewObject(meta.getVNU(), costPerCycle, user.getUserID(), user.getUsername());
         UserAccessor.updateUser(userid, usedspace, 1, meta.getLength());
-        long firstCost = costPerCycle * ServerConfig.PMS;                
+        long firstCost = costPerCycle * ServerConfig.PMS;
         byte[] signarg = EOSRequest.createEosClient(meta.getVNU());
         UploadObjectEndResp resp = new UploadObjectEndResp();
         resp.setFirstCost(firstCost);
@@ -41,7 +40,6 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         resp.setContractAccount(ServerConfig.contractAccount);
         LOG.info("Upload object " + user.getUserID() + "/" + meta.getVNU() + " OK.");
         CacheAccessor.delUploadObjectCache(meta.getVNU());
-        ReferCache.delRefersCache(meta.getVNU());
         return resp;
     }
 }

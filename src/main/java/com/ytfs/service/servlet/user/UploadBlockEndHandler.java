@@ -7,9 +7,7 @@ import com.ytfs.service.dao.BlockMeta;
 import com.ytfs.service.dao.ShardAccessor;
 import com.ytfs.service.dao.ShardMeta;
 import com.ytfs.service.dao.User;
-import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.Handler;
-import com.ytfs.service.servlet.UploadObjectCache;
 import com.ytfs.service.servlet.bp.SaveObjectMetaHandler;
 import static com.ytfs.common.ServiceErrorCode.INVALID_KED;
 import static com.ytfs.common.ServiceErrorCode.INVALID_KEU;
@@ -35,16 +33,15 @@ import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
 public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
-    
+
     private static final Logger LOG = Logger.getLogger(UploadBlockEndHandler.class);
-    
+
     @Override
     public Object handle() throws Throwable {
         long l = System.currentTimeMillis();
         User user = this.getUser();
         int userid = user.getUserID();
         LOG.debug("Receive UploadBlockEnd request:/" + request.getVNU() + "/" + request.getVBI());
-        UploadObjectCache progress = CacheAccessor.getUploadObjectCache(userid, request.getVNU());
         List<UploadShardRes> res = request.getOkList();
         List<ShardMeta> ls = verify(request, res);
         ShardAccessor.saveShardMetas(ls);
@@ -55,19 +52,18 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         saveObjectMetaReq.setNlink(1);
         try {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
-            progress.setBlockNum(request.getId());
             if (resp.isExists()) {
                 LOG.warn("Block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " has been uploaded.");
             }
         } catch (ServiceException r) {
             throw r;
         }
-        LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");      
+        LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
         sendDNI(ls);
         LOG.info("Upload block:/" + request.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");
         return new VoidResp();
     }
-    
+
     private void sendDNI(List<ShardMeta> ls) {
         ls.stream().forEach((doc) -> {
             int nid = doc.getNodeId();
@@ -81,7 +77,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             DNISender.startSender(data, nid);
         });
     }
-    
+
     private SaveObjectMetaReq makeSaveObjectMetaReq(UploadBlockEndReq req, int userid, long vbi, ObjectId VNU) {
         SaveObjectMetaReq saveObjectMetaReq = new SaveObjectMetaReq();
         saveObjectMetaReq.setUserID(userid);
@@ -96,7 +92,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         saveObjectMetaReq.setRefer(refer);
         return saveObjectMetaReq;
     }
-    
+
     private BlockMeta makeBlockMeta(UploadBlockEndReq req, long VBI, int shardCount) {
         BlockMeta meta = new BlockMeta();
         meta.setVBI(VBI);
@@ -111,40 +107,40 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         meta.setVHP(req.getVHP());
         return meta;
     }
-    
+
     private boolean verifySign(UploadShardRes res, Node node) {
         return true;
         /*
-        try {
-            LOG.info("PUBKEY:"+node.getPubkey());
-            LOG.info("DNSIGN:"+res.getDNSIGN());
-            return io.yottachain.ytcrypto.YTCrypto.verify(node.getPubkey(), res.getVHF(), res.getDNSIGN());
-        } catch (YTCryptoException ex) {
-            LOG.error("ERR:",ex);
-            return false;
-        }*/
+         try {
+         LOG.info("PUBKEY:"+node.getPubkey());
+         LOG.info("DNSIGN:"+res.getDNSIGN());
+         return io.yottachain.ytcrypto.YTCrypto.verify(node.getPubkey(), res.getVHF(), res.getDNSIGN());
+         } catch (YTCryptoException ex) {
+         LOG.error("ERR:",ex);
+         return false;
+         }*/
     }
-    
+
     private List<ShardMeta> verify(UploadBlockEndReq req, List<UploadShardRes> resList) throws ServiceException, NoSuchAlgorithmException, NodeMgmtException {
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         List<ShardMeta> ls = new ArrayList();
         UploadShardRes[] shards = new UploadShardRes[resList.size()];
-       // List<Integer> nodeidsls = new ArrayList();
+        // List<Integer> nodeidsls = new ArrayList();
         resList.stream().forEach((res) -> {
             shards[res.getSHARDID()] = res;
-          //  nodeidsls.add(res.getNODEID());
+            //  nodeidsls.add(res.getNODEID());
         });
         /*
-        List<Node> nodels = NodeManager.getNode(nodeidsls);
-        if (ls.size() != nodeidsls.size()) {
-            LOG.warn("Some Nodes have been cancelled.");
-            throw new ServiceException(NO_ENOUGH_NODE);
-        }
-        Map<Integer, Node> map = new HashMap();
-        nodels.stream().forEach((n) -> {
-            map.put(n.getId(), n);
-        });
-        */
+         List<Node> nodels = NodeManager.getNode(nodeidsls);
+         if (ls.size() != nodeidsls.size()) {
+         LOG.warn("Some Nodes have been cancelled.");
+         throw new ServiceException(NO_ENOUGH_NODE);
+         }
+         Map<Integer, Node> map = new HashMap();
+         nodels.stream().forEach((n) -> {
+         map.put(n.getId(), n);
+         });
+         */
         for (int ii = 0; ii < shards.length; ii++) {
             UploadShardRes res = shards[ii];
             if (req.isRsShard()) {
@@ -175,5 +171,5 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         }
         return ls;
     }
-    
+
 }

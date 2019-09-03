@@ -36,7 +36,6 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
-        int userid = user.getUserID();
         LOG.info("Upload block init " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId());
         if (request.getShardCount() > 255) {
             return new ServiceException(TOO_MANY_SHARDS);
@@ -45,11 +44,7 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
         if (n.getId() != ServerConfig.superNodeID) {//验证数据块是否对应
             throw new ServiceException(ILLEGAL_VHP_NODEID);
         }
-        UploadObjectCache progress = CacheAccessor.getUploadObjectCache(userid, request.getVNU());
         UploadBlockInitResp resp = new UploadBlockInitResp();
-        if (progress.exists(request.getId())) {
-            return new VoidResp();
-        }
         if (request instanceof UploadBlockInit2Req) {
             distributeNode(resp);
             return resp;
@@ -136,7 +131,6 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
             }
         }
     }
-   
 
     /**
      * 超级节点签名
