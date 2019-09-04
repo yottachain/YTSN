@@ -12,7 +12,7 @@ public class ActiveCacheHandler extends Handler<ActiveCache> {
     public Object handle() throws Throwable {
         User user = this.getUser();
         try {
-            //CacheAccessor.getUploadObjectCache(user.getUserID(), request.getVNU());
+            CacheAccessor.getUploadObjectCache(request.getVNU());
         } catch (Exception r) {
         }
         return new VoidResp();

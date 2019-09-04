@@ -28,7 +28,7 @@ public class RegUserHandler extends Handler<RegUserReq> {
         LOG.info("UserLogin:" + request.getUsername());
         try {
             EOSRequest.request(request.getSigndata(), pubkey);
-        } catch (IOException e) {
+        } catch (Throwable e) {
             return new ServiceException(SERVER_ERROR);
         }
         LOG.info("[" + request.getUsername() + "] Certification passed.");

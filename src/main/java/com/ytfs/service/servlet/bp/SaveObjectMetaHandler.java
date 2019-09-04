@@ -54,15 +54,15 @@ public class SaveObjectMetaHandler extends Handler<SaveObjectMetaReq> {
             throw new ServiceException(INVALID_UPLOAD_ID);
         }
         SaveObjectMetaResp resp = new SaveObjectMetaResp();
-        UploadObjectCache cache = CacheAccessor.getUploadObjectCache1(request.getUserID(), request.getVNU());
+        UploadObjectCache cache = CacheAccessor.getUploadObjectCache(request.getUserID(), request.getVNU());
         if (cache.exists(request.getRefer().getId())) {
             resp.setExists(true);
         } else {
             resp.setExists(false);
-            cache.setBlockNum(request.getRefer().getId());
             long usedspace = sumUsedSpace(request.getRefer().getRealSize(), request.getNlink());
             byte[] bs = request.getRefer().toBytes();
             ObjectAccessor.updateObject(request.getVNU(), bs, usedspace);
+            cache.setBlockNum(request.getRefer().getId());
         }
         return resp;
     }

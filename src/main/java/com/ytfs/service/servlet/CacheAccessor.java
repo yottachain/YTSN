@@ -26,7 +26,11 @@ public class CacheAccessor {
             .maximumSize(OBJ_MAX_SIZE)
             .build();
 
-    public static UploadObjectCache getUploadObjectCache1(int userid, ObjectId VNU) throws ServiceException {
+    public static UploadObjectCache getUploadObjectCache(ObjectId VNU) {
+        return uploadObjects.getIfPresent(VNU);
+    }
+
+    public static UploadObjectCache getUploadObjectCache(int userid, ObjectId VNU) throws ServiceException {
         try {
             UploadObjectCache cache = uploadObjects.get(VNU, () -> {
                 ObjectMeta meta = ObjectAccessor.getObject(VNU);
