@@ -6,11 +6,9 @@ import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.packet.bp.NodeSyncReq;
 
 import com.ytfs.service.servlet.Handler;
-import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.log4j.Logger;
 
@@ -20,8 +18,9 @@ public class NodeSyncHandler extends Handler<NodeSyncReq> {
 
     @Override
     public Object handle() throws Throwable {
+        int snid;
         try {
-            getSuperNodeId();
+            snid = getSuperNodeId();
         } catch (NodeMgmtException e) {
             LOG.error("Invalid super node pubkey:" + this.getPublicKey());
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
@@ -35,7 +34,7 @@ public class NodeSyncHandler extends Handler<NodeSyncReq> {
                 LOG.error("Sync node " + n.getId() + " stat err:" + ne.getMessage());
             }
         });
-        LOG.debug("Sync Node STAT,count:" + ls.size() + ",take times " + (System.currentTimeMillis() - starttime) + " ms");
+        LOG.debug("Sync Node STAT,count:" + ls.size() + ",from sn" + snid + ",take times " + (System.currentTimeMillis() - starttime) + " ms.");
         return new VoidResp();
     }
 

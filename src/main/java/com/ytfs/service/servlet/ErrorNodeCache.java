@@ -55,10 +55,10 @@ public class ErrorNodeCache {
     public static int[] getErrorIds() {
         List<Integer> idlist = new ArrayList(errIds.keySet());
         int[] ids = new int[idlist.size()];
-        if (ids.length > 300) {
-            LOG.warn("Error ids count exceed 300.");
+        if (ids.length > 200) {
+            LOG.warn("Error ids count exceed 200.");
         }
-        for (int ii = 0; ii < ids.length && ii < 300; ii++) {
+        for (int ii = 0; ii < ids.length && ii < 200; ii++) {
             ids[ii] = idlist.get(ii);
         }
         return ids;

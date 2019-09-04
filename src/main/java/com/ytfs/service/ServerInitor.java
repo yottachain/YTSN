@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 import org.apache.log4j.Logger;
@@ -70,6 +71,7 @@ public class ServerInitor {
                 MongoSource.terminate();
             }
         }
+        BpList.init();
         for (int ii = 0; ii < 100; ii++) {
             try {
                 int port = ServerConfig.port + ii;
@@ -130,6 +132,9 @@ public class ServerInitor {
         eosURI = p.getProperty("eosURI");
         if (eosURI == null || eosURI.trim().isEmpty()) {
             throw new IOException("The 'eosURI' parameter is not configured.");
+        } else {
+            URL url = new URL(eosURI.trim());
+            eosURI = url.toString();
         }
         BPAccount = p.getProperty("BPAccount");
         if (BPAccount == null || BPAccount.trim().isEmpty()) {

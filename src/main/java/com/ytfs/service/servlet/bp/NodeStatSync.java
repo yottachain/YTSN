@@ -7,13 +7,14 @@ import io.yottachain.nodemgmt.core.vo.Node;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 public class NodeStatSync extends Thread {
 
     private static final Logger LOG = Logger.getLogger(NodeStatSync.class);
     private static final int sleeptimes = 1000 * 60;
-    private static final Map<Integer, Node> nodestats = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<Integer, Node> nodestats = new ConcurrentHashMap<>();
 
     public static void updateNode(Node node) {
         nodestats.put(node.getId(), node);
