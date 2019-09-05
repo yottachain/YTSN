@@ -7,8 +7,8 @@ public class User {
 
     private int userID;
     private byte[] KUEp;    //用户公钥
-    private long usedspace;  //占用空间
-    private long spaceTotal;  //文件总量
+    private long usedspace;  //文件去重后占用空间总和
+    private long spaceTotal;  //文件实际长度总和
     private long fileTotal;   //文件数
     private long costPerCycle;//每周期总费用
     private String username;

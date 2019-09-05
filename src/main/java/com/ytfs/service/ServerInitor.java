@@ -2,10 +2,10 @@ package com.ytfs.service;
 
 import com.mongodb.ServerAddress;
 import com.ytfs.common.conf.ServerConfig;
-import static com.ytfs.common.conf.ServerConfig.eosURI;
 import com.ytfs.common.GlobleThreadPool;
 import com.ytfs.common.LogConfigurator;
 import static com.ytfs.common.conf.ServerConfig.*;
+import com.ytfs.common.eos.BpList;
 import com.ytfs.service.dao.MongoSource;
 import com.ytfs.service.http.HttpServerBoot;
 import com.ytfs.common.net.P2PUtils;
@@ -60,6 +60,7 @@ public class ServerInitor {
                 SNDSP = Base58.decode(privateKey);
                 SuperNodeList.isServer = true;
                 Sequence.initUserID_seq();
+                BpList.init(SuperNodeList.getSuperNodeList());
                 break;
             } catch (Exception r) {
                 LOG.error("Mongo client initialization failed:" + r.getMessage());
@@ -71,7 +72,6 @@ public class ServerInitor {
                 MongoSource.terminate();
             }
         }
-        BpList.init();
         for (int ii = 0; ii < 100; ii++) {
             try {
                 int port = ServerConfig.port + ii;

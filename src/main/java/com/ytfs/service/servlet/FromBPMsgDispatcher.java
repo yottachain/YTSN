@@ -16,7 +16,7 @@ public class FromBPMsgDispatcher implements BPNodeCallback {
         try {
             message = SerializationUtil.deserialize(bytes);
         } catch (Throwable r) {
-            LOG.error("Deserialize ERR:", r);
+            LOG.error("Deserialize ERR:" + r);
             return SerializationUtil.serialize(new ServiceException(ServiceErrorCode.SERVER_ERROR));
         }
         try {
