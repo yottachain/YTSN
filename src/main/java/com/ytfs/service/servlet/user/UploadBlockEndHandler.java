@@ -1,6 +1,7 @@
 package com.ytfs.service.servlet.user;
 
 import com.ytfs.common.Function;
+import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.dao.BlockMeta;
@@ -38,8 +39,11 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
 
     @Override
     public Object handle() throws Throwable {
-        long l = System.currentTimeMillis();
         User user = this.getUser();
+        if (user == null) {
+            return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
+        long l = System.currentTimeMillis();
         int userid = user.getUserID();
         LOG.debug("Receive UploadBlockEnd request:/" + request.getVNU() + "/" + request.getVBI());
         List<UploadShardRes> res = request.getOkList();

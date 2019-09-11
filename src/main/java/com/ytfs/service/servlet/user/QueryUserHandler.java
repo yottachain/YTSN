@@ -5,10 +5,12 @@ import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.Sequence;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserAccessor;
+import com.ytfs.service.dao.UserCache;
 import com.ytfs.service.packet.user.QueryUserReq;
 import com.ytfs.service.packet.user.QueryUserResp;
 import com.ytfs.service.servlet.Handler;
 import io.yottachain.p2phost.utils.Base58;
+import java.util.Arrays;
 import org.apache.log4j.Logger;
 
 public class QueryUserHandler extends Handler<QueryUserReq> {
@@ -22,10 +24,10 @@ public class QueryUserHandler extends Handler<QueryUserReq> {
 
     public static QueryUserResp queryAndReg(QueryUserReq req) throws ServiceException {
         byte[] KUEp = Base58.decode(req.getPubkey());
-        User user = UserAccessor.getUser(KUEp);
+        User user = UserAccessor.getUser(req.getUsername());
         if (user != null) {
-            if (!user.getUsername().equals(req.getUsername())) {//不大可能
-                LOG.error("Username '" + user.getUsername() + "' invalid.");
+            if (!Arrays.equals(KUEp, user.getKUEp())) {
+                LOG.error("User pubkey '" + req.getPubkey() + "' invalid.");
                 throw new ServiceException(INVALID_USER_ID);
             }
             if (req.getUserId() != -1 && req.getUserId() != user.getUserID()) {//不大可能
@@ -44,6 +46,7 @@ public class QueryUserHandler extends Handler<QueryUserReq> {
         }
         QueryUserResp resp = new QueryUserResp();
         resp.setUserId(user.getUserID());
+        UserCache.putUser(req.getCacheKey(), user);
         return resp;
     }
 }

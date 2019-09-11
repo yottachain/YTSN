@@ -13,7 +13,7 @@ import org.bson.types.Binary;
 public class UserAccessor {
 
     private static final Logger LOG = Logger.getLogger(UserAccessor.class);
-    
+
     public static Document total() {
         List<Document> ops = new ArrayList();
         Document all = new Document(new Document("_id", "ALL"));
@@ -26,7 +26,7 @@ public class UserAccessor {
         Document document = MongoSource.getUserCollection().aggregate(ops).first();
         return document;
     }
-    
+
     public static Document userTotal(int uid) throws Exception {
         Bson bson = Filters.eq("_id", uid);
         Document fields = new Document("usedspace", 1);
@@ -40,14 +40,14 @@ public class UserAccessor {
             return document;
         }
     }
-    
+
     public static void updateUser(int uid, long costPerCycle) {
         Bson bson = Filters.eq("_id", uid);
         Document doc = new Document("costPerCycle", costPerCycle);
         Document update = new Document("$inc", doc);
         MongoSource.getUserCollection().updateOne(bson, update);
     }
-    
+
     public static void updateUser(int uid, long usedSpace, long fileTotal, long spaceTotal) {
         Bson bson = Filters.eq("_id", uid);
         Document doc = new Document("usedspace", usedSpace);
@@ -56,7 +56,7 @@ public class UserAccessor {
         Document update = new Document("$inc", doc);
         MongoSource.getUserCollection().updateOne(bson, update);
     }
-    
+
     public static User getUser(int uid) {
         Bson bson = Filters.eq("_id", uid);
         Document document = MongoSource.getUserCollection().find(bson).first();
@@ -66,9 +66,9 @@ public class UserAccessor {
             return new User(document);
         }
     }
-    
-    public static User getUser(byte[] KUEp) {
-        Bson bson = Filters.eq("KUEp", new Binary(KUEp));
+
+    public static User getUser(String username) {
+        Bson bson = Filters.eq("username", username);
         Document document = MongoSource.getUserCollection().find(bson).first();
         if (document == null) {
             return null;
@@ -76,7 +76,7 @@ public class UserAccessor {
             return new User(document);
         }
     }
-    
+
     public static void addUser(User user) {
         MongoSource.getUserCollection().insertOne(user.toDocument());
         if (MongoSource.getProxy() != null) {
@@ -85,5 +85,5 @@ public class UserAccessor {
             LOG.debug("DBlog: sync user " + user.getUsername());
         }
     }
-    
+
 }

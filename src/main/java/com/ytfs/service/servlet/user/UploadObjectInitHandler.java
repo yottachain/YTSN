@@ -26,6 +26,9 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
+        if(user==null){
+            return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
         LOG.info("Upload object init " + user.getUserID());
         int userid = user.getUserID();
         SuperNode n = SuperNodeList.getUserSuperNode(userid);

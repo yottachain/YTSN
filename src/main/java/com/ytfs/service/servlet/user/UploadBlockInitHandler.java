@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.user;
 
+import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.dao.BlockMeta;
@@ -7,9 +8,7 @@ import com.ytfs.service.dao.Sequence;
 import com.ytfs.service.dao.User;
 import com.ytfs.common.node.NodeManager;
 import com.ytfs.common.node.SuperNodeList;
-import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.Handler;
-import com.ytfs.service.servlet.UploadObjectCache;
 import static com.ytfs.common.ServiceErrorCode.ILLEGAL_VHP_NODEID;
 import static com.ytfs.common.ServiceErrorCode.NO_ENOUGH_NODE;
 import static com.ytfs.common.ServiceErrorCode.TOO_MANY_SHARDS;
@@ -19,7 +18,6 @@ import com.ytfs.service.packet.UploadBlockDupResp;
 import com.ytfs.service.packet.UploadBlockInit2Req;
 import com.ytfs.service.packet.UploadBlockInitReq;
 import com.ytfs.service.packet.UploadBlockInitResp;
-import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.ErrorNodeCache;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
@@ -36,6 +34,9 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
+        if (user == null) {
+            return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
         LOG.info("Upload block init " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId());
         if (request.getShardCount() > 255) {
             return new ServiceException(TOO_MANY_SHARDS);

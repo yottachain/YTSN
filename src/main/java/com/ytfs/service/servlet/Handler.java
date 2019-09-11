@@ -3,15 +3,11 @@ package com.ytfs.service.servlet;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache;
 import com.ytfs.common.node.NodeCache;
-import com.ytfs.common.ServiceErrorCode;
-import com.ytfs.common.ServiceException;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
-import org.apache.log4j.Logger;
 
 public abstract class Handler<T> {
 
-    private static final Logger LOG = Logger.getLogger(Handler.class);
-
+ 
     protected T request;
     private String pubkey;
 
@@ -27,13 +23,8 @@ public abstract class Handler<T> {
         return pubkey;
     }
 
-    protected final User getUser() throws ServiceException {
-        User user = UserCache.getUser(pubkey);
-        if (user == null) {
-            LOG.warn("Invalid user public key:" + pubkey);
-            throw new ServiceException(ServiceErrorCode.INVALID_USER_ID);
-        }
-        return user;
+    protected final User getUser() {
+        return UserCache.getUser(pubkey);
     }
 
     protected final int getSuperNodeId() throws NodeMgmtException {

@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.user;
 
+import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.dao.BlockMeta;
@@ -23,6 +24,9 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
+        if (user == null) {
+            return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
         int userid = user.getUserID();
         LOG.info("Upload block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " exist...");
         BlockMeta meta = BlockAccessor.getBlockMeta(request.getVHP(), request.getVHB());

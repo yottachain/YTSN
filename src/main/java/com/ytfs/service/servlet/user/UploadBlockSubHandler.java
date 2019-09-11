@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.user;
 
+import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.NO_ENOUGH_NODE;
 import static com.ytfs.common.ServiceErrorCode.TOO_MANY_SHARDS;
 import com.ytfs.service.dao.User;
@@ -24,6 +25,9 @@ public class UploadBlockSubHandler extends Handler<UploadBlockSubReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
+        if(user==null){
+            return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
         if (request.getShardCount() > 255) {
             return new ServiceException(TOO_MANY_SHARDS);
         }

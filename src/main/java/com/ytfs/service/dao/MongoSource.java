@@ -17,7 +17,7 @@ public class MongoSource {
 
     //用户表
     public static final String USER_TABLE_NAME = "users";
-    private static final String USER_INDEX_NAME = "KUEp";
+    private static final String USER_INDEX_NAME = "username";
     //用户文件去重表
     public static final String OBJECT_TABLE_NAME = "objects";
     private static final String OBJECT_INDEX_NAME = "VNU";
@@ -261,7 +261,7 @@ public class MongoSource {
         if (!indexCreated) {
             IndexOptions indexOptions = new IndexOptions().unique(true);
             indexOptions = indexOptions.name(USER_INDEX_NAME);
-            user_collection.createIndex(Indexes.ascending("KUEp"), indexOptions);
+            user_collection.createIndex(Indexes.ascending("username"), indexOptions);
         }
         LOG.info("Successful creation of user tables.");
     }

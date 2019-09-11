@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.user;
 
+import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.User;
 import com.ytfs.common.eos.EOSClient;
@@ -15,6 +16,9 @@ public class SubBalanceHandler extends Handler<SubBalanceReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
+        if (user == null) {
+            return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
         try {
             EOSClient.deductHDD(request.getSignData(), request.getVNU());
             LOG.info("Sub Balance:" + user.getUserID());

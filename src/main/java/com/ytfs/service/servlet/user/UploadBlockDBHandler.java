@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.user;
 
+import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.codec.BlockEncrypted;
 import com.ytfs.service.dao.BlockAccessor;
@@ -32,6 +33,9 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
+        if (user == null) {
+            return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
         int userid = user.getUserID();
         LOG.info("Save block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " to DB...");
         SuperNode n = SuperNodeList.getBlockSuperNode(request.getVHP());
@@ -51,7 +55,7 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
             if (resp.isExists()) {
                 LOG.warn("Block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " has been uploaded.");
             }
-        } catch (ServiceException r) {            
+        } catch (ServiceException r) {
             throw r;
         }
         return new VoidResp();

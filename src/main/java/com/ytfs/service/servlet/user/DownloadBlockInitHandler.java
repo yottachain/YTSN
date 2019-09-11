@@ -1,9 +1,12 @@
 package com.ytfs.service.servlet.user;
 
+import com.ytfs.common.ServiceErrorCode;
+import com.ytfs.common.ServiceException;
 import com.ytfs.common.node.NodeManager;
 import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.dao.ShardAccessor;
 import com.ytfs.service.dao.ShardMeta;
+import com.ytfs.service.dao.User;
 import com.ytfs.service.packet.DownloadBlockDBResp;
 import com.ytfs.service.packet.DownloadBlockInitReq;
 import com.ytfs.service.packet.DownloadBlockInitResp;
@@ -19,7 +22,10 @@ public class DownloadBlockInitHandler extends Handler<DownloadBlockInitReq> {
 
     @Override
     public Object handle() throws Throwable {
-        this.getUser();
+        User user = this.getUser();
+        if (user == null) {
+            return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
         int vnf = BlockAccessor.getBlockMetaVNF(request.getVBI());
         LOG.info("Download block:" + request.getVBI() + " ,VNF " + vnf);
         if (vnf == 0) {//存储在数据库
