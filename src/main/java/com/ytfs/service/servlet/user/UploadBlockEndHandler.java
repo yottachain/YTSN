@@ -16,6 +16,7 @@ import static com.ytfs.common.ServiceErrorCode.INVALID_SIGNATURE;
 import static com.ytfs.common.ServiceErrorCode.INVALID_VHB;
 import static com.ytfs.common.ServiceErrorCode.INVALID_VHP;
 import com.ytfs.common.ServiceException;
+import com.ytfs.service.dao.Sequence;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
@@ -45,11 +46,15 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         }
         long l = System.currentTimeMillis();
         int userid = user.getUserID();
-        LOG.debug("Receive UploadBlockEnd request:/" + request.getVNU() + "/" + request.getVBI());
+        LOG.debug("Receive UploadBlockEnd request:/" + request.getVNU() + "/" + request.getId());
         List<UploadShardRes> res = request.getOkList();
-        List<ShardMeta> ls = verify(request, res);
+        if (res.size() > 160) {
+            return new ServiceException(ServiceErrorCode.TOO_MANY_SHARDS);
+        }
+        long VBI = Sequence.generateBlockID(res.size());
+        List<ShardMeta> ls = verify(request, res, VBI);
         ShardAccessor.saveShardMetas(ls);
-        BlockMeta meta = makeBlockMeta(request, request.getVBI(), res.size());
+        BlockMeta meta = makeBlockMeta(request, VBI, res.size());
         BlockAccessor.saveBlockMeta(meta);
         long starttime = System.currentTimeMillis();
         SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(request, userid, meta.getVBI(), request.getVNU());
@@ -62,17 +67,17 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         } catch (ServiceException r) {
             throw r;
         }
-        LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
-        sendDNI(ls);
-        LOG.info("Upload block:/" + request.getVNU() + "/" + request.getVBI() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");
+        LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
+        sendDNI(ls, VBI);
+        LOG.info("Upload block:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");
         return new VoidResp();
     }
 
-    private void sendDNI(List<ShardMeta> ls) {
+    private void sendDNI(List<ShardMeta> ls, long VBI) {
         ls.stream().forEach((doc) -> {
             int nid = doc.getNodeId();
             byte[] vhf = doc.getVHF();
-            byte[] vbi = Function.long2bytes(request.getVBI());
+            byte[] vbi = Function.long2bytes(VBI);
             byte[] data = new byte[vhf.length + 10];
             data[0] = (byte) ServerConfig.superNodeID;
             data[1] = (byte) ls.size();
@@ -125,7 +130,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
          }*/
     }
 
-    private List<ShardMeta> verify(UploadBlockEndReq req, List<UploadShardRes> resList) throws ServiceException, NoSuchAlgorithmException, NodeMgmtException {
+    private List<ShardMeta> verify(UploadBlockEndReq req, List<UploadShardRes> resList, long VBI) throws ServiceException, NoSuchAlgorithmException, NodeMgmtException {
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         List<ShardMeta> ls = new ArrayList();
         UploadShardRes[] shards = new UploadShardRes[resList.size()];
@@ -157,7 +162,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             if (!verifySign(res, null)) {
                 throw new ServiceException(INVALID_SIGNATURE);
             }
-            ShardMeta meta = new ShardMeta(req.getVBI() + ii, res.getNODEID(), res.getVHF());
+            ShardMeta meta = new ShardMeta(VBI + ii, res.getNODEID(), res.getVHF());
             ls.add(meta);
         }
         byte[] vhb = md5.digest();

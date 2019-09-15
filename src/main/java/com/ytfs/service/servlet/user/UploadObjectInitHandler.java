@@ -15,6 +15,9 @@ import com.ytfs.service.packet.UploadObjectInitResp;
 import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.UploadObjectCache;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
+import io.yottachain.ytcrypto.YTCrypto;
+import io.yottachain.ytcrypto.core.exception.YTCryptoException;
+import java.nio.charset.Charset;
 import java.util.List;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
@@ -26,7 +29,7 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
-        if(user==null){
+        if (user == null) {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);
         }
         LOG.info("Upload object init " + user.getUserID());
@@ -74,7 +77,22 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
         }
         cache.setFilesize(meta.getLength());
         CacheAccessor.putUploadObjectCache(meta.getVNU(), cache);
+        sign(resp);
         return resp;
     }
 
+    public void sign(UploadObjectInitResp resp) {
+        resp.setStamp(System.currentTimeMillis());
+        StringBuilder sb = new StringBuilder();
+        sb.append(resp.getVNU());
+        sb.append(this.getPublicKey());
+        sb.append(resp.getStamp());
+        byte[] data = sb.toString().getBytes(Charset.forName("UTF-8"));
+        try {
+            String sign = YTCrypto.sign(ServerConfig.privateKey, data);
+            resp.setSignArg(sign);
+        } catch (YTCryptoException ex) {
+            LOG.error("Sign ERR:" + ex.getMessage());
+        }
+    }
 }
