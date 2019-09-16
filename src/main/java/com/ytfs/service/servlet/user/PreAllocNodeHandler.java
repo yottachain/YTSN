@@ -27,7 +27,7 @@ public class PreAllocNodeHandler extends Handler<PreAllocNodeReq> {
         if (user == null) {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);
         }
-        int count = request.getCount() > 500 ? 500 : request.getCount();
+        int count = request.getCount() > 1000 ? 1000 : request.getCount();
         count = count < 100 ? 100 : count;
         PreAllocNodeResp resp = new PreAllocNodeResp();
         try {
