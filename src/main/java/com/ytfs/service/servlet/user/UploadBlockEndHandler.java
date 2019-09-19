@@ -23,7 +23,7 @@ import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.VoidResp;
-import com.ytfs.service.servlet.bp.DNISender;
+import com.ytfs.service.servlet.bp.DNISenderPool;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.security.MessageDigest;
@@ -83,7 +83,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             data[1] = (byte) ls.size();
             System.arraycopy(vbi, 0, data, 2, 8);
             System.arraycopy(vhf, 0, data, 10, vhf.length);
-            DNISender.startSender(data, nid);
+            DNISenderPool.startSender(data, nid, false);
         });
     }
 

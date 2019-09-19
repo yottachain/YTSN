@@ -9,7 +9,6 @@ import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.packet.s3.UpdateBucketReq;
 import com.ytfs.service.servlet.Handler;
 import org.apache.log4j.Logger;
-import org.bson.types.ObjectId;
 
 import static com.ytfs.common.ServiceErrorCode.INVALID_BUCKET_NAME;
 

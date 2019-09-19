@@ -7,7 +7,7 @@ import com.ytfs.service.dao.ShardAccessor;
 import com.ytfs.service.packet.TaskOpResult;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.Handler;
-import com.ytfs.service.servlet.bp.DNISender;
+import com.ytfs.service.servlet.bp.DNISenderPool;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.p2phost.utils.Base58;
 import org.apache.log4j.Logger;
@@ -45,8 +45,8 @@ public class TaskOpResultHandler extends Handler<TaskOpResult> {
             LOG.error("Rebuild task " + Base58.encode(id) + " update shard meta failed:" + VFI);
             return new VoidResp();
         }
-        DNISender.startSender(DNI, nodeid);
-      //  DNISender.startDeleteSender(DNI, rebuildNodeId);
+        DNISenderPool.startSender(DNI, nodeid,false);
+        DNISenderPool.startSender(DNI, rebuildNodeId,true);
         return new VoidResp();
     }
 

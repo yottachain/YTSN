@@ -69,9 +69,9 @@ public class TaskDispatchHandler extends Handler<TaskDispatchReq> {
             LOG.warn("Some Nodes have been cancelled.");
         }
         Map<Integer, Node> map = new HashMap();
-        for (Node n : ls) {
+        ls.stream().forEach((n) -> {
             map.put(n.getId(), n);
-        }
+        });
         byte[] id = new byte[42 + 12];
         System.arraycopy(Function.long2bytes(VFI), 0, id, 0, 8); //VFI
         System.arraycopy(Function.int2bytes(req.getNodeId()), 0, id, 8, 4);

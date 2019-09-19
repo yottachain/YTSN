@@ -26,6 +26,12 @@ public class SendRebuildTask implements Runnable {
         }
     }
 
+    /**
+     * 
+     * @param DNI
+     * @param nid 需重建节点
+     * @param node 目标节点
+     */
     public static void startSender(byte[] DNI, int nid, Node node) {
         try {
             SendRebuildTask sender = queue.take();
@@ -53,6 +59,7 @@ public class SendRebuildTask implements Runnable {
                 TaskDispatchReq req = new TaskDispatchReq();
                 req.setDNI(DNI);
                 req.setNodeId(nodeid);
+                req.setExecNodeId(node.getId());
                 SuperNode sn = SuperNodeList.getSuperNode(snnum);
                 TaskDispatchHandler.taskDispatchCall(req, sn);
                 if (LOG.isDebugEnabled()) {

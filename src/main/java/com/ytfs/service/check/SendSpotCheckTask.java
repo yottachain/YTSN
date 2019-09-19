@@ -52,15 +52,15 @@ public class SendSpotCheckTask extends Thread {
                             if (nlist.size() != sc.size()) {
                                 throw new Exception("getSTNodes return count:" + nlist.size() + "!=" + sc.size());
                             }
+                            LOG.info("Query returns " + sc.size() + " tasks.");
                         }
-                        LOG.info("Query returns " + sc.size() + " tasks.");
                     }
                 } catch (Throwable t) {
                     LOG.error("Get SpotCheckList ERR:" + t.getMessage());
                     sleep(30000);
                     continue;
                 }
-                if (sc != null && !sc.isEmpty()) {
+                if (sc != null && !sc.isEmpty() && nlist != null && !nlist.isEmpty()) {
                     for (SpotCheckList scheck : sc) {
                         try {
                             sendTask(scheck, nlist.remove(0));
@@ -90,7 +90,7 @@ public class SendSpotCheckTask extends Thread {
         mytask.setTaskId(scheck.getTaskID());
         mytask.setTaskList(new ArrayList());
         List<SpotCheckTask> ls = scheck.getTaskList();
-        for (SpotCheckTask st : ls) {
+        ls.stream().map((st) -> {
             com.ytfs.service.packet.SpotCheckTask myst = new com.ytfs.service.packet.SpotCheckTask();
             myst.setId(st.getId());
             myst.setNodeId(st.getNodeID());
@@ -103,8 +103,10 @@ public class SendSpotCheckTask extends Thread {
             } else {
                 myst.setVHF(vni);
             }
+            return myst;
+        }).forEach((myst) -> {
             mytask.getTaskList().add(myst);
-        }
+        });
         LOG.info("Send task [" + mytask.getTaskId() + "] to " + n.getId() + ":" + P2PUtils.getAddrString(n.getAddrs()));
         P2PUtils.requestNode(mytask, n);
         LOG.info("Send task [" + mytask.getTaskId() + "] OK!");
