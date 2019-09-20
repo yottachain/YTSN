@@ -45,7 +45,6 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         if (user == null) {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);
         }
-
         long l = System.currentTimeMillis();
         int userid = user.getUserID();
         LOG.debug("Receive UploadBlockEnd request:/" + request.getVNU() + "/" + request.getId());
