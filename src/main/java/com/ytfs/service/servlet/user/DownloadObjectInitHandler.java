@@ -5,8 +5,8 @@ import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
 import com.ytfs.service.dao.User;
-import com.ytfs.service.packet.DownloadObjectInitReq;
-import com.ytfs.service.packet.DownloadObjectInitResp;
+import com.ytfs.service.packet.user.DownloadObjectInitReq;
+import com.ytfs.service.packet.user.DownloadObjectInitResp;
 import com.ytfs.service.servlet.Handler;
 import org.apache.log4j.Logger;
 

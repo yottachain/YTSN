@@ -9,7 +9,7 @@ import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserAccessor;
-import com.ytfs.service.packet.UploadObjectEndReq;
+import com.ytfs.service.packet.user.UploadObjectEndReq;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.Handler;

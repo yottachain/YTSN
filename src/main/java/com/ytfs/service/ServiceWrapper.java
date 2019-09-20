@@ -2,7 +2,6 @@ package com.ytfs.service;
 
 import com.ytfs.service.check.QueryRebuildNode;
 import com.ytfs.service.check.SendSpotCheckTask;
-import com.ytfs.service.servlet.ErrorNodeCache;
 import com.ytfs.service.servlet.NewObjectScanner;
 import com.ytfs.service.servlet.bp.DNISenderPool;
 import com.ytfs.service.servlet.bp.NodeStatSync;
@@ -18,7 +17,6 @@ public class ServiceWrapper implements WrapperListener {
     @Override
     public Integer start(String[] strings) {
         ServerInitor.init();
-        ErrorNodeCache.startUp();
         //NewObjectScanner.startUp();
         //QueryRebuildNode.startUp();
         //SendSpotCheckTask.startUp();
@@ -30,7 +28,6 @@ public class ServiceWrapper implements WrapperListener {
     @Override
     public int stop(int exitCode) {
         NewObjectScanner.shutdown();
-        ErrorNodeCache.shutdown();
         SendSpotCheckTask.shutdown();
         QueryRebuildNode.shutdown();
         DNISenderPool.stop();

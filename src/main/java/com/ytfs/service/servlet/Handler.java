@@ -7,7 +7,6 @@ import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 
 public abstract class Handler<T> {
 
- 
     protected T request;
     private String pubkey;
 

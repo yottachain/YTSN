@@ -20,7 +20,7 @@ import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
-import com.ytfs.service.packet.UploadBlockDBReq;
+import com.ytfs.service.packet.user.UploadBlockDBReq;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.CacheAccessor;
 import io.yottachain.nodemgmt.core.vo.SuperNode;

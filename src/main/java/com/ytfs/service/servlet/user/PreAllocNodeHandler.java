@@ -31,7 +31,7 @@ public class PreAllocNodeHandler extends Handler<PreAllocNodeReq> {
         count = count < 100 ? 100 : count;
         PreAllocNodeResp resp = new PreAllocNodeResp();
         try {
-            List<Node> nodes = NodeManager.preAllocNode(count);
+            List<Node> nodes = NodeManager.getNode(count,request.getExcludes());
             nodes.stream().map((node) -> new PreAllocNode(node)).filter((n) -> (resp.addNode(n))).forEach((n) -> {
                 sign(n);
             });

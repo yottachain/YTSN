@@ -13,7 +13,7 @@ import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
-import com.ytfs.service.packet.UploadBlockDupReq;
+import com.ytfs.service.packet.user.UploadBlockDupReq;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.CacheAccessor;
 import org.apache.log4j.Logger;

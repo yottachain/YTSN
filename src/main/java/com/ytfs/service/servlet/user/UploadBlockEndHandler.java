@@ -20,7 +20,7 @@ import com.ytfs.service.dao.Sequence;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
-import com.ytfs.service.packet.UploadBlockEndReq;
+import com.ytfs.service.packet.user.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.CacheAccessor;

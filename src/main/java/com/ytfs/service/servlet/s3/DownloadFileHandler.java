@@ -5,8 +5,8 @@ import com.ytfs.service.servlet.Handler;
 import static com.ytfs.common.ServiceErrorCode.INVALID_BUCKET_NAME;
 import static com.ytfs.common.ServiceErrorCode.INVALID_OBJECT_NAME;
 import com.ytfs.common.ServiceException;
-import com.ytfs.service.packet.DownloadObjectInitResp;
 import com.ytfs.service.packet.s3.DownloadFileReq;
+import com.ytfs.service.packet.user.DownloadObjectInitResp;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
