@@ -22,6 +22,7 @@ import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.packet.UploadBlockDBReq;
 import com.ytfs.service.packet.VoidResp;
+import com.ytfs.service.servlet.CacheAccessor;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.Arrays;
 import org.apache.log4j.Logger;
@@ -35,6 +36,11 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         User user = this.getUser();
         if (user == null) {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
+        String cacheKey = request.getVNU().toHexString() + request.getId();
+        if (CacheAccessor.ExistBlocks.getIfPresent(cacheKey) != null) {
+            LOG.warn(request.getVNU() + "/" + request.getId() + " already exist.");
+            return new VoidResp();
         }
         int userid = user.getUserID();
         LOG.info("Save block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " to DB...");
@@ -58,6 +64,7 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         } catch (ServiceException r) {
             throw r;
         }
+        CacheAccessor.ExistBlocks.put(cacheKey, Boolean.TRUE);
         return new VoidResp();
     }
 

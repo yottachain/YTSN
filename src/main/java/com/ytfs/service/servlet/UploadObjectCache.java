@@ -8,6 +8,7 @@ public class UploadObjectCache {
 
     private int userid;
     private long filesize;
+    private long usedspace;
     private final List<Short> blockids = Collections.synchronizedList(new ArrayList());
 
     /**
@@ -52,4 +53,21 @@ public class UploadObjectCache {
         return this.blockids.contains(num);
     }
 
+    /**
+     * @return the usedspace
+     */
+    public long getUsedspace() {
+        return usedspace;
+    }
+
+    /**
+     * @param usedspace the usedspace to set
+     */
+    public void setUsedspace(long usedspace) {
+        this.usedspace = usedspace;
+    }
+
+    public synchronized void addUsedspace(long addspace) {
+        this.usedspace = this.usedspace + addspace;
+    }
 }

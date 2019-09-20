@@ -63,6 +63,7 @@ public class SaveObjectMetaHandler extends Handler<SaveObjectMetaReq> {
             byte[] bs = request.getRefer().toBytes();
             ObjectAccessor.updateObject(request.getVNU(), bs, usedspace);
             cache.setBlockNum(request.getRefer().getId());
+            cache.addUsedspace(usedspace);
         }
         return resp;
     }

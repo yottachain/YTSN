@@ -17,6 +17,14 @@ import org.bson.types.ObjectId;
 public class CacheAccessor {
 
     private static final Logger LOG = Logger.getLogger(CacheAccessor.class);
+    private static final long BLK_MAX_SIZE = 5000000;
+    private static final long BLK_EXPIRED_TIME = 30;
+
+    public static final Cache<String, Boolean> ExistBlocks = CacheBuilder.newBuilder()
+            .expireAfterWrite(BLK_EXPIRED_TIME, TimeUnit.SECONDS)
+            .expireAfterAccess(BLK_EXPIRED_TIME, TimeUnit.SECONDS)
+            .maximumSize(BLK_MAX_SIZE)
+            .build();
 
     private static final long OBJ_MAX_SIZE = 500000;
     private static final long OBJ_EXPIRED_TIME = 3;
@@ -39,6 +47,7 @@ public class CacheAccessor {
                         UploadObjectCache ca = new UploadObjectCache();
                         ca.setFilesize(meta.getLength());
                         ca.setUserid(userid);
+                        ca.setUsedspace(meta.getUsedspace());
                         List<ObjectRefer> refers = ObjectRefer.parse(meta.getBlocks(), meta.getBlockList());
                         refers.stream().forEach((refer) -> {
                             ca.setBlockNum(refer.getId());
@@ -68,4 +77,5 @@ public class CacheAccessor {
     public static void delUploadObjectCache(ObjectId VNU) {
         uploadObjects.invalidate(VNU);
     }
+
 }

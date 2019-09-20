@@ -23,6 +23,7 @@ import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.VoidResp;
+import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.bp.DNISenderPool;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
@@ -35,14 +36,20 @@ import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
 public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
-
+    
     private static final Logger LOG = Logger.getLogger(UploadBlockEndHandler.class);
 
+    
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
         if (user == null) {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
+        String cacheKey = request.getVNU().toHexString() + request.getId();
+        if (CacheAccessor.ExistBlocks.getIfPresent(cacheKey) != null) {
+            LOG.warn(request.getVNU() + "/" + request.getId() + " already exist.");
+            return new VoidResp();
         }
         long l = System.currentTimeMillis();
         int userid = user.getUserID();
@@ -70,9 +77,10 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
         sendDNI(ls, VBI);
         LOG.info("Upload block:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");
+        CacheAccessor.ExistBlocks.put(cacheKey, Boolean.TRUE);
         return new VoidResp();
     }
-
+    
     private void sendDNI(List<ShardMeta> ls, long VBI) {
         ls.stream().forEach((doc) -> {
             int nid = doc.getNodeId();
@@ -86,7 +94,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             DNISenderPool.startSender(data, nid, false);
         });
     }
-
+    
     private SaveObjectMetaReq makeSaveObjectMetaReq(UploadBlockEndReq req, int userid, long vbi, ObjectId VNU) {
         SaveObjectMetaReq saveObjectMetaReq = new SaveObjectMetaReq();
         saveObjectMetaReq.setUserID(userid);
@@ -101,7 +109,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         saveObjectMetaReq.setRefer(refer);
         return saveObjectMetaReq;
     }
-
+    
     private BlockMeta makeBlockMeta(UploadBlockEndReq req, long VBI, int shardCount) {
         BlockMeta meta = new BlockMeta();
         meta.setVBI(VBI);
@@ -116,7 +124,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         meta.setVHP(req.getVHP());
         return meta;
     }
-
+    
     private boolean verifySign(UploadShardRes res, Node node) {
         return true;
         /*
@@ -129,7 +137,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
          return false;
          }*/
     }
-
+    
     private List<ShardMeta> verify(UploadBlockEndReq req, List<UploadShardRes> resList, long VBI) throws ServiceException, NoSuchAlgorithmException, NodeMgmtException {
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         List<ShardMeta> ls = new ArrayList();
@@ -180,5 +188,5 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         }
         return ls;
     }
-
+    
 }

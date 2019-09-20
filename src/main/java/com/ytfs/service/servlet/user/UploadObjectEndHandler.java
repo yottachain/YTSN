@@ -9,9 +9,8 @@ import com.ytfs.service.dao.ObjectAccessor;
 import com.ytfs.service.dao.ObjectMeta;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserAccessor;
-import com.ytfs.common.eos.EOSRequest;
 import com.ytfs.service.packet.UploadObjectEndReq;
-import com.ytfs.service.packet.UploadObjectEndResp;
+import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.Handler;
 import org.apache.log4j.Logger;
@@ -23,8 +22,11 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
-        if(user==null){
+        if (user == null) {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
+        if (CacheAccessor.getUploadObjectCache(request.getVNU()) == null) {
+            LOG.warn(request.getVNU() + " already completed.");
         }
         int userid = user.getUserID();
         ObjectMeta meta = new ObjectMeta(userid, request.getVHW());
@@ -36,15 +38,14 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         long costPerCycle = count * ServerConfig.unitcost;
         ObjectAccessor.addNewObject(meta.getVNU(), costPerCycle, user.getUserID(), user.getUsername());
         UserAccessor.updateUser(userid, usedspace, 1, meta.getLength());
-        long firstCost = costPerCycle * ServerConfig.PMS;
-        byte[] signarg = EOSRequest.createEosClient(meta.getVNU());
-        UploadObjectEndResp resp = new UploadObjectEndResp();
-        resp.setFirstCost(firstCost);
-        resp.setSignArg(signarg);
-        resp.setUserid(userid);
-        resp.setContractAccount(ServerConfig.contractAccount);
+        try {
+            EOSClient.deductHDD(request.getSignData(), request.getVNU());
+            LOG.info("Sub Balance:" + user.getUserID());
+        } catch (ServiceException e) {
+            LOG.error("Sub Balance ERR: session expires.");
+        }
         LOG.info("Upload object " + user.getUserID() + "/" + meta.getVNU() + " OK.");
         CacheAccessor.delUploadObjectCache(meta.getVNU());
-        return resp;
+        return new VoidResp();
     }
 }
