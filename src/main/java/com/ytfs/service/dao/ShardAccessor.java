@@ -1,5 +1,7 @@
 package com.ytfs.service.dao;
 
+import com.mongodb.MongoBulkWriteException;
+import com.mongodb.MongoException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
@@ -24,7 +26,8 @@ public class ShardAccessor {
         });
         try {
             MongoSource.getShardCollection().insertMany(docs);
-        } catch (MongoWriteException r) {
+            MongoBulkWriteException s;
+        } catch (MongoException r) {
             if (!(r.getMessage() != null && r.getMessage().contains("duplicate key"))) {
                 throw r;
             }

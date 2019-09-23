@@ -1,6 +1,6 @@
 package com.ytfs.service.dao;
 
-import com.mongodb.MongoWriteException;
+import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import com.ytfs.common.Function;
@@ -37,7 +37,7 @@ public class BlockAccessor {
         doc.append("dat", new Binary(dat));
         try {
             MongoSource.getBlockDatCollection().insertOne(doc);
-        } catch (MongoWriteException r) {
+        } catch (MongoException r) {
             if (!(r.getMessage() != null && r.getMessage().contains("duplicate key"))) {
                 throw r;
             }
