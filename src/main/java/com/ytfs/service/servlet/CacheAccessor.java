@@ -17,14 +17,6 @@ import org.bson.types.ObjectId;
 public class CacheAccessor {
 
     private static final Logger LOG = Logger.getLogger(CacheAccessor.class);
-    private static final long BLK_MAX_SIZE = 5000000;
-    private static final long BLK_EXPIRED_TIME = 30;
-
-    public static final Cache<String, Boolean> ExistBlocks = CacheBuilder.newBuilder()
-            .expireAfterWrite(BLK_EXPIRED_TIME, TimeUnit.SECONDS)
-            .expireAfterAccess(BLK_EXPIRED_TIME, TimeUnit.SECONDS)
-            .maximumSize(BLK_MAX_SIZE)
-            .build();
 
     private static final long OBJ_MAX_SIZE = 500000;
     private static final long OBJ_EXPIRED_TIME = 3;

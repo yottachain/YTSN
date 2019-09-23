@@ -52,18 +52,24 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         if (res.size() > 160) {
             return new ServiceException(ServiceErrorCode.TOO_MANY_SHARDS);
         }
+        long VBI = Sequence.generateBlockID(res.size());
         BlockMeta bmeta = BlockAccessor.getBlockMeta(request.getVHP(), request.getVHB());
         if (bmeta != null) {
-            LOG.warn(request.getVNU() + "/" + request.getId() + " already exist.");
-            return new VoidResp();
+            if (!Arrays.equals(bmeta.getKED(), request.getKED())) {
+                LOG.error("Block meta duplicate writing.");
+                return new ServiceException(ServiceErrorCode.SERVER_ERROR);
+            } else {
+                VBI = bmeta.getVBI();
+            }
         }
-        long VBI = Sequence.generateBlockID(res.size());
         List<ShardMeta> ls = verify(request, res, VBI);
         ShardAccessor.saveShardMetas(ls);
-        BlockMeta meta = makeBlockMeta(request, VBI, res.size());
-        BlockAccessor.saveBlockMeta(meta);
+        if (bmeta == null) {
+            BlockMeta meta = makeBlockMeta(request, VBI, res.size());
+            BlockAccessor.saveBlockMeta(meta);
+        }
         long starttime = System.currentTimeMillis();
-        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(request, userid, meta.getVBI(), request.getVNU());
+        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(request, userid, VBI, request.getVNU());
         saveObjectMetaReq.setNlink(1);
         try {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);

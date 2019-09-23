@@ -1,5 +1,6 @@
 package com.ytfs.service.dao;
 
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import com.ytfs.common.Function;
@@ -18,9 +19,9 @@ import org.bson.conversions.Bson;
 import org.bson.types.Binary;
 
 public class BlockAccessor {
-    
+
     private static final Logger LOG = Logger.getLogger(BlockAccessor.class);
-    
+
     public static void saveBlockMeta(BlockMeta meta) {
         MongoSource.getBlockCollection().insertOne(meta.toDocument());
         if (MongoSource.getProxy() != null) {
@@ -29,12 +30,18 @@ public class BlockAccessor {
             LOG.debug("DBlog: sync blocks " + meta.getVBI());
         }
     }
-    
+
     public static void saveBlockData(long vbi, byte[] dat) {
         Document doc = new Document();
         doc.append("_id", vbi);
         doc.append("dat", new Binary(dat));
-        MongoSource.getBlockDatCollection().insertOne(doc);
+        try {
+            MongoSource.getBlockDatCollection().insertOne(doc);
+        } catch (MongoWriteException r) {
+            if (!(r.getMessage() != null && r.getMessage().contains("duplicate key"))) {
+                throw r;
+            }
+        }
         if (MongoSource.getProxy() != null) {
             BlockDataLog blog = new BlockDataLog();
             blog.setId(vbi);
@@ -44,20 +51,20 @@ public class BlockAccessor {
             LOG.debug("DBlog: sync block data " + vbi);
         }
     }
-    
-    public static void incBlockNLINK(BlockMeta meta) {
+
+    public static void incBlockNLINK(BlockMeta meta, int num) {
         if (meta.getNLINK() < 0xFFFFFF) {
             Bson filter = Filters.eq("_id", meta.getVBI());
-            Document update = new Document("$inc", new Document("NLINK", 1));
+            Document update = new Document("$inc", new Document("NLINK", num));
             MongoSource.getBlockCollection().findOneAndUpdate(filter, update);
             if (MongoSource.getProxy() != null) {
                 LogMessage log = new LogMessage(Op_Block_NLINK_INC, Function.long2bytes(meta.getVBI()));
                 MongoSource.getProxy().post(log);
-                LOG.debug("DBlog: sync block NLINK");                
-            }            
+                LOG.debug("DBlog: sync block NLINK");
+            }
         }
     }
-    
+
     public static BlockMeta getBlockMeta(long VBI) {
         Bson filter = Filters.eq("_id", VBI);
         Document doc = MongoSource.getBlockCollection().find(filter).first();
@@ -67,7 +74,7 @@ public class BlockAccessor {
             return new BlockMeta(doc);
         }
     }
-    
+
     public static int getBlockMetaVNF(long VBI) throws ServiceException {
         Bson filter = Filters.eq("_id", VBI);
         Document fields = new Document("VNF", 1);
@@ -78,7 +85,7 @@ public class BlockAccessor {
             return doc.getInteger("VNF");
         }
     }
-    
+
     public static byte[] readBlockData(long vbi) {
         Bson filter = Filters.eq("_id", vbi);
         Document doc = MongoSource.getBlockDatCollection().find(filter).first();
@@ -88,7 +95,7 @@ public class BlockAccessor {
             return ((Binary) doc.get("dat")).getData();
         }
     }
-    
+
     public static List<BlockMeta> getBlockMeta(byte[] VHP) {
         List<BlockMeta> ls = new ArrayList();
         Bson filter = Filters.eq("VHP", new Binary(VHP));
@@ -100,13 +107,14 @@ public class BlockAccessor {
         }
         return ls;
     }
-    
+
     public static BlockMeta getBlockMeta(byte[] VHP, byte[] VHB) {
         Bson bson1 = Filters.eq("VHP", new Binary(VHP));
         Bson bson2 = Filters.eq("VHB", new Binary(VHB));
         Bson bson = Filters.and(bson1, bson2);
         Document fields = new Document("_id", 1);
         fields.append("NLINK", 1);
+        fields.append("KED", 1);
         Document doc = MongoSource.getBlockCollection().find(bson).projection(fields).first();
         if (doc == null) {
             return null;
@@ -114,5 +122,5 @@ public class BlockAccessor {
             return new BlockMeta(doc);
         }
     }
-    
+
 }

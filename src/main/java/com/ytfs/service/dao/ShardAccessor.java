@@ -3,6 +3,9 @@ package com.ytfs.service.dao;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
+import com.ytfs.service.dao.sync.LogMessage;
+import static com.ytfs.service.dao.sync.LogMessageCode.Op_Shards_INS;
+import com.ytfs.service.dao.sync.ShardInsertLog;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,14 +29,13 @@ public class ShardAccessor {
                 throw r;
             }
         }
-        /*
-         if (MongoSource.getProxy() != null) {
-         ShardInsertLog slog = new ShardInsertLog();
-         slog.setShards(metas);
-         LogMessage log = new LogMessage(Op_Shards_INS, slog);
-         MongoSource.getProxy().post(log);
-         LOG.debug("DBlog: sync insert shards");
-         }*/
+        if (MongoSource.getProxy() != null) {
+            ShardInsertLog slog = new ShardInsertLog();
+            slog.setShards(metas);
+            LogMessage log = new LogMessage(Op_Shards_INS, slog);
+            MongoSource.getProxy().post(log);
+            LOG.debug("DBlog: sync insert shards");
+        }
     }
 
     public static ShardMeta[] getShardMeta(long VBI, int shardCount) {

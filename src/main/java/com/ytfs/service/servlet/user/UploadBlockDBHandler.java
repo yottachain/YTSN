@@ -22,7 +22,6 @@ import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.packet.user.UploadBlockDBReq;
 import com.ytfs.service.packet.VoidResp;
-import com.ytfs.service.servlet.CacheAccessor;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.Arrays;
 import org.apache.log4j.Logger;
@@ -37,24 +36,31 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         if (user == null) {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);
         }
-        String cacheKey = request.getVNU().toHexString() + request.getId();
-        if (CacheAccessor.ExistBlocks.getIfPresent(cacheKey) != null) {
-            LOG.warn(request.getVNU() + "/" + request.getId() + " already exist.");
-            return new VoidResp();
-        }
         int userid = user.getUserID();
         LOG.info("Save block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " to DB...");
         SuperNode n = SuperNodeList.getBlockSuperNode(request.getVHP());
         if (n.getId() != ServerConfig.superNodeID) {//验证数据块是否对应
             throw new ServiceException(ILLEGAL_VHP_NODEID);
         }
+        long VBI = Sequence.generateBlockID(1);
+        BlockMeta bmeta = BlockAccessor.getBlockMeta(request.getVHP(), request.getVHB());
+        if (bmeta != null) {
+            if (!Arrays.equals(bmeta.getKED(), request.getKED())) {
+                LOG.error("Block meta duplicate writing.");
+                return new ServiceException(ServiceErrorCode.SERVER_ERROR);
+            } else {
+                VBI = bmeta.getVBI();
+            }
+        }
         BlockEncrypted b = new BlockEncrypted();
         b.setData(request.getData());
         verify(request, b.getVHB());
-        BlockMeta meta = makeBlockMeta(request, Sequence.generateBlockID(1));
-        BlockAccessor.saveBlockData(meta.getVBI(), request.getData());
-        BlockAccessor.saveBlockMeta(meta);
-        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(request, userid, meta.getVBI());
+        BlockAccessor.saveBlockData(VBI, request.getData());
+        if (bmeta == null) {
+            BlockMeta meta = makeBlockMeta(request, VBI);
+            BlockAccessor.saveBlockMeta(meta);
+        }
+        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(request, userid, VBI);
         saveObjectMetaReq.setNlink(1);
         try {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
@@ -64,7 +70,6 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         } catch (ServiceException r) {
             throw r;
         }
-        CacheAccessor.ExistBlocks.put(cacheKey, Boolean.TRUE);
         return new VoidResp();
     }
 

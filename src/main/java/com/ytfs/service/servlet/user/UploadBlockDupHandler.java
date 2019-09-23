@@ -15,7 +15,6 @@ import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.packet.user.UploadBlockDupReq;
 import com.ytfs.service.packet.VoidResp;
-import com.ytfs.service.servlet.CacheAccessor;
 import org.apache.log4j.Logger;
 
 public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
@@ -28,11 +27,6 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
         if (user == null) {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);
         }
-        String cacheKey = request.getVNU().toHexString() + request.getId();
-        if (CacheAccessor.ExistBlocks.getIfPresent(cacheKey) != null) {
-            LOG.warn(request.getVNU() + "/" + request.getId() + " already exist.");
-            return new VoidResp();
-        }
         int userid = user.getUserID();
         LOG.info("Upload block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " exist...");
         BlockMeta meta = BlockAccessor.getBlockMeta(request.getVHP(), request.getVHB());
@@ -40,18 +34,18 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
             throw new ServiceException(NO_SUCH_BLOCK);
         }
         verify(request);
-        BlockAccessor.incBlockNLINK(meta);//+1        
         SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(request, userid, meta.getVBI());
         saveObjectMetaReq.setNlink(meta.getNLINK() + 1);
         try {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
             if (resp.isExists()) {
                 LOG.warn("Block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " has been uploaded.");
+            } else {
+                BlockAccessor.incBlockNLINK(meta, 1);
             }
         } catch (ServiceException r) {
             throw r;
         }
-        CacheAccessor.ExistBlocks.put(cacheKey, Boolean.TRUE);
         return new VoidResp();
     }
 
