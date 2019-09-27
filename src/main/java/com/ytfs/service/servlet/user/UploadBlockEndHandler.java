@@ -16,8 +16,10 @@ import static com.ytfs.common.ServiceErrorCode.INVALID_SIGNATURE;
 import static com.ytfs.common.ServiceErrorCode.INVALID_VHB;
 import static com.ytfs.common.ServiceErrorCode.INVALID_VHP;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.dao.Sequence;
 import com.ytfs.service.packet.ObjectRefer;
+import com.ytfs.service.packet.TaskDispatchReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.packet.user.UploadBlockEndReq;
@@ -25,8 +27,11 @@ import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.CacheAccessor;
 import com.ytfs.service.servlet.bp.DNISenderPool;
+import com.ytfs.service.servlet.bp.TaskDispatchHandler;
+import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
+import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -96,6 +101,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             System.arraycopy(vbi, 0, data, 2, 8);
             System.arraycopy(vhf, 0, data, 10, vhf.length);
             DNISenderPool.startSender(data, nid, false);
+            test(data, nid);
         });
     }
 
@@ -192,5 +198,26 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         }
         return ls;
     }
+    static boolean hasTest = false;
 
+    public static void test(byte[] DNI, int nodeid) {
+        if (!hasTest) {
+            try {
+                int snnum = (int) DNI[0];
+                TaskDispatchReq req = new TaskDispatchReq();
+                req.setDNI(DNI);
+                req.setNodeId(nodeid);
+                req.setExecNodeId(nodeid);
+                SuperNode sn = SuperNodeList.getSuperNode(snnum);
+                TaskDispatchHandler.taskDispatchCall(req, sn);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Query rebuild task " + Base58.encode(DNI));
+                }
+            } catch (Throwable r) {
+                LOG.error("Send rebuild task " + Base58.encode(DNI) + " ERR:" , r);
+            }
+            hasTest = true;
+        }
+
+    }
 }

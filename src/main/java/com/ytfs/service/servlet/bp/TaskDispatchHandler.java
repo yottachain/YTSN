@@ -1,6 +1,7 @@
 package com.ytfs.service.servlet.bp;
 
 import com.ytfs.common.Function;
+import com.ytfs.common.SerializationUtil;
 import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
@@ -20,6 +21,9 @@ import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import io.yottachain.p2phost.utils.Base58;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,6 +40,7 @@ public class TaskDispatchHandler extends Handler<TaskDispatchReq> {
             try {
                 return dispatch(req);
             } catch (Throwable t) {
+                LOG.error("", t);
                 throw t instanceof ServiceException ? (ServiceException) t : new ServiceException(SERVER_ERROR, t.getMessage());
             }
         } else {
@@ -45,7 +50,7 @@ public class TaskDispatchHandler extends Handler<TaskDispatchReq> {
 
     private static VoidResp dispatch(TaskDispatchReq req) throws Throwable {
         byte[] DNI = req.getDNI();
-        int shardCount = (int) DNI[1];
+        int shardCount = (int) DNI[1] & 0xFF;;
         long VBI = Function.bytes2Integer(DNI, 2, 8);
         byte[] VHF = new byte[32];
         System.arraycopy(DNI, DNI.length - 32, VHF, 0, 32);
@@ -101,6 +106,20 @@ public class TaskDispatchHandler extends Handler<TaskDispatchReq> {
             ((TaskDescriptionCP) task).setDataHash(VHF);
             ((TaskDescriptionCP) task).setLocations(locations);
         }
+
+        OutputStream is = null;
+        try {
+            byte[] data = SerializationUtil.serialize(task);
+            File f = new File("/" + Base58.encode(id) + ".dat");
+            is = new FileOutputStream(f);
+            is.write(data);
+        } catch (Exception r) {
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+
         try {
             P2PUtils.requestNode(task, map.get(req.getExecNodeId()));
             if (LOG.isDebugEnabled()) {

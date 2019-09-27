@@ -48,4 +48,6 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         CacheAccessor.delUploadObjectCache(meta.getVNU());
         return new VoidResp();
     }
+
+
 }

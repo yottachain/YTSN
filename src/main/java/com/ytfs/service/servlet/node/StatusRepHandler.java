@@ -3,11 +3,8 @@ package com.ytfs.service.servlet.node;
 import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.INVALID_NODE_ID;
 import com.ytfs.common.ServiceException;
-import com.ytfs.common.conf.ServerConfig;
-import com.ytfs.service.SNSynchronizer;
 import com.ytfs.service.packet.StatusRepReq;
 import com.ytfs.service.packet.StatusRepResp;
-import com.ytfs.service.packet.bp.NodeSyncReq;
 import com.ytfs.service.servlet.Handler;
 import com.ytfs.service.servlet.bp.NodeStatSync;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
@@ -26,7 +23,7 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
         try {
             nodeid = this.getNodeId();
         } catch (NodeMgmtException e) {
-            LOG.error("Invalid node pubkey:" + this.getPublicKey());
+            LOG.error("Invalid node pubkey:" + this.getPublicKey() + ",ID:" + request.getId());
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
         }
         if (nodeid != request.getId()) {
