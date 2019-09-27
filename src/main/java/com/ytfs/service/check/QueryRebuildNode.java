@@ -43,10 +43,10 @@ public class QueryRebuildNode extends Thread {
                 try {
                     if (min < 60000 * 3) {
                         sc = YottaNodeMgmt.getInvalidNodes();
-                        LOG.info("Query returns " + sc.size() + " tasks.");
+                        LOG.info("Query returns " + (sc == null ? 0 : sc.size()) + " tasks.");
                     }
                 } catch (Throwable t) {
-                    LOG.error("Get RebuildTask ERR:" + t.getMessage());
+                    LOG.error("Get RebuildTask ERR:" + t);
                     sleep(30000);
                     continue;
                 }

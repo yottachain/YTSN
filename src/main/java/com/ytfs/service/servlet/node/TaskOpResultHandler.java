@@ -26,6 +26,7 @@ public class TaskOpResultHandler extends Handler<TaskOpResult> {
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
         }
         byte[] id = this.request.getId();
+        LOG.debug("Received " + Base58.encode(id));
         if (id == null || id.length != 54) {
             LOG.error("TaskID Length Less than 54.");
             return new VoidResp();
@@ -45,8 +46,8 @@ public class TaskOpResultHandler extends Handler<TaskOpResult> {
             LOG.error("Rebuild task " + Base58.encode(id) + " update shard meta failed:" + VFI);
             return new VoidResp();
         }
-        DNISenderPool.startSender(DNI, nodeid,false);
-        DNISenderPool.startSender(DNI, rebuildNodeId,true);
+        DNISenderPool.startSender(DNI, nodeid, false);
+        DNISenderPool.startSender(DNI, rebuildNodeId, true);
         return new VoidResp();
     }
 
