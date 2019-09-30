@@ -107,6 +107,7 @@ public class TaskDispatchHandler extends Handler<TaskDispatchReq> {
             ((TaskDescriptionCP) task).setLocations(locations);
         }
 
+        
         OutputStream is = null;
         try {
             byte[] data = SerializationUtil.serialize(task);

@@ -198,7 +198,8 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         }
         return ls;
     }
-    static boolean hasTest = false;
+    
+    public static boolean hasTest = false;
 
     public static void test(byte[] DNI, int nodeid) {
         if (!hasTest) {
@@ -214,7 +215,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
                     LOG.debug("Query rebuild task " + Base58.encode(DNI));
                 }
             } catch (Throwable r) {
-                LOG.error("Send rebuild task " + Base58.encode(DNI) + " ERR:" , r);
+                LOG.error("Send rebuild task " + Base58.encode(DNI) + " ERR:", r);
             }
             hasTest = true;
         }
