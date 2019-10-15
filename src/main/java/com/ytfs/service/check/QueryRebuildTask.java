@@ -51,9 +51,10 @@ public class QueryRebuildTask implements Runnable {
         RebuildItem items = YottaNodeMgmt.getRebuildItem(shardCount.getId(), index, count);
         List<byte[]> ls = items.getShards();
         if (ls != null) {
-            for (byte[] DNI : ls) {
+            ls.stream().forEach((DNI) -> {
                 SendRebuildTask.startSender(DNI, shardCount.getId(), items.getNode());
-            }
+            });
+            LOG.info("Send Task OK,count:" + ls.size() + ",NodeId:" + items.getNode().getId());
         }
     }
 }

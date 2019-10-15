@@ -1,5 +1,6 @@
 package com.ytfs.service.dao;
 
+import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
@@ -122,7 +123,13 @@ public class ObjectAccessor {
         update.append("userid", userid);
         update.append("time", System.currentTimeMillis());
         update.append("username", username);
-        MongoSource.getObjectNewCollection().insertOne(update);
+        try {
+            MongoSource.getObjectNewCollection().insertOne(update);
+        } catch (MongoException r) {
+            if (!(r.getMessage() != null && r.getMessage().contains("duplicate key"))) {
+                throw r;
+            }
+        }
     }
 
     public static boolean isObjectExists(ObjectMeta meta) {

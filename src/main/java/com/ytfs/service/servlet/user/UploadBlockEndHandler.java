@@ -101,7 +101,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             System.arraycopy(vbi, 0, data, 2, 8);
             System.arraycopy(vhf, 0, data, 10, vhf.length);
             DNISenderPool.startSender(data, nid, false);
-            test(data, nid);
+            //test(data, nid);
         });
     }
 
@@ -199,8 +199,8 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         return ls;
     }
     
-    public static boolean hasTest = false;
-
+   // public static boolean hasTest = false;
+/*
     public static void test(byte[] DNI, int nodeid) {
         if (!hasTest) {
             try {
@@ -220,5 +220,5 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             hasTest = true;
         }
 
-    }
+    }*/
 }

@@ -62,9 +62,9 @@ public class SendRebuildTask implements Runnable {
                 req.setExecNodeId(node.getId());
                 SuperNode sn = SuperNodeList.getSuperNode(snnum);
                 TaskDispatchHandler.taskDispatchCall(req, sn);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Query rebuild task " + Base58.encode(DNI));
-                }
+                //if (LOG.isDebugEnabled()) {
+                  //  LOG.debug("Query rebuild task " + Base58.encode(DNI));
+               // }
             } catch (Throwable r) {
                 LOG.error("Send rebuild task " + Base58.encode(DNI) + " ERR:" + r.getMessage());
             }

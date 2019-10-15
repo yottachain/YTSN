@@ -19,7 +19,7 @@ public class ServiceWrapper implements WrapperListener {
         ServerInitor.init();
         //NewObjectScanner.startUp();
         QueryRebuildNode.startUp();
-        //SendSpotCheckTask.startUp();
+        SendSpotCheckTask.startUp();
         DNISenderPool.start();
         NodeStatSync.startup();
         return null;

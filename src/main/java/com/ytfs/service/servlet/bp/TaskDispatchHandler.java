@@ -1,7 +1,6 @@
 package com.ytfs.service.servlet.bp;
 
 import com.ytfs.common.Function;
-import com.ytfs.common.SerializationUtil;
 import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
@@ -21,14 +20,12 @@ import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import io.yottachain.p2phost.utils.Base58;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import org.apache.log4j.Logger;
 
 public class TaskDispatchHandler extends Handler<TaskDispatchReq> {
@@ -50,12 +47,12 @@ public class TaskDispatchHandler extends Handler<TaskDispatchReq> {
 
     private static VoidResp dispatch(TaskDispatchReq req) throws Throwable {
         byte[] DNI = req.getDNI();
-        int shardCount = (int) DNI[1] & 0xFF;;
+        int shardCount = (int) DNI[1] & 0xFF;
         long VBI = Function.bytes2Integer(DNI, 2, 8);
         byte[] VHF = new byte[32];
         System.arraycopy(DNI, DNI.length - 32, VHF, 0, 32);
         ShardMeta[] metas = ShardAccessor.getShardMeta(VBI, shardCount);
-        LOG.debug("Query shard meta return " + metas.length + "items,VBI:" + VBI);
+        LOG.debug("Query shard meta return " + metas.length + " items,VBI:" + VBI);
         List<Integer> nodeidsls = new ArrayList();
         long VFI = 0;
         for (ShardMeta meta : metas) {
@@ -107,20 +104,19 @@ public class TaskDispatchHandler extends Handler<TaskDispatchReq> {
             ((TaskDescriptionCP) task).setLocations(locations);
         }
 
-        
-        OutputStream is = null;
-        try {
-            byte[] data = SerializationUtil.serialize(task);
-            File f = new File("/" + Base58.encode(id) + ".dat");
-            is = new FileOutputStream(f);
-            is.write(data);
-        } catch (Exception r) {
-        } finally {
-            if (is != null) {
-                is.close();
-            }
-        }
-
+        /*
+         OutputStream is = null;
+         try {
+         byte[] data = SerializationUtil.serialize(task);
+         File f = new File("/" + Base58.encode(id) + ".dat");
+         is = new FileOutputStream(f);
+         is.write(data);
+         } catch (Exception r) {
+         } finally {
+         if (is != null) {
+         is.close();
+         }
+         }*/
         try {
             P2PUtils.requestNode(task, map.get(req.getExecNodeId()));
             if (LOG.isDebugEnabled()) {
@@ -132,6 +128,9 @@ public class TaskDispatchHandler extends Handler<TaskDispatchReq> {
         return new VoidResp();
     }
 
+    private static final ArrayBlockingQueue<TaskDispatchReq> queue = new ArrayBlockingQueue(5000);
+    private static final List<Thread> taskls = new ArrayList();
+
     @Override
     public Object handle() throws Throwable {
         try {
@@ -141,10 +140,42 @@ public class TaskDispatchHandler extends Handler<TaskDispatchReq> {
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
         }
         try {
-            return dispatch(request);
+            dispatch(request);
         } catch (Throwable t) {
             LOG.error("Query shards meta ERR:", t);
-            return t instanceof ServiceException ? (ServiceException) t : new ServiceException(SERVER_ERROR, t.getMessage());
+        }
+
+        //queue.offer(request);
+        //startHandle();
+        return new VoidResp();
+    }
+
+    private static synchronized void startHandle() {
+        if (taskls.isEmpty()) {
+            for (int ii = 0; ii < 100; ii++) {
+                DoTask task = new DoTask();
+                taskls.add(task);
+                task.start();
+            }
         }
     }
+
+    private static class DoTask extends Thread {
+
+        @Override
+        public void run() {
+            while (!this.isInterrupted()) {
+                try {
+                    TaskDispatchReq req = queue.take();
+                    dispatch(req);
+                } catch (InterruptedException e) {
+                    break;
+                } catch (Throwable t) {
+                    LOG.error("Query shards meta ERR:", t);
+                }
+            }
+
+        }
+    }
+
 }
