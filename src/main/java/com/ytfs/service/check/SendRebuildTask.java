@@ -3,10 +3,8 @@ package com.ytfs.service.check;
 import com.ytfs.common.GlobleThreadPool;
 import static com.ytfs.common.conf.ServerConfig.REBULIDTHREAD;
 import com.ytfs.common.node.SuperNodeList;
-import com.ytfs.service.packet.TaskDispatchReq;
-import com.ytfs.service.servlet.bp.TaskDispatchHandler;
-import io.jafka.jeos.util.Base58;
-import io.yottachain.nodemgmt.core.vo.Node;
+import com.ytfs.service.packet.TaskDispatchList;
+import com.ytfs.service.servlet.bp.TaskListHandler;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.concurrent.ArrayBlockingQueue;
 import org.apache.log4j.Logger;
@@ -26,47 +24,35 @@ public class SendRebuildTask implements Runnable {
         }
     }
 
-    /**
-     * 
-     * @param DNI
-     * @param nid 需重建节点
-     * @param node 目标节点
-     */
-    public static void startSender(byte[] DNI, int nid, Node node) {
+    public static void startSender(int snnode, TaskDispatchList req) {
         try {
             SendRebuildTask sender = queue.take();
-            sender.nodeid = nid;
-            sender.DNI = DNI;
-            sender.node = node;
+            sender.req = req;
+            sender.snnode = snnode;
             GlobleThreadPool.execute(sender);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
     }
-    private byte[] DNI;
-    private Node node;
-    private int nodeid;
+    private TaskDispatchList req;
+    private int snnode;
 
     @Override
     public void run() {
         try {
-            if (DNI == null || DNI.length != 42) {
-                LOG.warn("DNI Length Less than 42.");
-                return;
-            }
-            try {
-                int snnum = (int) DNI[0];
-                TaskDispatchReq req = new TaskDispatchReq();
-                req.setDNI(DNI);
-                req.setNodeId(nodeid);
-                req.setExecNodeId(node.getId());
-                SuperNode sn = SuperNodeList.getSuperNode(snnum);
-                TaskDispatchHandler.taskDispatchCall(req, sn);
-                //if (LOG.isDebugEnabled()) {
-                  //  LOG.debug("Query rebuild task " + Base58.encode(DNI));
-               // }
-            } catch (Throwable r) {
-                LOG.error("Send rebuild task " + Base58.encode(DNI) + " ERR:" + r.getMessage());
+            for (int ii = 0; ii < 3; ii++) {
+                try {
+                    SuperNode sn = SuperNodeList.getSuperNode(snnode);
+                    TaskListHandler.taskDispatchCall(req, sn);
+                    break;
+                } catch (Throwable r) {
+                    LOG.error("Send rebuild tasks ERR:" + r.getMessage());
+                    try {
+                        Thread.sleep(15000);
+                    } catch (InterruptedException ex) {
+                        break;
+                    }
+                }
             }
         } finally {
             queue.add(this);

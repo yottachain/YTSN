@@ -1,12 +1,17 @@
 package com.ytfs.service.check;
 
+import com.ytfs.service.packet.TaskDispatchList;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.RebuildItem;
 import io.yottachain.nodemgmt.core.vo.ShardCount;
 import static java.lang.Thread.sleep;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import org.apache.log4j.Logger;
 
 public class QueryRebuildTask implements Runnable {
@@ -50,9 +55,27 @@ public class QueryRebuildTask implements Runnable {
     private void queryTask(long index, long count) throws NodeMgmtException {
         RebuildItem items = YottaNodeMgmt.getRebuildItem(shardCount.getId(), index, count);
         List<byte[]> ls = items.getShards();
+        Map<Integer, TaskDispatchList> map = new HashMap();
         if (ls != null) {
-            ls.stream().forEach((DNI) -> {
-                SendRebuildTask.startSender(DNI, shardCount.getId(), items.getNode());
+            for (byte[] DNI : ls) {
+                if (DNI == null || DNI.length != 42) {
+                    LOG.warn("DNI Length Less than 42.");
+                    continue;
+                }
+                int snnum = (int) DNI[0];
+                TaskDispatchList list = map.get(snnum);
+                if (list == null) {
+                    list = new TaskDispatchList();
+                    list.setNodeId(shardCount.getId());
+                    list.setExecNodeId(items.getNode().getId());
+                    list.setDNI(new ArrayList());
+                    map.put(snnum, list);
+                }
+                list.addDNI(DNI);
+            }
+            Set<Entry<Integer, TaskDispatchList>> set = map.entrySet();
+            set.stream().forEach((ent) -> {
+                SendRebuildTask.startSender(ent.getKey(), ent.getValue());
             });
             LOG.info("Send Task OK,count:" + ls.size() + ",NodeId:" + items.getNode().getId());
         }

@@ -31,11 +31,11 @@ public class PreAllocNodeHandler extends Handler<PreAllocNodeReq> {
         count = count < 100 ? 100 : count;
         PreAllocNodeResp resp = new PreAllocNodeResp();
         try {
-            List<Node> nodes = NodeManager.getNode(count, request.getExcludes());           
+            LOG.info("User " + user.getUserID() + " AllocNodes,count:" + count);
+            List<Node> nodes = NodeManager.getNode(count, request.getExcludes());
             nodes.stream().map((node) -> new PreAllocNode(node)).filter((n) -> (resp.addNode(n))).forEach((n) -> {
                 sign(n);
             });
-            LOG.info("User " + user.getUserID() + " AllocNodes,count " + nodes.size());
             return resp;
         } catch (NodeMgmtException ex) {
             LOG.error("AllocNodes ERR:" + ex.getMessage());
