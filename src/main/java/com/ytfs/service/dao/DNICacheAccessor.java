@@ -4,6 +4,7 @@ import io.jafka.jeos.util.Base58;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.Binary;
+import org.bson.types.ObjectId;
 
 public class DNICacheAccessor {
 
@@ -12,7 +13,7 @@ public class DNICacheAccessor {
 
     public static void addDNI(int snid, int nid, byte[] vhf, boolean delete) {
         try {
-            Document update = new Document("_id", new Object());
+            Document update = new Document("_id", new ObjectId());
             update.append("nodeId", nid);
             update.append("vhf", new Binary(vhf));
             update.append("delete", delete);

@@ -30,7 +30,7 @@ public class TaskOpResultListHandler extends Handler<TaskOpResultList> {
         int index = 0;
         for (byte[] id : ls) {
             LOG.debug("Received " + Base58.encode(id));
-            int res = request.getRES()[index];
+            int res = request.getRES().get(index);
             index++;
             if (id == null || id.length != 54) {
                 LOG.error("TaskID Length Less than 54.");

@@ -10,8 +10,9 @@ import org.bson.types.ObjectId;
 public class Test {
  
     public static void main(String[] a) throws Exception {
-         int  i=Integer.MAX_VALUE;
-         System.out.println(i);
+       
+       
+         System.out.println(5130 %21);
 
     }
 
