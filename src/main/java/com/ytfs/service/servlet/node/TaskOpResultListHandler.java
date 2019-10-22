@@ -53,7 +53,7 @@ public class TaskOpResultListHandler extends Handler<TaskOpResultList> {
             }
             DNISenderPool.startSender(DNI, nodeid, false);
             DNISenderPool.startSender(DNI, rebuildNodeId, true);
-            LOG.debug("Rebuild OK: " + Base58.encode(id));
+            LOG.debug("Rebuild OK:" + Base58.encode(id));
         }
         return new VoidResp();
     }

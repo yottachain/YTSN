@@ -106,7 +106,7 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
     private static VoidResp dispatch(TaskDispatchList req) throws Throwable {
         Node execnode = NodeManager.getNode(req.getExecNodeId());
         if (execnode == null) {
-            LOG.error("Node not found：" + req.getExecNodeId());
+            LOG.error("Node not found:" + req.getExecNodeId());
             return new VoidResp();
         }
         TaskList task = new TaskList();

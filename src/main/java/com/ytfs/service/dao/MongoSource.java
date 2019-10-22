@@ -120,7 +120,7 @@ public class MongoSource {
         return source.file_collection;
     }
 
-    static MongoCollection<Document> getCollection(String tabname) {
+    public static MongoCollection<Document> getCollection(String tabname) {
         newInstance();
         return source.database.getCollection(tabname);
     }
