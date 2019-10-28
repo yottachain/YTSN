@@ -1,5 +1,6 @@
 package com.ytfs.service.check;
 
+import com.ytfs.common.SerializationUtil;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.net.P2PUtils;
@@ -9,8 +10,12 @@ import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SpotCheckList;
 import io.yottachain.nodemgmt.core.vo.SpotCheckTask;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 
@@ -43,7 +48,7 @@ public class SendSpotCheckTask extends Thread {
         while (!exit) {
             try {
                 long time = System.currentTimeMillis();
-                long min = time % 3600000L;
+                long min = time % 600000L;
                 try {
                     if (min < 60000 * 3) {
                         sc = YottaNodeMgmt.getSpotCheckList();
@@ -107,8 +112,12 @@ public class SendSpotCheckTask extends Thread {
         }).forEach((myst) -> {
             mytask.getTaskList().add(myst);
         });
+
+        MessageWriter.write(mytask);
+
         LOG.info("Send task [" + mytask.getTaskId() + "] to " + n.getId() + ":" + P2PUtils.getAddrString(n.getAddrs()));
         P2PUtils.requestNode(mytask, n);
         LOG.info("Send task [" + mytask.getTaskId() + "] OK!");
     }
+
 }

@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
 public class QueryRebuildTask implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(QueryRebuildTask.class);
-    private static final int Max_Shard_Count = 1000;
+    private static final int Max_Shard_Count = 5000;
     private final ShardCount shardCount;
     private final Map<Integer, QueryRebuildTask> taskMap;
 

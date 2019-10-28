@@ -19,9 +19,9 @@ public class ServiceWrapper implements WrapperListener {
     @Override
     public Integer start(String[] strings) {
         ServerInitor.init();
-        ShardUpdateTest.start();
+        //ShardUpdateTest.start();
         //NewObjectScanner.startUp();
-        QueryRebuildNode.startUp();
+        //QueryRebuildNode.startUp();
         SendSpotCheckTask.startUp();
         DNISenderPool.start();
         NodeStatSync.startup();
@@ -31,7 +31,7 @@ public class ServiceWrapper implements WrapperListener {
     @Override
     public int stop(int exitCode) {
         NewObjectScanner.shutdown();
-        ShardUpdateTest.stop();
+        //ShardUpdateTest.stop();
         SendSpotCheckTask.shutdown();
         QueryRebuildNode.shutdown();
         DNISenderPool.stop();

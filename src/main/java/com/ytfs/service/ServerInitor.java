@@ -62,7 +62,7 @@ public class ServerInitor {
                 Sequence.initUserID_seq();
                 BpList.init(SuperNodeList.getSuperNodeList());
                 break;
-            } catch (Exception r) {
+            } catch (Throwable r) {
                 LOG.error("Mongo client initialization failed:" + r.getMessage());
                 try {
                     Thread.sleep(30000);

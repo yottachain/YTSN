@@ -11,9 +11,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public class SpotCheckRepHandler extends Handler<SpotCheckStatus> {
-    
+
     private static final Logger LOG = Logger.getLogger(SpotCheckRepHandler.class);
-    
+
     @Override
     public Object handle() throws Throwable {
         try {
@@ -26,13 +26,19 @@ public class SpotCheckRepHandler extends Handler<SpotCheckStatus> {
             String taskid = request.getTaskId();
             List<Integer> ls = request.getInvalidNodeList();
             if (ls == null || ls.isEmpty()) {
-                LOG.warn("SpotCheckTaskStatus:" + taskid + ",invalidNodeList is empty.");
+                LOG.info("SpotCheckTaskStatus:" + taskid + ",invalidNodeList is empty.");
             } else {
-                LOG.info("SpotCheckTaskStatus:" + taskid);
+                String ids = null;
                 int[] nodes = new int[ls.size()];
                 for (int ii = 0; ii < nodes.length; ii++) {
                     nodes[ii] = ls.get(ii);
+                    if (ids == null) {
+                        ids = "[" + nodes[ii];
+                    } else {
+                        ids = ids + "," + nodes[ii];
+                    }
                 }
+                LOG.warn("SpotCheckTaskStatus:" + taskid + ",invalidNodeList:" + ids + "]");
                 YottaNodeMgmt.updateTaskStatus(taskid, nodes);
             }
         } catch (NodeMgmtException e) {
@@ -40,5 +46,5 @@ public class SpotCheckRepHandler extends Handler<SpotCheckStatus> {
         }
         return new VoidResp();
     }
-    
+
 }
