@@ -8,11 +8,13 @@ import java.util.Random;
 import org.bson.types.ObjectId;
 
 public class Test {
- 
-    public static void main(String[] a) throws Exception {
-       
-       
-         System.out.println(5130 %21);
+
+    public static void main(String[] arg) throws Exception {
+
+        int a = 0;
+        Random b = new Random();
+        a = b.nextInt(400);
+        System.out.println(a);
 
     }
 

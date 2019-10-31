@@ -44,6 +44,7 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
             node.setAddrs(addrs);
             NodeStatSync.updateNode(node);
             LOG.debug("StatusRep Node:" + request.getId() + ",take times " + (System.currentTimeMillis() - l) + " ms");
+            SendSpotCheckTask.startUploadShard(this.getNode());
             return resp;
         } catch (NodeMgmtException e) {
             LOG.error("UpdateNodeStatus ERR:" + e.getMessage() + ",ID:" + request.getId() + ",take times " + (System.currentTimeMillis() - l) + " ms");

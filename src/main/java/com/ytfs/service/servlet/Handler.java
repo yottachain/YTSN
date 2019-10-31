@@ -3,6 +3,7 @@ package com.ytfs.service.servlet;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache;
 import com.ytfs.common.node.NodeCache;
+import com.ytfs.common.node.NodeInfo;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 
 public abstract class Handler<T> {
@@ -28,6 +29,10 @@ public abstract class Handler<T> {
 
     protected final int getSuperNodeId() throws NodeMgmtException {
         return NodeCache.getSuperNodeId(pubkey);
+    }
+
+    protected final NodeInfo getNode() throws NodeMgmtException {
+        return NodeCache.getNode(pubkey);
     }
 
     protected final int getNodeId() throws NodeMgmtException {
