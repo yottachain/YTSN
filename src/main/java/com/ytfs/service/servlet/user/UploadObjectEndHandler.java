@@ -27,10 +27,12 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         }
         if (CacheAccessor.getUploadObjectCache(request.getVNU()) == null) {
             LOG.warn(request.getVNU() + " already completed.");
+            return new ServiceException(ServiceErrorCode.INVALID_UPLOAD_ID);
         }
         int userid = user.getUserID();
         ObjectMeta meta = new ObjectMeta(userid, request.getVHW());
         ObjectAccessor.getObjectAndUpdateNLINK(meta);
+
         long usedspace = meta.getUsedspace() + ServerConfig.PCM;
         EOSClient.addUsedSpace(usedspace, user.getUsername(), userid);
         long count = usedspace / UserConfig.Default_Shard_Size
@@ -38,8 +40,10 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         long costPerCycle = count * ServerConfig.unitcost;
         ObjectAccessor.addNewObject(meta.getVNU(), costPerCycle, user.getUserID(), user.getUsername());
         UserAccessor.updateUser(userid, usedspace, 1, meta.getLength());
+
+        long firstCost = costPerCycle * ServerConfig.PMS;
         try {
-            EOSClient.deductHDD(request.getSignData(), request.getVNU());
+            EOSClient.deductHDD(firstCost, user.getUsername(), user.getUserID());
             LOG.info("Sub Balance:" + user.getUserID());
         } catch (ServiceException e) {
             LOG.error("Sub Balance ERR: session expires.");
@@ -48,6 +52,5 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         CacheAccessor.delUploadObjectCache(meta.getVNU());
         return new VoidResp();
     }
-
 
 }
