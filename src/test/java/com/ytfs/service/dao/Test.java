@@ -33,7 +33,7 @@ public class Test {
         String filename = "dir/dfile4";
         FileMetaV2 meta = new FileMetaV2(new ObjectId(), bucketId, filename);
 
-        FileAccessorV2.insertFileMeta(meta);
+       // FileAccessorV2.insertFileMeta(meta);
 
         ObjectId verid = new ObjectId("5cf7463651010218385ae602");
         // FileAccessorV2.deleteFileMeta(bucketId, filename, verid);
@@ -46,11 +46,11 @@ public class Test {
     private static void testObjectLs() throws Exception {
         int limit = 200;
         ObjectId bucketId = new ObjectId("5ce6613551f96b0c6a8f1b58");
-        long count = FileAccessorV2.getObjectCount(bucketId);
-        System.out.println("count:" + count);
+       // long count = FileAccessorV2.getObjectCount(bucketId);
+       // System.out.println("count:" + count);
 
-        List<FileMetaV2> ls = FileAccessorV2.listBucket(bucketId, null, FileAccessorV2.firstVersionId, "dir\\", limit);
-        System.out.println(ls.size());
+        //List<FileMetaV2> ls = FileAccessorV2.listBucket(bucketId, null, FileAccessorV2.firstVersionId, "dir\\", limit);
+       // System.out.println(ls.size());
     }
 
     private static void testUser() throws Exception {

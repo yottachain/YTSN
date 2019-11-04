@@ -1,6 +1,5 @@
 package com.ytfs.service.dao;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import org.bson.Document;
@@ -15,37 +14,20 @@ public class ObjectMeta {
     private int NLINK;
     private long length;
     private long usedspace;
-    private byte[] blocks;
     private byte[][] blockList;
-
-    private final byte[] _id;
 
     public ObjectMeta(int userID, byte[] VHW) {
         this.userID = userID;
         this.VHW = VHW;
-        byte[] id = new byte[VHW.length + 4];
-        id[0] = (byte) (userID >>> 24);
-        id[1] = (byte) (userID >>> 16);
-        id[2] = (byte) (userID >>> 8);
-        id[3] = (byte) (userID);
-        System.arraycopy(VHW, 0, id, 4, VHW.length);
-        this._id = id;
     }
 
-    public ObjectMeta(Document doc) {
-        if (doc.containsKey("_id")) {
-            this._id = ((Binary) doc.get("_id")).getData();
-            ByteBuffer bb = ByteBuffer.wrap(_id);
-            this.userID = bb.getInt();
-            VHW = new byte[bb.remaining()];
-            bb.get(VHW);
-        } else {
-            _id = null;
-        }
+    public ObjectMeta(int userID, Document doc) {
+        this.userID = userID;
         fill(doc);
     }
 
     public final void fill(Document doc) {
+        this.VHW = ((Binary) doc.get("_id")).getData();
         if (doc.containsKey("VNU")) {
             this.VNU = doc.getObjectId("VNU");
         }
@@ -59,37 +41,29 @@ public class ObjectMeta {
             this.usedspace = doc.getLong("usedspace");
         }
         if (doc.get("blocks") != null) {
-            if (doc.get("blocks") instanceof List) {
-                List ls = (List) doc.get("blocks");
-                this.blockList = new byte[ls.size()][];
-                int index = 0;
-                for (Object obj : ls) {
-                    this.blockList[index++] = ((Binary) obj).getData();
-                }
-            } else {
-                this.blocks = ((Binary) doc.get("blocks")).getData();
+            List ls = (List) doc.get("blocks");
+            this.blockList = new byte[ls.size()][];
+            int index = 0;
+            for (Object obj : ls) {
+                this.blockList[index++] = ((Binary) obj).getData();
             }
         }
     }
 
     public Document toDocument() {
         Document doc = new Document();
-        doc.append("_id", new Binary(getId()));
+        doc.append("_id", new Binary(VHW));
         doc.append("length", this.length);
         doc.append("usedspace", this.usedspace);
         doc.append("VNU", VNU);
         doc.append("NLINK", NLINK);
-        if (blocks != null) {
-            doc.append("blocks", new Binary(blocks));
-        } else {
-            List<Binary> blks = new ArrayList();
-            if (blockList != null) {
-                for (byte[] bs : blockList) {
-                    blks.add(new Binary(bs));
-                }
+        List<Binary> blks = new ArrayList();
+        if (blockList != null) {
+            for (byte[] bs : blockList) {
+                blks.add(new Binary(bs));
             }
-            doc.append("blocks", blks);
         }
+        doc.append("blocks", blks);
         return doc;
     }
 
@@ -147,27 +121,6 @@ public class ObjectMeta {
      */
     public void setNLINK(int NLINK) {
         this.NLINK = NLINK;
-    }
-
-    /**
-     * @return the blocks
-     */
-    public byte[] getBlocks() {
-        return blocks;
-    }
-
-    /**
-     * @param blocks the blocks to set
-     */
-    public void setBlocks(byte[] blocks) {
-        this.blocks = blocks;
-    }
-
-    /**
-     * @return the _id
-     */
-    public byte[] getId() {
-        return _id;
     }
 
     /**

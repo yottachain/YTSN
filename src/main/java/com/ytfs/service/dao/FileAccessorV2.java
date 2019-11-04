@@ -19,18 +19,19 @@ public class FileAccessorV2 {
     /**
      * 插入文件meta,如果记录存在抛出OBJECT_ALREADY_EXISTS错误
      *
+     * @param userId
      * @param meta
      * @return 版本号
      * @throws ServiceException
      */
-    public static ObjectId insertFileMeta(FileMetaV2 meta) throws ServiceException {
+    public static ObjectId insertFileMeta(int userId, FileMetaV2 meta) throws ServiceException {
         Document doc = new Document("bucketId", meta.getBucketId());
         doc.append("fileName", meta.getFileName());
         List<Document> vers = new ArrayList();
         vers.add(meta.getVerDocument());
         doc.append("version", vers);
         try {
-            MongoSource.getFileCollection().insertOne(doc);
+            MongoSource.getFileCollection(userId).insertOne(doc);
         } catch (MongoWriteException e) {
             if (e.getMessage().contains("dup key")) {
                 throw new ServiceException(OBJECT_ALREADY_EXISTS);
@@ -42,10 +43,11 @@ public class FileAccessorV2 {
     /**
      * 插入文件meta,如果记录存在生成新版本
      *
+     * @param userId
      * @param meta
      * @return 最新版本号
      */
-    public static ObjectId saveFileMeta(FileMetaV2 meta) {
+    public static ObjectId saveFileMeta(int userId, FileMetaV2 meta) {
         Bson bson1 = Filters.eq("bucketId", meta.getBucketId());
         Bson bson2 = Filters.eq("fileName", meta.getFileName());
         Bson filter = Filters.and(bson1, bson2);
@@ -55,21 +57,22 @@ public class FileAccessorV2 {
         update.append("$addToSet", new Document("version", meta.getVerDocument()));
         UpdateOptions updateOptions = new UpdateOptions();
         updateOptions.upsert(true);
-        MongoSource.getFileCollection().updateOne(filter, update, updateOptions);
+        MongoSource.getFileCollection(userId).updateOne(filter, update, updateOptions);
         return meta.getVersionId();
     }
 
     /**
      * 根据bucketid,版本号,文件名查询指定版本meta
      *
+     * @param userId
      * @param bucketid
      * @param filename
      * @param versionId
      * @return FileMetaV2
      */
-    public static FileMetaV2 getFileMeta(ObjectId bucketid, String filename, ObjectId versionId) {
+    public static FileMetaV2 getFileMeta(int userId, ObjectId bucketid, String filename, ObjectId versionId) {
         if (versionId == null) {
-            return getFileMeta(bucketid, filename);
+            return getFileMeta(userId, bucketid, filename);
         }
         Bson bson1 = Filters.eq("bucketId", bucketid);
         Bson bson2 = Filters.eq("fileName", filename);
@@ -77,7 +80,7 @@ public class FileAccessorV2 {
         Bson bson = Filters.and(bson1, bson2, bson3);
         Document fields = new Document("_id", 1);
         fields.append("version.$", 1);
-        Document doc = MongoSource.getFileCollection().find(bson).projection(fields).first();
+        Document doc = MongoSource.getFileCollection(userId).find(bson).projection(fields).first();
         if (doc == null) {
             return null;
         } else {
@@ -91,17 +94,18 @@ public class FileAccessorV2 {
     /**
      * 根据bucketid,文件名查询最新版本meta
      *
+     * @param userId
      * @param bucketid
      * @param filename
      * @return FileMetaV2
      */
-    public static FileMetaV2 getFileMeta(ObjectId bucketid, String filename) {
+    public static FileMetaV2 getFileMeta(int userId, ObjectId bucketid, String filename) {
         Bson bson1 = Filters.eq("bucketId", bucketid);
         Bson bson2 = Filters.eq("fileName", filename);
         Bson bson = Filters.and(bson1, bson2);
         Document fields = new Document("_id", 1);
         fields.append("version", new Document("$slice", -1));
-        Document doc = MongoSource.getFileCollection().find(bson).projection(fields).first();
+        Document doc = MongoSource.getFileCollection(userId).find(bson).projection(fields).first();
         if (doc == null) {
             return null;
         } else {
@@ -116,42 +120,45 @@ public class FileAccessorV2 {
     /**
      * 统计bucket下文件总数
      *
+     * @param userId
      * @param bucketId
      * @return long
      */
-    public static long getObjectCount(ObjectId bucketId) {
+    public static long getObjectCount(int userId, ObjectId bucketId) {
         Bson filter = Filters.eq("bucketId", bucketId);
-        return MongoSource.getFileCollection().countDocuments(filter);
+        return MongoSource.getFileCollection(userId).countDocuments(filter);
     }
 
     /**
      * 删除文件meta
      *
+     * @param userId
      * @param bucketid
      * @param filename
      */
-    public static void deleteFileMeta(ObjectId bucketid, String filename) {
+    public static void deleteFileMeta(int userId, ObjectId bucketid, String filename) {
         Bson bson1 = Filters.eq("bucketId", bucketid);
         Bson bson2 = Filters.eq("fileName", filename);
         Bson bson = Filters.and(bson1, bson2);
-        MongoSource.getFileCollection().deleteOne(bson);
+        MongoSource.getFileCollection(userId).deleteOne(bson);
     }
 
     /**
      * 删除指定版本文件meta
      *
+     * @param userId
      * @param bucketid
      * @param filename
      * @param versionId
      */
-    public static void deleteFileMeta(ObjectId bucketid, String filename, ObjectId versionId) {
+    public static void deleteFileMeta(int userId, ObjectId bucketid, String filename, ObjectId versionId) {
         Bson bson1 = Filters.eq("bucketId", bucketid);
         Bson bson2 = Filters.eq("fileName", filename);
         Bson bson = Filters.and(bson1, bson2);
         Document update = new Document("$pull", new Document("version", new Document("versionId", versionId)));
-        MongoSource.getFileCollection().updateOne(bson, update);
+        MongoSource.getFileCollection(userId).updateOne(bson, update);
         Document bson3 = new Document("version", new Document("$size", 0));
-        MongoSource.getFileCollection().deleteOne(Filters.and(bson1, bson2, bson3));
+        MongoSource.getFileCollection(userId).deleteOne(Filters.and(bson1, bson2, bson3));
     }
 
     public static final ObjectId firstVersionId = new ObjectId("000000000000000000000000");
@@ -159,6 +166,7 @@ public class FileAccessorV2 {
     /**
      * 遍历目录
      *
+     * @param userId
      * @param bucketId
      * @param nextFileName =null,从第一条记录开始
      * @param nextVersionId =null,遍历最新版本,!=null遍历所有版本(初始值=firstVersionId)
@@ -167,7 +175,7 @@ public class FileAccessorV2 {
      * @return　List
      * @throws com.ytfs.common.ServiceException
      */
-    public static List<FileMetaV2> listBucket(ObjectId bucketId, String nextFileName, ObjectId nextVersionId, String prefix, int limit) throws ServiceException {
+    public static List<FileMetaV2> listBucket(int userId, ObjectId bucketId, String nextFileName, ObjectId nextVersionId, String prefix, int limit) throws ServiceException {
         if (limit < 10) {
             limit = 10;
         }
@@ -188,7 +196,7 @@ public class FileAccessorV2 {
             Bson bson2 = Filters.eq("fileName", nextFileName);
             Bson bson = Filters.and(bson1, bson2);
             Document fields = new Document("_id", 1);
-            Document doc = MongoSource.getFileCollection().find(bson).projection(fields).first();
+            Document doc = MongoSource.getFileCollection(userId).find(bson).projection(fields).first();
             if (doc == null) {
                 throw new ServiceException(INVALID_NEXTFILENAME);//无效的nextFileName
             }
@@ -216,8 +224,8 @@ public class FileAccessorV2 {
         int count = 0;
         List<FileMetaV2> res = new ArrayList();
         FindIterable<Document> it = fields == null
-                ? MongoSource.getFileCollection().find(filter).sort(sort).limit(limit)
-                : MongoSource.getFileCollection().find(filter).projection(fields).sort(sort).limit(limit);
+                ? MongoSource.getFileCollection(userId).find(filter).sort(sort).limit(limit)
+                : MongoSource.getFileCollection(userId).find(filter).projection(fields).sort(sort).limit(limit);
         for (Document doc : it) {
             List ls = (List) doc.get("version");
             int vercount = 0, versize = ls.size();

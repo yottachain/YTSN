@@ -13,7 +13,7 @@ public class ShardInsertTest {
     private static final Logger LOG = Logger.getLogger(ShardInsertTest.class);
 
     private static int[] nodeids = new int[]{21, 25, 29, 30, 34, 38, 40, 43, 44, 59, 64, 66, 67, 80, 88, 91, 95, 97};
-    private static byte[] VHF = "1234567890abcdefghijkhigkyajdk3t".getBytes();
+    public static byte[] VHF = "1234567890abcdefghijkhigkyajdk3t".getBytes();
     private static AtomicLong count = new AtomicLong();
     private static Thread t;
     private static Insert[] insert = new Insert[10];

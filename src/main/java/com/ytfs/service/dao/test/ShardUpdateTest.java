@@ -1,14 +1,18 @@
 package com.ytfs.service.dao.test;
 
+import com.mongodb.client.model.ReplaceOneModel;
+import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
+import static com.ytfs.service.dao.test.ShardInsertTest.VHF;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.log4j.Logger;
 import org.bson.Document;
+import org.bson.types.Binary;
 
 public class ShardUpdateTest {
 
@@ -76,13 +80,39 @@ public class ShardUpdateTest {
         return requests;
     }
 
+    private static List<WriteModel<Document>> makeReplaces() {
+        int index = 0;
+        List<WriteModel<Document>> requests = new ArrayList<>();
+        for (int ii = 0; ii < 160; ii++) {
+            Long id = ls.pollFirst();
+            if (id == null) {
+                break;
+            }
+            if (index >= nodeids.length) {
+                index = 0;
+            }
+            int nodeid = nodeids[index++];
+            Document queryDocument = new Document("_id", id);
+
+            Document doc = new Document();
+            doc.append("_id", id);
+            doc.append("nodeId", nodeid);
+            doc.append("VHF", new Binary(VHF));
+
+            ReplaceOneModel<Document> uom = new ReplaceOneModel(queryDocument, doc, new ReplaceOptions().upsert(false));
+            requests.add(uom);
+        }
+        return requests;
+    }
+
     private static class Update extends Thread {
 
         @Override
         public void run() {
             while (!this.isInterrupted()) {
                 try {
-                    List<WriteModel<Document>> ls = makeUpdates();
+                    //List<WriteModel<Document>> ls = makeUpdates();
+                    List<WriteModel<Document>> ls = makeReplaces();
                     if (ls.isEmpty()) {
                         break;
                     }

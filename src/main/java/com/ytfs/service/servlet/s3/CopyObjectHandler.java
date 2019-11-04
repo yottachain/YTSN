@@ -28,7 +28,7 @@ public class CopyObjectHandler extends Handler<CopyObjectReq> {
             throw new ServiceException(INVALID_BUCKET_NAME);
         }
         //根据bucket object获取文件的全部信息
-        FileMetaV2 metaV2 = FileAccessorV2.getFileMeta(meta.getBucketId(),request.getSrcObjectKey());
+        FileMetaV2 metaV2 = FileAccessorV2.getFileMeta(user.getUserID(),meta.getBucketId(),request.getSrcObjectKey());
 
         Map<String, String> header = SerializationUtil.deserializeMap(metaV2.getMeta());
         Date date = new Date();
@@ -40,7 +40,7 @@ public class CopyObjectHandler extends Handler<CopyObjectReq> {
         filemeta.setFileName(request.getDestObjectKey());
         filemeta.setMeta(bs);
         filemeta.setVersionId(metaV2.getVersionId());
-        FileAccessorV2.saveFileMeta(filemeta);
+        FileAccessorV2.saveFileMeta(user.getUserID(),filemeta);
         CopyObjectResp resp = new CopyObjectResp();
         resp.setBucketId(filemeta.getBucketId());
         resp.setBucketName(filemeta.getFileName());

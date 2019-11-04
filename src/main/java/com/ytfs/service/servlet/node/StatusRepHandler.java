@@ -22,8 +22,8 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
         int nodeid;
         try {
             nodeid = this.getNodeId();
-        } catch (NodeMgmtException e) {
-            LOG.error("Invalid node pubkey:" + this.getPublicKey() + ",ID:" + request.getId());
+        } catch (Throwable e) {
+            LOG.error("Invalid node pubkey:" + this.getPublicKey() + ",ID:" + request.getId() + "," + e);
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
         }
         if (nodeid != request.getId()) {

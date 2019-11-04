@@ -23,13 +23,12 @@ public class DownloadFileHandler extends Handler<DownloadFileReq> {
         if (meta == null) {
             throw new ServiceException(INVALID_BUCKET_NAME);
         }
-        FileMetaV2 fmeta = FileAccessorV2.getFileMeta(meta.getBucketId(), request.getFileName(), versionId);
+        FileMetaV2 fmeta = FileAccessorV2.getFileMeta(user.getUserID(),meta.getBucketId(), request.getFileName(), versionId);
         if (fmeta == null) {
             throw new ServiceException(INVALID_OBJECT_NAME);
         }
-        ObjectMeta ometa = ObjectAccessor.getObject(fmeta.getVersionId());
+        ObjectMeta ometa = ObjectAccessor.getObject(user.getUserID(),fmeta.getVersionId());
         DownloadObjectInitResp resp = new DownloadObjectInitResp();
-        resp.setOldRefers(ometa.getBlocks());
         resp.setRefers(ometa.getBlockList());
         resp.setLength(ometa.getLength());
         return resp;

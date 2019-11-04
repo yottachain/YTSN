@@ -25,7 +25,7 @@ public class ListObjectHandler extends Handler<ListObjectReq> {
             ObjectId nextVersionId = request.getNextVersionId();
             BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(), null);
             String fileName = request.getFileName();
-            List<FileMetaV2> fileMetaV2s = FileAccessorV2.listBucket(meta.getBucketId(), fileName, nextVersionId, prefix, limit);
+            List<FileMetaV2> fileMetaV2s = FileAccessorV2.listBucket(user.getUserID(),meta.getBucketId(), fileName, nextVersionId, prefix, limit);
             List<FileMetaMsg> fileMetaMsgs = new ArrayList<>();
             if (fileMetaV2s.size() > 0) {
                 for (FileMetaV2 fileMetaV2 : fileMetaV2s) {

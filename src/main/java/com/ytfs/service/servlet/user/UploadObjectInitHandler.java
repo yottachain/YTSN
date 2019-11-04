@@ -50,7 +50,7 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
             resp.setVNU(meta.getVNU());
             int nlink = meta.getNLINK();
             if (nlink == 0) {//正在上传               
-                List<ObjectRefer> refers = ObjectRefer.parse(meta.getBlocks(), meta.getBlockList());
+                List<ObjectRefer> refers = ObjectRefer.parse(meta.getBlockList());
                 short[] blocks = new short[refers.size()];
                 for (int ii = 0; ii < blocks.length; ii++) {
                     short id = refers.get(ii).getId();

@@ -33,14 +33,14 @@ public class CacheAccessor {
     public static UploadObjectCache getUploadObjectCache(int userid, ObjectId VNU) throws ServiceException {
         try {
             UploadObjectCache cache = uploadObjects.get(VNU, () -> {
-                ObjectMeta meta = ObjectAccessor.getObject(VNU);
+                ObjectMeta meta = ObjectAccessor.getObject(userid, VNU);
                 if (meta != null) {
                     if (meta.getUserID() == userid) {
                         UploadObjectCache ca = new UploadObjectCache();
                         ca.setFilesize(meta.getLength());
                         ca.setUserid(userid);
                         ca.setUsedspace(meta.getUsedspace());
-                        List<ObjectRefer> refers = ObjectRefer.parse(meta.getBlocks(), meta.getBlockList());
+                        List<ObjectRefer> refers = ObjectRefer.parse(meta.getBlockList());
                         refers.stream().forEach((refer) -> {
                             ca.setBlockNum(refer.getId());
                         });

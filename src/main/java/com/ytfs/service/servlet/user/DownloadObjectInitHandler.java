@@ -24,7 +24,6 @@ public class DownloadObjectInitHandler extends Handler<DownloadObjectInitReq> {
         ObjectMeta meta = ObjectAccessor.getObject(userid, request.getVHW());
         LOG.info("Download object:" + userid + "/" + meta.getVNU());
         DownloadObjectInitResp resp = new DownloadObjectInitResp();
-        resp.setOldRefers(meta.getBlocks());
         resp.setRefers(meta.getBlockList());
         resp.setLength(meta.getLength());
         return resp;

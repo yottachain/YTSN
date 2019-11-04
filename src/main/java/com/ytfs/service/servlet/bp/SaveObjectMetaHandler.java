@@ -61,7 +61,7 @@ public class SaveObjectMetaHandler extends Handler<SaveObjectMetaReq> {
             resp.setExists(false);
             long usedspace = sumUsedSpace(request.getRefer().getRealSize(), request.getNlink());
             byte[] bs = request.getRefer().toBytes();
-            ObjectAccessor.updateObject(request.getVNU(), bs, usedspace);
+            ObjectAccessor.updateObject(request.getUserID(), request.getVNU(), bs, usedspace);
             cache.setBlockNum(request.getRefer().getId());
             cache.addUsedspace(usedspace);
         }

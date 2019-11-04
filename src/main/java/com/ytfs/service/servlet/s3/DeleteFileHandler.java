@@ -20,16 +20,16 @@ public class DeleteFileHandler extends Handler<DeleteFileReq> {
         LOG.info("Delete object:" + "/" + request.getBucketName() + "/" + request.getFileName());
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(),request.getMeta());
 
-        FileMetaV2 fileMeta = FileAccessorV2.getFileMeta(meta.getBucketId(),request.getFileName());
+        FileMetaV2 fileMeta = FileAccessorV2.getFileMeta(user.getUserID(),meta.getBucketId(),request.getFileName());
         if(fileMeta == null) {
             throw new ServiceException(INVALID_OBJECT_NAME);
         }
         ObjectId versionId = request.getVNU();
 
         if(versionId == null) {
-            FileAccessorV2.deleteFileMeta(fileMeta.getBucketId(),request.getFileName());
+            FileAccessorV2.deleteFileMeta(user.getUserID(),fileMeta.getBucketId(),request.getFileName());
         } else {
-            FileAccessorV2.deleteFileMeta(fileMeta.getBucketId(),request.getFileName(),versionId);
+            FileAccessorV2.deleteFileMeta(user.getUserID(),fileMeta.getBucketId(),request.getFileName(),versionId);
         }
         return new VoidResp();
     }

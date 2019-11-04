@@ -4,6 +4,7 @@ import com.mongodb.MongoException;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.WriteModel;
 import com.ytfs.service.dao.MongoSource;
 import java.util.Collections;
@@ -27,6 +28,7 @@ public class ShardTest {
     }
 
     public static void saveShardMetas(List<Document> metas) {
+        getCollection().insertMany(metas);
         try {
             getCollection().insertMany(metas);
         } catch (MongoException r) {
@@ -58,7 +60,10 @@ public class ShardTest {
 
     public static void updateShardMetas(List<WriteModel<Document>> ls) {
         try {
-            BulkWriteResult bulkWriteResult = getCollection().bulkWrite(ls);
+            BulkWriteOptions bulkWriteOptions = new BulkWriteOptions();
+            bulkWriteOptions.ordered(false);
+            bulkWriteOptions.bypassDocumentValidation(true);
+            BulkWriteResult bulkWriteResult = getCollection().bulkWrite(ls,bulkWriteOptions);
         } catch (MongoException r) {
             if (!(r.getMessage() != null && r.getMessage().contains("duplicate key"))) {
                 throw r;

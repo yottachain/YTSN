@@ -8,6 +8,7 @@ import com.mongodb.client.model.*;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 
@@ -18,9 +19,7 @@ public class MongoSource {
     //用户表
     public static final String USER_TABLE_NAME = "users";
     private static final String USER_INDEX_NAME = "username";
-    //用户文件去重表
-    public static final String OBJECT_TABLE_NAME = "objects";
-    private static final String OBJECT_INDEX_NAME = "VNU";
+
     public static final String OBJECT_NEW_TABLE_NAME = "objects_new";
 
     //数据块源信息表
@@ -29,14 +28,6 @@ public class MongoSource {
     public static final String BLOCK_DAT_TABLE_NAME = "blocks_data";
     //分片元数据
     public static final String SHARD_TABLE_NAME = "shards";
-
-    //bucket
-    public static final String BUCKET_TABLE_NAME = "buckets";
-    private static final String BUCKET_INDEX_NAME = "UID_NAME";//唯一
-
-    //file
-    public static final String FILE_TABLE_NAME = "files";
-    private static final String FILE_INDEX_NAME = "BID_NAME";//唯一
 
     private static MongoSource source = null;
 
@@ -85,11 +76,6 @@ public class MongoSource {
         return source.user_collection;
     }
 
-    static MongoCollection<Document> getObjectCollection() {
-        newInstance();
-        return source.object_collection;
-    }
-
     static MongoCollection<Document> getObjectNewCollection() {
         newInstance();
         return source.object_new_collection;
@@ -110,14 +96,33 @@ public class MongoSource {
         return source.shard_collection;
     }
 
-    static MongoCollection<Document> getBucketCollection() {
-        newInstance();
-        return source.bucket_collection;
+    static MongoCollection<Document> getBucketCollection(int userId) {
+        UserMetaSource usersource = getUserMetaSource(userId);
+        return usersource.getBucket_collection();
     }
 
-    static MongoCollection<Document> getFileCollection() {
+    static MongoCollection<Document> getFileCollection(int userId) {
+        UserMetaSource usersource = getUserMetaSource(userId);
+        return usersource.getFile_collection();
+    }
+
+    private static UserMetaSource getUserMetaSource(int userId) {
         newInstance();
-        return source.file_collection;
+        UserMetaSource usersource = source.userbaseMap.get(userId);
+        if (usersource == null) {
+            synchronized (source) {
+                if (usersource == null) {
+                    usersource = new UserMetaSource(source.client, userId);
+                    source.userbaseMap.put(userId, usersource);
+                }
+            }
+        }
+        return usersource;
+    }
+
+    static MongoCollection<Document> getObjectCollection(int userId) {
+        UserMetaSource usersource = getUserMetaSource(userId);
+        return usersource.getObject_collection();
     }
 
     public static MongoCollection<Document> getCollection(String tabname) {
@@ -149,13 +154,11 @@ public class MongoSource {
     private MongoClient client = null;
     private MongoDatabase database;
     private MongoCollection<Document> user_collection = null;
-    private MongoCollection<Document> object_collection = null;
     private MongoCollection<Document> object_new_collection = null;
     private MongoCollection<Document> block_collection = null;
     private MongoCollection<Document> block_dat_collection = null;
     private MongoCollection<Document> shard_collection = null;
-    private MongoCollection<Document> bucket_collection = null;
-    private MongoCollection<Document> file_collection = null;
+    private Map<Integer, UserMetaSource> userbaseMap = new ConcurrentHashMap();
 
     private List<ServerAddress> serverAddress;
     private String authString = "";
@@ -167,10 +170,8 @@ public class MongoSource {
             p.load(inStream);
             init(p);
             init_user_collection();
-            init_object_collection();
             init_block_collection();
-            init_bucket_collection();
-            init_file_collection();
+            init_newobject_collection();
         } catch (Exception e) {
             if (client != null) {
                 client.close();
@@ -266,23 +267,8 @@ public class MongoSource {
         LOG.info("Successful creation of user tables.");
     }
 
-    private void init_object_collection() {
-        object_collection = database.getCollection(OBJECT_TABLE_NAME);
-        boolean indexCreated = false;
-        ListIndexesIterable<Document> indexs = object_collection.listIndexes();
-        for (Document index : indexs) {
-            if (index.get("name").equals(OBJECT_INDEX_NAME)) {
-                indexCreated = true;
-                break;
-            }
-        }
-        if (!indexCreated) {
-            IndexOptions indexOptions = new IndexOptions().unique(true);
-            indexOptions = indexOptions.name(OBJECT_INDEX_NAME);
-            object_collection.createIndex(Indexes.ascending("VNU"), indexOptions);
-        }
+    private void init_newobject_collection() {
         object_new_collection = database.getCollection(OBJECT_NEW_TABLE_NAME);
-        LOG.info("Successful creation of object tables.");
     }
 
     private void init_block_collection() {
@@ -304,41 +290,4 @@ public class MongoSource {
         shard_collection = database.getCollection(SHARD_TABLE_NAME);
         LOG.info("Successful creation of data block tables.");
     }
-
-    private void init_bucket_collection() {
-        bucket_collection = database.getCollection(BUCKET_TABLE_NAME);
-        boolean indexCreated = false;
-        ListIndexesIterable<Document> indexs = bucket_collection.listIndexes();
-        for (Document index : indexs) {
-            if (index.get("name").equals(BUCKET_INDEX_NAME)) {
-                indexCreated = true;
-                break;
-            }
-        }
-        if (!indexCreated) {
-            IndexOptions indexOptions = new IndexOptions().unique(true);
-            indexOptions = indexOptions.name(BUCKET_INDEX_NAME);
-            bucket_collection.createIndex(Indexes.ascending("userId", "bucketName"), indexOptions);
-        }
-        LOG.info("Successful creation of user bucket table.");
-    }
-
-    private void init_file_collection() {
-        file_collection = database.getCollection(FILE_TABLE_NAME);
-        boolean indexCreated = false;
-        ListIndexesIterable<Document> indexs = file_collection.listIndexes();
-        for (Document index : indexs) {
-            if (index.get("name").equals(FILE_INDEX_NAME)) {
-                indexCreated = true;
-                break;
-            }
-        }
-        if (!indexCreated) {
-            IndexOptions indexOptions = new IndexOptions().unique(true);
-            indexOptions = indexOptions.name(FILE_INDEX_NAME);
-            file_collection.createIndex(Indexes.ascending("bucketId", "fileName"), indexOptions);
-        }
-        LOG.info("Successful creation of user file table.");
-    }
-
 }

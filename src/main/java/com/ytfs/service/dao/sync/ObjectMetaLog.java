@@ -15,7 +15,7 @@ public class ObjectMetaLog {
     }
 
     public ObjectMetaLog(ObjectMeta meta) {
-        this.id = meta.getId();
+        //this.id = meta.getId();
         this.length = meta.getLength();
         this.VNU = meta.getVNU().toHexString();
         this.usedspace = meta.getUsedspace();

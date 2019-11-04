@@ -13,19 +13,20 @@ import java.util.List;
 
 import static com.ytfs.common.ServiceErrorCode.BUCKET_ALREADY_EXISTS;
 import static com.ytfs.common.ServiceErrorCode.TOO_MANY_BUCKETS;
+import org.bson.types.Binary;
 
 public class BucketAccessor {
+
     private static final Logger LOG = Logger.getLogger(BucketAccessor.class);
     static final int Max_Bucket_count = 100;
 
     public static void saveBucketMeta(BucketMeta meta) throws ServiceException {
-        Bson filter = Filters.eq("userId", meta.getUserId());
-        long count = MongoSource.getBucketCollection().countDocuments(filter);
+        long count = MongoSource.getBucketCollection(meta.getUserId()).countDocuments();
         if (count >= Max_Bucket_count) {
             throw new ServiceException(TOO_MANY_BUCKETS);
         }
         try {
-            MongoSource.getBucketCollection().insertOne(meta.toDocument());
+            MongoSource.getBucketCollection(meta.getUserId()).insertOne(meta.toDocument());
         } catch (MongoWriteException e) {
             if (e.getMessage().contains("dup key")) {
                 throw new ServiceException(BUCKET_ALREADY_EXISTS);
@@ -34,33 +35,25 @@ public class BucketAccessor {
     }
 
     public static void updateBucketMeta(BucketMeta meta) throws ServiceException {
-
-        Bson bson1 = Filters.eq("_id", meta.getBucketId());
-        Bson bson2 = Filters.eq("userId", meta.getUserId());
-        Bson filter = Filters.and(bson1, bson2);
-        LOG.info("bucketId======"+meta.getBucketId());
-
-        Document data = meta.toDocument();
-        Document update = new Document("$set",data);
-        MongoSource.getBucketCollection().updateOne(filter,update);
+        Bson bson = Filters.eq("_id", meta.getBucketId());
+        Document data = new Document("meta", new Binary(meta.getMeta()));
+        Document update = new Document("$set", data);
+        MongoSource.getBucketCollection(meta.getUserId()).updateOne(bson, update);
     }
 
     public static BucketMeta getBucketMeta(int userid, String bucketname) {
-        Bson bson1 = Filters.eq("bucketName", bucketname);
-        Bson bson2 = Filters.eq("userId", userid);
-        Bson bson = Filters.and(bson1, bson2);
-        Document doc = MongoSource.getBucketCollection().find(bson).first();
+        Bson bson = Filters.eq("bucketName", bucketname);
+        Document doc = MongoSource.getBucketCollection(userid).find(bson).first();
         if (doc == null) {
             return null;
         } else {
-            return new BucketMeta(doc);
+            return new BucketMeta(doc, userid);
         }
     }
 
     public static String[] listBucket(int userid) {
         List<String> ls = new ArrayList();
-        Bson filter = Filters.eq("userId", userid);
-        FindIterable<Document> it = MongoSource.getBucketCollection().find(filter);
+        FindIterable<Document> it = MongoSource.getBucketCollection(userid).find();
         for (Document doc : it) {
             ls.add(doc.getString("bucketName"));
         }
@@ -69,11 +62,8 @@ public class BucketAccessor {
     }
 
     public static void deleteBucketMeta(BucketMeta meta) throws ServiceException {
-        LOG.info("bucketName=====deleteBucketMeta() ======"+meta.getBucketName());
-        LOG.info("bucketId=====deleteBucketMeta() ======"+meta.getBucketId());
         Bson bson = Filters.eq("_id", meta.getBucketId());
-        //根据bucketId删除bucket
-        MongoSource.getBucketCollection().deleteOne(bson);
+        MongoSource.getBucketCollection(meta.getUserId()).deleteOne(bson);
     }
 
 }

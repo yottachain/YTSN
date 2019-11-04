@@ -20,15 +20,14 @@ public class DeleteBucketHandler extends Handler<DeleteBucketReq> {
     public Object handle() throws Throwable {
         User user = this.getUser();
         LOG.info("Delete bucket:" + "/" + request.getBucketName());
-        BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(),new byte[0]);
+        BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(), new byte[0]);
         //meta is null,当前bucket不存在
-        if(meta == null) {
+        if (meta == null) {
             throw new ServiceException(INVALID_BUCKET_NAME);
         }
         //判断bucket下是否有文件,如果有文件则不允许删除bucket
-        Map<String,byte[]> map = FileAccessor.listObjectByBucket(meta.getBucketId());
-        LOG.info("map.size()=======" + map.size());
-        if(map.size() > 0) {
+        long count = FileAccessorV2.getObjectCount(user.getUserID(),meta.getBucketId());
+        if (count > 0) {
             throw new ServiceException(BUCKET_NOT_EMPTY);
         }
         BucketAccessor.deleteBucketMeta(meta);

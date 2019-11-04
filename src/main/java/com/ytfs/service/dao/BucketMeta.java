@@ -11,36 +11,31 @@ public class BucketMeta {
     private ObjectId bucketId;
     private byte[] meta;
 
-
-
-    public BucketMeta(int userId, ObjectId bucketId, String bucketName,byte[] meta) {
+    public BucketMeta(int userId, ObjectId bucketId, String bucketName, byte[] meta) {
         this.userId = userId;
         this.bucketId = bucketId;
         this.bucketName = bucketName;
         this.meta = meta;
     }
 
-    public BucketMeta(Document doc) {
+    public BucketMeta(Document doc,int userId) {
         if (doc.containsKey("_id")) {
             this.bucketId = doc.getObjectId("_id");
-        }
-        if (doc.containsKey("userId")) {
-            this.userId = doc.getInteger("userId");
         }
         if (doc.containsKey("bucketName")) {
             this.bucketName = doc.getString("bucketName");
         }
-        if(doc.containsKey("meta")) {
+        if (doc.containsKey("meta")) {
             this.meta = ((Binary) doc.get("meta")).getData();
         }
+        this.userId=userId;
     }
 
     public Document toDocument() {
         Document doc = new Document();
         doc.append("_id", bucketId);
-        doc.append("userId", userId);
         doc.append("bucketName", bucketName);
-        doc.append("meta",new Binary(meta));
+        doc.append("meta", new Binary(meta));
         return doc;
     }
 
