@@ -20,7 +20,7 @@ public class SendSpotCheckTask implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(SendSpotCheckTask.class);
 
-    private static int checkInterval = 0;
+    private static int checkInterval = 60;
     private static ArrayBlockingQueue<SendSpotCheckTask> queue = null;
 
     private static synchronized ArrayBlockingQueue<SendSpotCheckTask> getQueue() {

@@ -3,7 +3,6 @@ package com.ytfs.service.dao;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.Random;
 import org.bson.types.ObjectId;
 
