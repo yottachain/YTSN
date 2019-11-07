@@ -34,6 +34,7 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
     private static final Logger LOG = Logger.getLogger(TaskListHandler.class);
 
     public static Object taskDispatchCall(TaskDispatchList req, SuperNode node) throws ServiceException {
+        req.setExecNodeId(795);
         if (node.getId() == ServerConfig.superNodeID) {
             try {
                 return dispatch(req);
@@ -54,12 +55,19 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
         ShardMeta[] metas = ShardAccessor.getShardMeta(VBI, shardCount);
         List<Integer> nodeidsls = new ArrayList();
         long VFI = 0;
+        if (metas.length != shardCount) {
+            LOG.error("Query shard metas Err.");
+            return null;
+        }
         for (ShardMeta meta : metas) {
             if (!nodeidsls.contains(meta.getNodeId())) {
                 nodeidsls.add(meta.getNodeId());
             }
-            if (meta.getNodeId() == nodeid && Arrays.equals(meta.getVHF(), VHF)) {
+            if (Arrays.equals(meta.getVHF(), VHF)) {
                 VFI = meta.getVFI();
+                if (meta.getNodeId() != nodeid) {
+                    LOG.warn("Nodeid err:" + meta.getNodeId() + "!=" + nodeid);
+                }
             }
         }
         List<Node> ls = NodeManager.getNode(nodeidsls);
@@ -100,6 +108,7 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
             ((TaskDescriptionCP) task).setDataHash(VHF);
             ((TaskDescriptionCP) task).setLocations(locations);
         }
+        LOG.info("Query Task(" + task.getClass().getSimpleName() + "):" + Base58.encode(id));
         return SerializationUtil.serialize(task);
     }
 
@@ -114,7 +123,9 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
         ls.stream().forEach((dni) -> {
             try {
                 byte[] bs = query(dni, req.getNodeId());
-                task.addTasks(bs);
+                if (bs != null) {
+                    task.addTasks(bs);
+                }
             } catch (Throwable t) {
                 LOG.error("Query shard meta [" + Base58.encode(dni) + "] err:", t);
             }

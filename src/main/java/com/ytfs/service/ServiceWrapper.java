@@ -21,8 +21,7 @@ public class ServiceWrapper implements WrapperListener {
         ServerInitor.init();
         //ShardUpdateTest.start();
         //NewObjectScanner.startUp();
-        //QueryRebuildNode.startUp();
-        //SendSpotCheckTask.startUp();
+        QueryRebuildNode.startUp();
         DNISenderPool.start();
         NodeStatSync.startup();
         return null;
@@ -32,7 +31,6 @@ public class ServiceWrapper implements WrapperListener {
     public int stop(int exitCode) {
         NewObjectScanner.shutdown();
         //ShardUpdateTest.stop();
-        //SendSpotCheckTask.shutdown();
         QueryRebuildNode.shutdown();
         DNISenderPool.stop();
         NodeStatSync.terminate();

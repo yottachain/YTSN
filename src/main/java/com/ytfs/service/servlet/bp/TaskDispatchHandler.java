@@ -44,7 +44,7 @@ public class TaskDispatchHandler extends Handler<TaskDispatchReq> {
         }
     }
 
-    private static VoidResp dispatch(TaskDispatchReq req) throws Throwable {
+    private static VoidResp dispatch(TaskDispatchReq req) throws Throwable {  
         byte[] DNI = req.getDNI();
         int shardCount = (int) DNI[1] & 0xFF;
         long VBI = Function.bytes2Integer(DNI, 2, 8);

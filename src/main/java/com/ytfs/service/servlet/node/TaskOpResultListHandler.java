@@ -28,8 +28,13 @@ public class TaskOpResultListHandler extends Handler<TaskOpResultList> {
         }
         List<byte[]> ls = request.getId();
         int index = 0;
+        if (ls == null || ls.isEmpty()) {
+            LOG.error("TaskID list is empty.");
+            return new VoidResp();
+        } else {
+            LOG.info("Received: count " + ls.size());
+        }
         for (byte[] id : ls) {
-            LOG.debug("Received " + Base58.encode(id));
             int res = request.getRES().get(index);
             index++;
             if (id == null || id.length != 54) {
