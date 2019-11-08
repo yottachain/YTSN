@@ -10,7 +10,7 @@ import org.bson.types.ObjectId;
 public class Test {
 
     public static void main(String[] arg) throws Exception {
-        String ss = "111111111121CKsUxnBSPFRnAFKgBesw5ixt2gfwPoDuuPELG4rc2tFHQ6HssUiDZzMeEv";
+        String ss = "8ZQThXw1r4q7C3k1MjaHQ9R6BBiXyHV1XpcewUkmLHGW2BH8TycUkWvhDChzY3NxvyRnZUFVBx";
         byte[] id = Base58.decode(ss);
         long VFI = Function.bytes2Integer(id, 0, 8);
         int rebuildNodeId = (int) Function.bytes2Integer(id, 8, 4);

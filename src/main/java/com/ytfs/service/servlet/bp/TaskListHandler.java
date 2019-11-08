@@ -56,7 +56,7 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
         List<Integer> nodeidsls = new ArrayList();
         long VFI = 0;
         if (metas.length != shardCount) {
-            LOG.error("Query shard metas Err.");
+            LOG.error("Query shard metas Err:" + metas.length + "!=" + shardCount);
             return null;
         }
         for (ShardMeta meta : metas) {
@@ -108,7 +108,7 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
             ((TaskDescriptionCP) task).setDataHash(VHF);
             ((TaskDescriptionCP) task).setLocations(locations);
         }
-        LOG.info("Query Task(" + task.getClass().getSimpleName() + "):" + Base58.encode(id));
+        LOG.info("Query Task(" + task.getClass().getSimpleName() + "):" + Base58.encode(id) + ",shardCount:" + shardCount);
         return SerializationUtil.serialize(task);
     }
 

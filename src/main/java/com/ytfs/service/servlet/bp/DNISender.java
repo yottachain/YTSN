@@ -57,17 +57,17 @@ public class DNISender extends Thread {
     public void run() {
         int maxCount = 200;
         List<UpdateDNIReq> list = new ArrayList();
-        long sleeptime = 1000 * 60 * 60;
+        long sleeptime = 0;
         boolean retry = false;
-        UpdateDNIReq req;
+        UpdateDNIReq req = null;
         LOG.info("DNI sender thread " + snId + " startup....");
         while (!this.isInterrupted()) {
-            try {
-                req = queue.take();
-            } catch (InterruptedException ex) {
-                break;
-            }
             if (snId == ServerConfig.superNodeID) {
+                try {
+                    req = queue.take();
+                } catch (InterruptedException ex) {
+                    break;
+                }
                 if (req.isDelete()) {
                     try {
                         YottaNodeMgmt.deleteDNI(req.getNodeid(), req.getDni());
@@ -87,17 +87,19 @@ public class DNISender extends Thread {
                 if (!retry) {
                     long st = System.currentTimeMillis();
                     req = queue.poll(1, TimeUnit.MINUTES);
-                    sleeptime = System.currentTimeMillis() - st;
+                    sleeptime = sleeptime + (System.currentTimeMillis() - st);
                 }
                 if (req != null) {
                     list.add(req);
                 }
                 if (list.size() >= maxCount) {
                     send(list);
+                    sleeptime = 0;
                 } else {
                     if (!list.isEmpty()) {
                         if (sleeptime > 1000 * 60 * 3) {
                             send(list);
+                            sleeptime = 0;
                         }
                     }
                 }
@@ -105,7 +107,9 @@ public class DNISender extends Thread {
             } catch (InterruptedException e) {
                 break;
             } catch (Throwable r) {
-                retry = true;
+                if (list.size() >= maxCount) {
+                    retry = true;
+                }
                 try {
                     LOG.error("Send DNI to " + snId + " ERR:" + r.getMessage());
                     sleep(5000);
