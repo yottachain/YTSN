@@ -3,8 +3,10 @@ package com.ytfs.service.servlet.node;
 import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.INVALID_NODE_ID;
 import com.ytfs.common.ServiceException;
+import static com.ytfs.service.ServiceWrapper.REBUILDER_NODEID;
 import com.ytfs.service.packet.StatusRepReq;
 import com.ytfs.service.packet.StatusRepResp;
+import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.servlet.Handler;
 import com.ytfs.service.servlet.bp.NodeStatSync;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
@@ -29,6 +31,9 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
         if (nodeid != request.getId()) {
             LOG.error("StatusRep Nodeid ERR:" + nodeid + "!=" + request.getId());
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID);
+        }
+        if (nodeid == REBUILDER_NODEID) {
+            return new VoidResp();
         }
         long l = System.currentTimeMillis();
         try {

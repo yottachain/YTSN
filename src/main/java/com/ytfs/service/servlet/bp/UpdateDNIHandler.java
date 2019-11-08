@@ -30,7 +30,6 @@ public class UpdateDNIHandler extends Handler<UpdateDNIMutiReq> {
             if (req.isDelete()) {
                 try {
                     YottaNodeMgmt.deleteDNI(req.getNodeid(), req.getDni());
-                    LOG.info("DeleteDNI " + req.getNodeid() + "-[" + Base58.encode(req.getDni()) + "] OK.");
                 } catch (NodeMgmtException ne) {
                     LOG.error("DeleteDNI " + req.getNodeid() + "-[" + Base58.encode(req.getDni()) + "] ERR:" + ne.getMessage());
                 }

@@ -9,6 +9,7 @@ import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.NodeManager;
+import static com.ytfs.service.ServiceWrapper.REBUILDER_EXEC_NODEID;
 import com.ytfs.service.dao.ShardAccessor;
 import com.ytfs.service.dao.ShardMeta;
 import com.ytfs.service.packet.P2PLocation;
@@ -34,7 +35,9 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
     private static final Logger LOG = Logger.getLogger(TaskListHandler.class);
 
     public static Object taskDispatchCall(TaskDispatchList req, SuperNode node) throws ServiceException {
-        req.setExecNodeId(795);
+        if (REBUILDER_EXEC_NODEID > 0) {
+            req.setExecNodeId(REBUILDER_EXEC_NODEID);
+        }
         if (node.getId() == ServerConfig.superNodeID) {
             try {
                 return dispatch(req);

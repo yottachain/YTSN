@@ -11,6 +11,8 @@ import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 public class ServiceWrapper implements WrapperListener {
+    public static int REBUILDER_NODEID=1172;
+    public static int REBUILDER_EXEC_NODEID=795;
 
     public static void main(String[] args) {
         WrapperManager.start(new ServiceWrapper(), args);
