@@ -39,8 +39,8 @@ public class SendSpotCheckTask implements Runnable {
         }
         Random b = new Random();
         int a = b.nextInt(checkInterval * 10 + 1);
-        if (a > 10) {
-            SendSpotCheckTask task = getQueue().peek();
+        if (a <= 10) {
+            SendSpotCheckTask task = getQueue().poll();
             if (task == null) {
                 SendSpotCheckTask ct = new SendSpotCheckTask();
                 ct.nodeinfo = nodeinfo;
@@ -103,7 +103,11 @@ public class SendSpotCheckTask implements Runnable {
 
     @Override
     public void run() {
-        execute();
+        try {
+            execute();
+        } finally {
+            getQueue().add(this);
+        }
     }
 
 }

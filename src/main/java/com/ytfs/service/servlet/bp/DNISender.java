@@ -59,7 +59,7 @@ public class DNISender extends Thread {
         List<UpdateDNIReq> list = new ArrayList();
         long sleeptime = 0;
         boolean retry = false;
-        UpdateDNIReq req = null;
+        UpdateDNIReq req;
         LOG.info("DNI sender thread " + snId + " startup....");
         while (!this.isInterrupted()) {
             if (snId == ServerConfig.superNodeID) {
@@ -87,10 +87,10 @@ public class DNISender extends Thread {
                 if (!retry) {
                     long st = System.currentTimeMillis();
                     req = queue.poll(1, TimeUnit.MINUTES);
+                    if (req != null) {
+                        list.add(req);
+                    }
                     sleeptime = sleeptime + (System.currentTimeMillis() - st);
-                }
-                if (req != null) {
-                    list.add(req);
                 }
                 if (list.size() >= maxCount) {
                     send(list);
