@@ -1,6 +1,5 @@
 package com.ytfs.service.dao;
 
-import com.ytfs.common.Function;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import java.nio.ByteBuffer;
@@ -10,13 +9,12 @@ import org.bson.types.ObjectId;
 public class Test {
 
     public static void main(String[] arg) throws Exception {
-        String ss = "8ZQThXw1r4q7C3k1MjaHQ9R6BBiXyHV1XpcewUkmLHGW2BH8TycUkWvhDChzY3NxvyRnZUFVBx";
-        byte[] id = Base58.decode(ss);
-        long VFI = Function.bytes2Integer(id, 0, 8);
-        int rebuildNodeId = (int) Function.bytes2Integer(id, 8, 4);
-        System.out.println(VFI);
-        System.out.println(rebuildNodeId);
-
+        int a=-2;
+        byte b = (byte) a;
+        int cc=(int)b;
+        System.out.println(cc);
+        int ii = cc & 0xFF;
+        System.out.println(ii);
     }
 
     public static byte[] makeBytes(int length) {

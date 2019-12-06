@@ -74,8 +74,7 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
             ObjectAccessor.insertOrUpdate(meta);
         } else {
             throw new ServiceException(ServiceErrorCode.NOT_ENOUGH_DHH);
-        }
-        cache.setFilesize(meta.getLength());
+        }         
         CacheAccessor.putUploadObjectCache(meta.getVNU(), cache);
         sign(resp);
         return resp;

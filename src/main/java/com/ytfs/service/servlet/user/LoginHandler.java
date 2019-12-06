@@ -1,5 +1,7 @@
 package com.ytfs.service.servlet.user;
 
+import com.ytfs.common.ServiceErrorCode;
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache;
 import com.ytfs.service.packet.VoidResp;
@@ -13,9 +15,16 @@ public class LoginHandler extends Handler<LoginReq> {
 
     @Override
     public Object handle() throws Throwable {
-        User user = UserCache.getUser(this.getPublicKey(), this.request.getUserId(), this.request.getSignData());
-        LOG.info("User [" + user.getUsername() + "] login,id:" + user.getUserID());
-        return new VoidResp();
+        try {
+            User user = UserCache.getUser(this.getPublicKey(), this.request.getUserId(), this.request.getSignData());
+            LOG.info("User [" + user.getUsername() + "] login,id:" + user.getUserID());
+            return new VoidResp();
+        } catch (ServiceException se) {
+            if(se.getErrorCode()==ServiceErrorCode.INVALID_USER_ID){
+                LOG.info("Login err:"+this.request.getUserId());
+            }
+            return se;
+        }
     }
 
 }

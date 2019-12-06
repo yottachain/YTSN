@@ -37,9 +37,7 @@ public class CacheAccessor {
                 if (meta != null) {
                     if (meta.getUserID() == userid) {
                         UploadObjectCache ca = new UploadObjectCache();
-                        ca.setFilesize(meta.getLength());
                         ca.setUserid(userid);
-                        ca.setUsedspace(meta.getUsedspace());
                         List<ObjectRefer> refers = ObjectRefer.parse(meta.getBlockList());
                         refers.stream().forEach((refer) -> {
                             ca.setBlockNum(refer.getId());

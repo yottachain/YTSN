@@ -18,9 +18,9 @@ import io.yottachain.p2phost.utils.Base58;
 import org.apache.log4j.Logger;
 
 public class RegUserHandler extends Handler<RegUserReq> {
-    
+
     private static final Logger LOG = Logger.getLogger(RegUserHandler.class);
-    
+
     @Override
     public Object handle() throws Throwable {
         String cachekey = this.getPublicKey();
@@ -33,8 +33,7 @@ public class RegUserHandler extends Handler<RegUserReq> {
         }
         LOG.info("[" + request.getUsername() + "] Certification passed.");
         String userPubkey = request.getPubKey();
-        byte[] KUEp = Base58.decode(userPubkey);
-        SuperNode sn = SuperNodeList.getUserRegSuperNode(KUEp);
+        SuperNode sn = SuperNodeList.getUserRegSuperNode(request.getUsername());
         QueryUserReq req = new QueryUserReq();
         req.setCacheKey(cachekey);
         req.setUsername(request.getUsername());
@@ -68,5 +67,5 @@ public class RegUserHandler extends Handler<RegUserReq> {
         regUserResp.setUserId(resp.getUserId());
         return regUserResp;
     }
-    
+
 }

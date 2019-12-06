@@ -164,4 +164,5 @@ public class ObjectMeta {
     public void setBlockList(byte[][] blockList) {
         this.blockList = blockList;
     }
+
 }

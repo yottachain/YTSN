@@ -4,6 +4,9 @@ import com.mongodb.ServerAddress;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.GlobleThreadPool;
 import com.ytfs.common.LogConfigurator;
+import com.ytfs.common.codec.BlockEncrypted;
+import com.ytfs.common.codec.lrc.MemoryCache;
+import com.ytfs.common.codec.lrc.ShardLRCEncoder;
 import static com.ytfs.common.conf.ServerConfig.*;
 import com.ytfs.common.eos.BpList;
 import com.ytfs.service.dao.MongoSource;
@@ -25,14 +28,36 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 public class ServerInitor {
 
     private static final Logger LOG = Logger.getLogger(ServerInitor.class);
+
+    public static byte[] makeBytes(int length) {
+        Random ran = new Random();
+        ByteBuffer buf = ByteBuffer.allocate(length);
+        for (int ii = 0; ii < length / 8; ii++) {
+            long l = ran.nextLong();
+            buf.putLong(l);
+        }
+        return buf.array();
+    }
+
+    private static void testLRC() throws IOException {
+        MemoryCache.init();
+        BlockEncrypted b = new BlockEncrypted();
+        b.setData(makeBytes(1024 * 1024 * 2 - 1024 * 16));
+        ShardLRCEncoder encoder = new ShardLRCEncoder(b);
+        encoder.encode();
+
+    }
 
     public static void stop() {
         P2PUtils.stop();
@@ -52,10 +77,15 @@ public class ServerInitor {
             LOG.error("Init err.", e);
             System.exit(0);
         }
+        try {
+            testLRC();
+        } catch (IOException ex) {
+            LOG.error("Init err.", ex);
+        }
         for (int ii = 0; ii < 1000; ii++) {
             try {
                 List<ServerAddress> addrs = MongoSource.getServerAddress();
-                NodeManager.start(addrs, MongoSource.getAuth(), eosURI, BPAccount, BPPriKey, contractAccount, contractOwnerD, superNodeID);
+                NodeManager.start(addrs, MongoSource.getAuth(), eosURI, BPAccount, ShadowAccount, ShadowPriKey, contractAccount, contractOwnerD, superNodeID);
                 privateKey = YottaNodeMgmt.getSuperNodePrivateKey(superNodeID);
                 SNDSP = Base58.decode(privateKey);
                 SuperNodeList.isServer = true;
@@ -140,9 +170,13 @@ public class ServerInitor {
         if (BPAccount == null || BPAccount.trim().isEmpty()) {
             throw new IOException("The 'BPAccount' parameter is not configured.");
         }
-        BPPriKey = p.getProperty("BPPriKey");
-        if (BPPriKey == null || BPPriKey.trim().isEmpty()) {
-            throw new IOException("The 'BPPriKey' parameter is not configured.");
+        ShadowAccount = p.getProperty("ShadowAccount");
+        if (ShadowAccount == null || ShadowAccount.trim().isEmpty()) {
+            throw new IOException("The 'ShadowAccount' parameter is not configured.");
+        }
+        ShadowPriKey = p.getProperty("ShadowPriKey");
+        if (ShadowPriKey == null || ShadowPriKey.trim().isEmpty()) {
+            throw new IOException("The 'ShadowPriKey' parameter is not configured.");
         }
         contractAccount = p.getProperty("contractAccount");
         if (contractAccount == null || contractAccount.trim().isEmpty()) {

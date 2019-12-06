@@ -4,6 +4,7 @@ import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.node.NodeManager;
 import com.ytfs.service.dao.BlockAccessor;
+import com.ytfs.service.dao.BlockMeta;
 import com.ytfs.service.dao.ShardAccessor;
 import com.ytfs.service.dao.ShardMeta;
 import com.ytfs.service.dao.User;
@@ -26,18 +27,18 @@ public class DownloadBlockInitHandler extends Handler<DownloadBlockInitReq> {
         if (user == null) {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);
         }
-        int vnf = BlockAccessor.getBlockMetaVNF(request.getVBI());
-        LOG.info("Download block:" + request.getVBI() + " ,VNF " + vnf);
-        if (vnf == 0) {//存储在数据库
+        BlockMeta meta = BlockAccessor.getBlockMetaVNF(request.getVBI());
+        LOG.info("Download block:" + request.getVBI() + " ,VNF " + meta.getVNF());
+        if (meta.getVNF() == 0) {//存储在数据库
             byte[] dat = BlockAccessor.readBlockData(request.getVBI());
             DownloadBlockDBResp res = new DownloadBlockDBResp();
             res.setData(dat);
             return res;
         }
         DownloadBlockInitResp resp = new DownloadBlockInitResp();
-        resp.setVNF(vnf);
-        int len = vnf > 0 ? vnf : (vnf * -1);
-        ShardMeta[] metas = ShardAccessor.getShardMeta(request.getVBI(), len);
+        resp.setVNF(meta.getVNF());
+        resp.setAR(meta.getAR());
+        ShardMeta[] metas = ShardAccessor.getShardMeta(request.getVBI(), meta.getVNF());
         byte[][] VHF = new byte[metas.length][];
         int[] nodeids = new int[metas.length];
         List<Integer> nodeidsls = new ArrayList();

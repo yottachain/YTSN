@@ -12,6 +12,7 @@ public class User {
     private long fileTotal;   //文件数
     private long costPerCycle;//每周期总费用
     private String username;
+    private long nextCycle;
 
     public User(int userid) {
         this.userID = userid;
@@ -39,6 +40,9 @@ public class User {
         if (doc.containsKey("username")) {
             this.username = doc.getString("username");
         }
+        if (doc.containsKey("nextCycle")) {
+            this.nextCycle = doc.getLong("nextCycle");
+        }
     }
 
     public Document toDocument() {
@@ -50,6 +54,7 @@ public class User {
         doc.append("spaceTotal", spaceTotal);
         doc.append("fileTotal", fileTotal);
         doc.append("username", username);
+        doc.append("nextCycle", nextCycle);
         return doc;
     }
 
@@ -149,6 +154,20 @@ public class User {
      */
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    /**
+     * @return the nextCycle
+     */
+    public long getNextCycle() {
+        return nextCycle;
+    }
+
+    /**
+     * @param nextCycle the nextCycle to set
+     */
+    public void setNextCycle(long nextCycle) {
+        this.nextCycle = nextCycle;
     }
 
 }

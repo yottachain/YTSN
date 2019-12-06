@@ -1,19 +1,13 @@
 package com.ytfs.service.dao;
 
-import com.mongodb.MongoException;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
-import com.ytfs.common.conf.ServerConfig;
-import com.ytfs.common.eos.EOSClient;
 import com.ytfs.service.dao.sync.LogMessage;
 import static com.ytfs.service.dao.sync.LogMessageCode.Op_Object_Block_Update;
 import static com.ytfs.service.dao.sync.LogMessageCode.Op_Object_NLINK_INC;
 import static com.ytfs.service.dao.sync.LogMessageCode.Op_Object_New;
 import com.ytfs.service.dao.sync.ObjectMetaLog;
 import com.ytfs.service.dao.sync.ObjectUpdateLog;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -43,6 +37,20 @@ public class ObjectAccessor {
             LogMessage log = new LogMessage(Op_Object_New, metalog);
             MongoSource.getProxy().post(log);
             LOG.debug("DBlog: sync object " + metalog.getVNU());
+        }
+    }
+
+    public static void decObjectNLINK(ObjectMeta meta) {
+        if (meta.getNLINK() >= 255) {
+            return;
+        }
+        Bson filter = Filters.eq("_id", new Binary(meta.getVHW()));
+        Document update = new Document("$inc", new Document("NLINK", -1));
+        MongoSource.getObjectCollection(meta.getUserID()).updateOne(filter, update);
+        if (MongoSource.getProxy() != null) {
+            LogMessage log = new LogMessage(Op_Object_NLINK_INC, meta.getVHW());
+            MongoSource.getProxy().post(log);
+            LOG.debug("DBlog: sync object NLINK");
         }
     }
 
@@ -90,45 +98,6 @@ public class ObjectAccessor {
             LogMessage log = new LogMessage(Op_Object_Block_Update, uplog);
             MongoSource.getProxy().post(log);
             LOG.debug("DBlog: sync blocks of data referenced by objects");
-        }
-    }
-
-    public static boolean listNewObject() throws Throwable {
-        long curtime = System.currentTimeMillis();
-        Document sort = new Document("_id", 1);
-        FindIterable<Document> fi = MongoSource.getObjectNewCollection().find().sort(sort).limit(100);
-        List<Document> needDelete = new ArrayList();
-        for (Document doc : fi) {
-            long time = doc.getLong("time");
-            if (curtime - time > ServerConfig.PPC * ServerConfig.PMS) {
-                needDelete.add(doc);
-            } else {
-                break;
-            }
-        }
-        for (Document doc : needDelete) {
-            int userid = doc.getInteger("userid");
-            long cost = doc.getLong("costPerCycle");
-            EOSClient.setUserFee(cost, doc.getString("username"), userid);
-            UserAccessor.updateUser(userid, cost);
-            Bson filter = Filters.eq("_id", doc.getObjectId("_id"));
-            MongoSource.getObjectNewCollection().deleteOne(filter);
-        }
-        return needDelete.size() > 0;
-    }
-
-    public static void addNewObject(ObjectId id, long costPerCycle, int userid, String username) {
-        Document update = new Document("_id", id);
-        update.append("costPerCycle", costPerCycle);
-        update.append("userid", userid);
-        update.append("time", System.currentTimeMillis());
-        update.append("username", username);
-        try {
-            MongoSource.getObjectNewCollection().insertOne(update);
-        } catch (MongoException r) {
-            if (!(r.getMessage() != null && r.getMessage().contains("duplicate key"))) {
-                throw r;
-            }
         }
     }
 

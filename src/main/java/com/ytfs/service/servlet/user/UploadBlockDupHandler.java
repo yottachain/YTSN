@@ -10,6 +10,7 @@ import com.ytfs.service.servlet.bp.SaveObjectMetaHandler;
 import static com.ytfs.common.ServiceErrorCode.INVALID_KEU;
 import static com.ytfs.common.ServiceErrorCode.NO_SUCH_BLOCK;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.codec.ShardEncoder;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
@@ -33,9 +34,10 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
         if (meta == null) {
             throw new ServiceException(NO_SUCH_BLOCK);
         }
-        verify(request);
-        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(request, userid, meta.getVBI());
-        saveObjectMetaReq.setNlink(meta.getNLINK() + 1);
+        verify();
+        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(userid, meta.getVBI());
+        long usedSpace = meta.getAR() == ShardEncoder.AR_DB_MODE ? ServerConfig.PCM : ServerConfig.PFL * meta.getVNF() / (meta.getNLINK() + 1);
+        saveObjectMetaReq.setUsedSpace(usedSpace);
         try {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
             if (resp.isExists()) {
@@ -49,22 +51,22 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
         return new VoidResp();
     }
 
-    private void verify(UploadBlockDupReq req) throws ServiceException {
-        if (req.getKEU() == null || req.getKEU().length != 32) {
+    private void verify() throws ServiceException {
+        if (request.getKEU() == null || request.getKEU().length != 32) {
             throw new ServiceException(INVALID_KEU);
         }
     }
 
-    private SaveObjectMetaReq makeSaveObjectMetaReq(UploadBlockDupReq req, int userid, long vbi) {
+    private SaveObjectMetaReq makeSaveObjectMetaReq(int userid, long vbi) {
         SaveObjectMetaReq saveObjectMetaReq = new SaveObjectMetaReq();
         saveObjectMetaReq.setUserID(userid);
-        saveObjectMetaReq.setVNU(req.getVNU());
+        saveObjectMetaReq.setVNU(request.getVNU());
         ObjectRefer refer = new ObjectRefer();
         refer.setVBI(vbi);
-        refer.setId(req.getId());
-        refer.setKEU(req.getKEU());
-        refer.setOriginalSize(req.getOriginalSize());
-        refer.setRealSize(req.getRealSize());
+        refer.setId(request.getId());
+        refer.setKEU(request.getKEU());
+        refer.setOriginalSize(request.getOriginalSize());
+        refer.setRealSize(request.getRealSize());
         refer.setSuperID((byte) ServerConfig.superNodeID);
         saveObjectMetaReq.setRefer(refer);
         return saveObjectMetaReq;

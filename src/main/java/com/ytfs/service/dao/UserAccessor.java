@@ -43,7 +43,8 @@ public class UserAccessor {
     public static void updateUser(int uid, long costPerCycle) {
         Bson bson = Filters.eq("_id", uid);
         Document doc = new Document("costPerCycle", costPerCycle);
-        Document update = new Document("$inc", doc);
+        doc.append("nextCycle", System.currentTimeMillis());
+        Document update = new Document("$set", doc);
         MongoSource.getUserCollection().updateOne(bson, update);
     }
 

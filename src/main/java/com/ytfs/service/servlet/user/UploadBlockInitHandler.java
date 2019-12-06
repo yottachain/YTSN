@@ -8,7 +8,6 @@ import com.ytfs.service.dao.User;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.servlet.Handler;
 import static com.ytfs.common.ServiceErrorCode.ILLEGAL_VHP_NODEID;
-import static com.ytfs.common.ServiceErrorCode.TOO_MANY_SHARDS;
 import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.user.UploadBlockDupResp;
 import com.ytfs.service.packet.user.UploadBlockInitReq;
@@ -28,9 +27,6 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);
         }
         LOG.info("Upload block init " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId());
-        if (request.getShardCount() > 255) {
-            return new ServiceException(TOO_MANY_SHARDS);
-        }
         SuperNode n = SuperNodeList.getBlockSuperNode(request.getVHP());
         if (n.getId() != ServerConfig.superNodeID) {//验证数据块是否对应
             throw new ServiceException(ILLEGAL_VHP_NODEID);

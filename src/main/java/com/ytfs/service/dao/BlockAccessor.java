@@ -6,6 +6,7 @@ import com.mongodb.client.model.Filters;
 import com.ytfs.common.Function;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.dao.sync.BlockDataLog;
 import com.ytfs.service.dao.sync.LogMessage;
 import static com.ytfs.service.dao.sync.LogMessageCode.Op_Block_Data;
@@ -65,6 +66,26 @@ public class BlockAccessor {
         }
     }
 
+    public static long getUsedSpace(List<Long> ids) {
+        long space = 0;
+        Bson filter = Filters.in("_id", ids);
+        Document fields = new Document("VNF", 1);
+        fields.append("AR", 1);
+        fields.append("NLINK", 1);
+        FindIterable<Document> it = MongoSource.getBlockCollection().find(filter).projection(fields);
+        for (Document doc : it) {
+            int ar = doc.getInteger("AR");//0 RS  1 多副本 -1数据库
+            int vnf = doc.getInteger("VNF");
+            long nlink = doc.getLong("NLINK");
+            if (ar != -1) {
+                space = space + ServerConfig.PFL * vnf / nlink;
+            } else {
+                space = space + ServerConfig.PCM;
+            }
+        }
+        return space;
+    }
+
     public static BlockMeta getBlockMeta(long VBI) {
         Bson filter = Filters.eq("_id", VBI);
         Document doc = MongoSource.getBlockCollection().find(filter).first();
@@ -75,14 +96,15 @@ public class BlockAccessor {
         }
     }
 
-    public static int getBlockMetaVNF(long VBI) throws ServiceException {
+    public static BlockMeta getBlockMetaVNF(long VBI) throws ServiceException {
         Bson filter = Filters.eq("_id", VBI);
         Document fields = new Document("VNF", 1);
+        fields.append("AR", 1);
         Document doc = MongoSource.getBlockCollection().find(filter).projection(fields).first();
         if (doc == null) {
             throw new ServiceException(SERVER_ERROR);
         } else {
-            return doc.getInteger("VNF");
+            return new BlockMeta(doc);
         }
     }
 
@@ -114,6 +136,8 @@ public class BlockAccessor {
         Bson bson = Filters.and(bson1, bson2);
         Document fields = new Document("_id", 1);
         fields.append("NLINK", 1);
+        fields.append("VNF", 1);
+        fields.append("AR", 1);
         fields.append("KED", 1);
         Document doc = MongoSource.getBlockCollection().find(bson).projection(fields).first();
         if (doc == null) {

@@ -5,6 +5,7 @@ import com.ytfs.common.SerializationUtil;
 import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.codec.ShardEncoder;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.P2PUtils;
@@ -15,6 +16,7 @@ import com.ytfs.service.dao.ShardMeta;
 import com.ytfs.service.packet.P2PLocation;
 import com.ytfs.service.packet.TaskDescription;
 import com.ytfs.service.packet.TaskDescriptionCP;
+import com.ytfs.service.packet.TaskDescriptionLRC;
 import com.ytfs.service.packet.TaskDispatchList;
 import com.ytfs.service.packet.TaskList;
 import com.ytfs.service.packet.VoidResp;
@@ -52,9 +54,10 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
 
     private static byte[] query(byte[] DNI, int nodeid) throws Throwable {
         int shardCount = (int) DNI[1] & 0xFF;
-        long VBI = Function.bytes2Integer(DNI, 2, 8);
-        byte[] VHF = new byte[32];
-        System.arraycopy(DNI, DNI.length - 32, VHF, 0, 32);
+        int AR = (int) DNI[2];
+        long VBI = Function.bytes2Integer(DNI, 3, 8);
+        byte[] VHF = new byte[16];
+        System.arraycopy(DNI, DNI.length - 16, VHF, 0, 16);
         ShardMeta[] metas = ShardAccessor.getShardMeta(VBI, shardCount);
         List<Integer> nodeidsls = new ArrayList();
         long VFI = 0;
@@ -68,9 +71,6 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
             }
             if (Arrays.equals(meta.getVHF(), VHF)) {
                 VFI = meta.getVFI();
-                if (meta.getNodeId() != nodeid) {
-                    LOG.warn("Nodeid err:" + meta.getNodeId() + "!=" + nodeid);
-                }
             }
         }
         List<Node> ls = NodeManager.getNode(nodeidsls);
@@ -81,10 +81,10 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
         ls.stream().forEach((n) -> {
             map.put(n.getId(), n);
         });
-        byte[] id = new byte[42 + 12];
+        byte[] id = new byte[27 + 12];
         System.arraycopy(Function.long2bytes(VFI), 0, id, 0, 8); //VFI
         System.arraycopy(Function.int2bytes(nodeid), 0, id, 8, 4);
-        System.arraycopy(DNI, 0, id, 12, 42);
+        System.arraycopy(DNI, 0, id, 12, 27);
         List<byte[]> hashs = new ArrayList();
         List<P2PLocation> locations = new ArrayList();
         for (ShardMeta meta : metas) {
@@ -98,20 +98,31 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
             locations.add(location);
         }
         Object task;
-        if (shardCount > UserConfig.Default_PND) {
-            task = new TaskDescription();
-            ((TaskDescription) task).setId(id);
-            ((TaskDescription) task).setParityShardCount(UserConfig.Default_PND);
-            ((TaskDescription) task).setRecoverId((int) (VFI - VBI));
-            ((TaskDescription) task).setHashs(hashs);
-            ((TaskDescription) task).setLocations(locations);
-        } else {
-            task = new TaskDescriptionCP();
-            ((TaskDescriptionCP) task).setId(id);
-            ((TaskDescriptionCP) task).setDataHash(VHF);
-            ((TaskDescriptionCP) task).setLocations(locations);
+        switch (AR) {
+            case ShardEncoder.AR_RS_MODE:
+                task = new TaskDescription();
+                ((TaskDescription) task).setId(id);
+                ((TaskDescription) task).setParityShardCount(UserConfig.Default_PND);
+                ((TaskDescription) task).setRecoverId((int) (VFI - VBI));
+                ((TaskDescription) task).setHashs(hashs);
+                ((TaskDescription) task).setLocations(locations);
+                break;
+            case ShardEncoder.AR_COPY_MODE:
+                task = new TaskDescriptionCP();
+                ((TaskDescriptionCP) task).setId(id);
+                ((TaskDescriptionCP) task).setDataHash(VHF);
+                ((TaskDescriptionCP) task).setLocations(locations);
+                break;
+            default:
+                int datacount = AR & 0xFF;
+                task = new TaskDescriptionLRC();
+                ((TaskDescriptionLRC) task).setId(id);
+                ((TaskDescriptionLRC) task).setParityShardCount(hashs.size() - datacount);
+                ((TaskDescriptionLRC) task).setRecoverId((int) (VFI - VBI));
+                ((TaskDescriptionLRC) task).setHashs(hashs);
+                ((TaskDescriptionLRC) task).setLocations(locations);
+                break;
         }
-        LOG.info("Query Task(" + task.getClass().getSimpleName() + "):" + Base58.encode(id) + ",shardCount:" + shardCount);
         return SerializationUtil.serialize(task);
     }
 
@@ -135,10 +146,15 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
         });
         if (!(task.getTasks() == null || task.getTasks().isEmpty())) {
             try {
-                P2PUtils.requestNode(task, execnode);
+                P2PUtils.requestNode(task, execnode.getNodeid(), execnode.getId());
                 LOG.debug("Send rebuild task total " + task.getTasks().size() + " to " + req.getExecNodeId());
             } catch (Throwable ex) {
                 LOG.error("Send rebuild tasks to " + req.getExecNodeId() + " ERR:" + ex.getMessage());
+                try {
+                    P2PUtils.requestNode(task, execnode);
+                } catch (Throwable ex1) {
+                    LOG.error("Send rebuild tasks to " + req.getExecNodeId() + " ERR:" + ex1.getMessage());
+                }
             }
         }
         return new VoidResp();

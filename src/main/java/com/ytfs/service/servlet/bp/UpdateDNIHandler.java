@@ -26,21 +26,25 @@ public class UpdateDNIHandler extends Handler<UpdateDNIMutiReq> {
         }
         long starttime = System.currentTimeMillis();
         List<UpdateDNIReq> ls = request.getList();
-        ls.stream().forEach((req) -> {
+        for (UpdateDNIReq req : ls) {
             if (req.isDelete()) {
                 try {
                     YottaNodeMgmt.deleteDNI(req.getNodeid(), req.getDni());
                 } catch (NodeMgmtException ne) {
                     LOG.error("DeleteDNI " + req.getNodeid() + "-[" + Base58.encode(req.getDni()) + "] ERR:" + ne.getMessage());
+                    return new ServiceException(ServiceErrorCode.SERVER_ERROR);
                 }
             } else {
                 try {
                     YottaNodeMgmt.addDNI(req.getNodeid(), req.getDni());
-                } catch (NodeMgmtException ne) {
-                    LOG.error("InsertDNI " + req.getNodeid() + "-[" + Base58.encode(req.getDni()) + "] ERR:" + ne.getMessage());
+                } catch (NodeMgmtException r) {
+                    if (!(r.getMessage() != null && r.getMessage().contains("duplicate key"))) {
+                        LOG.error("InsertDNI " + req.getNodeid() + "-[" + Base58.encode(req.getDni()) + "] ERR:" + r.getMessage());
+                        return new ServiceException(ServiceErrorCode.SERVER_ERROR);
+                    }
                 }
             }
-        });
+        }
         LOG.info("Update DNI OK,count:" + ls.size() + ",take times " + (System.currentTimeMillis() - starttime) + " ms");
         return new VoidResp();
     }

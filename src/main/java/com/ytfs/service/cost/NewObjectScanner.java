@@ -1,6 +1,6 @@
-package com.ytfs.service.servlet;
+package com.ytfs.service.cost;
 
-import com.ytfs.service.dao.ObjectAccessor;
+import com.ytfs.service.dao.CacheBaseAccessor;
 import org.apache.log4j.Logger;
 
 public class NewObjectScanner extends Thread {
@@ -22,11 +22,13 @@ public class NewObjectScanner extends Thread {
         }
     }
 
+    
+
     @Override
     public void run() {
         while (!this.isInterrupted()) {
             try {
-                boolean b = ObjectAccessor.listNewObject();
+                boolean b = CacheBaseAccessor.listNewObject();
                 if (!b) {
                     Thread.sleep(1000 * 60 * 10);
                 }

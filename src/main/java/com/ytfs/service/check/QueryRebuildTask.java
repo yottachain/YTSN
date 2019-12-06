@@ -58,8 +58,8 @@ public class QueryRebuildTask implements Runnable {
         Map<Integer, TaskDispatchList> map = new HashMap();
         if (ls != null) {
             for (byte[] DNI : ls) {
-                if (DNI == null || DNI.length != 42) {
-                    LOG.warn("DNI Length Less than 42.");
+                if (DNI == null || DNI.length != 27) {
+                    LOG.warn("DNI Length Less than 27.");
                     continue;
                 }
                 int snnum = (int) DNI[0];

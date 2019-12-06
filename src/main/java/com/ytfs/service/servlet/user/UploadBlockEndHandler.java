@@ -15,7 +15,12 @@ import static com.ytfs.common.ServiceErrorCode.INVALID_KEU;
 import static com.ytfs.common.ServiceErrorCode.INVALID_SIGNATURE;
 import static com.ytfs.common.ServiceErrorCode.INVALID_VHB;
 import static com.ytfs.common.ServiceErrorCode.INVALID_VHP;
+import static com.ytfs.common.ServiceErrorCode.NO_ENOUGH_NODE;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.codec.ShardEncoder;
+import com.ytfs.common.node.NodeManager;
+import com.ytfs.common.node.SuperNodeList;
+import com.ytfs.service.dao.CacheBaseAccessor;
 import com.ytfs.service.dao.Sequence;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
@@ -23,16 +28,20 @@ import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.packet.user.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.VoidResp;
-import com.ytfs.service.servlet.bp.DNISenderPool;
+import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
+import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.log4j.Logger;
-import org.bson.types.ObjectId;
+import org.bson.Document;
+import org.bson.types.Binary;
 
 public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
 
@@ -64,12 +73,12 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         List<ShardMeta> ls = verify(request, res, VBI);
         ShardAccessor.saveShardMetas(ls);
         if (bmeta == null) {
-            BlockMeta meta = makeBlockMeta(request, VBI, res.size());
+            BlockMeta meta = makeBlockMeta(VBI, res.size());
             BlockAccessor.saveBlockMeta(meta);
         }
         long starttime = System.currentTimeMillis();
-        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(request, userid, VBI, request.getVNU());
-        saveObjectMetaReq.setNlink(1);
+        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(userid, VBI);
+        saveObjectMetaReq.setUsedSpace(ServerConfig.PFL * res.size());
         try {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
             if (resp.isExists()) {
@@ -84,48 +93,65 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         return new VoidResp();
     }
 
-    private void sendDNI(List<ShardMeta> ls, long VBI) {
-        ls.stream().forEach((doc) -> {
+    private void sendDNI(List<ShardMeta> ls, long VBI) throws Throwable {
+        int AR = request.getAR();
+        List<Document> docs = new ArrayList();
+        for (ShardMeta doc : ls) {
             int nid = doc.getNodeId();
             byte[] vhf = doc.getVHF();
             byte[] vbi = Function.long2bytes(VBI);
-            byte[] data = new byte[vhf.length + 10];
+            byte[] data = new byte[vhf.length + 11];
             data[0] = (byte) ServerConfig.superNodeID;
             data[1] = (byte) ls.size();
-            System.arraycopy(vbi, 0, data, 2, 8);
-            System.arraycopy(vhf, 0, data, 10, vhf.length);
-            DNISenderPool.startSender(data, nid, false);
-            //test(data, nid);
-        });
+            data[2] = (byte) AR;
+            System.arraycopy(vbi, 0, data, 3, 8);
+            System.arraycopy(vhf, 0, data, 11, vhf.length);
+            SuperNode sn = SuperNodeList.getDNISuperNode(nid);
+            if (ServerConfig.superNodeID == sn.getId()) {
+                try {
+                    YottaNodeMgmt.addDNI(nid, data);
+                } catch (NodeMgmtException r) {
+                    if (!(r.getMessage() != null && r.getMessage().contains("duplicate key"))) {
+                        throw r;
+                    }
+                }
+            } else {
+                Document adddoc = new Document();
+                adddoc.append("nodeId", nid);
+                adddoc.append("vhf", new Binary(data));
+                adddoc.append("delete", false);
+                docs.add(adddoc);
+            }
+        }
+        if (!docs.isEmpty()) {
+            CacheBaseAccessor.addDNI(docs);
+        }
     }
 
-    private SaveObjectMetaReq makeSaveObjectMetaReq(UploadBlockEndReq req, int userid, long vbi, ObjectId VNU) {
+    private SaveObjectMetaReq makeSaveObjectMetaReq(int userid, long vbi) {
         SaveObjectMetaReq saveObjectMetaReq = new SaveObjectMetaReq();
         saveObjectMetaReq.setUserID(userid);
-        saveObjectMetaReq.setVNU(VNU);
+        saveObjectMetaReq.setVNU(request.getVNU());
         ObjectRefer refer = new ObjectRefer();
-        refer.setId(req.getId());
-        refer.setKEU(req.getKEU());
-        refer.setOriginalSize(req.getOriginalSize());
-        refer.setRealSize(req.getRealSize());
+        refer.setId(request.getId());
+        refer.setKEU(request.getKEU());
+        refer.setOriginalSize(request.getOriginalSize());
+        refer.setRealSize(request.getRealSize());
         refer.setSuperID((byte) ServerConfig.superNodeID);
         refer.setVBI(vbi);
         saveObjectMetaReq.setRefer(refer);
         return saveObjectMetaReq;
     }
 
-    private BlockMeta makeBlockMeta(UploadBlockEndReq req, long VBI, int shardCount) {
+    private BlockMeta makeBlockMeta(long VBI, int shardCount) {
         BlockMeta meta = new BlockMeta();
         meta.setVBI(VBI);
-        meta.setKED(req.getKED());
+        meta.setKED(request.getKED());
         meta.setNLINK(1);
-        if (req.isRsShard()) {
-            meta.setVNF(shardCount);
-        } else {
-            meta.setVNF(shardCount * -1);
-        }
-        meta.setVHB(req.getVHB());
-        meta.setVHP(req.getVHP());
+        meta.setVNF(shardCount);
+        meta.setAR(request.getAR());
+        meta.setVHB(request.getVHB());
+        meta.setVHP(request.getVHP());
         return meta;
     }
 
@@ -133,45 +159,46 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         return true;
         /*
          try {
-         LOG.info("PUBKEY:"+node.getPubkey());
-         LOG.info("DNSIGN:"+res.getDNSIGN());
-         return io.yottachain.ytcrypto.YTCrypto.verify(node.getPubkey(), res.getVHF(), res.getDNSIGN());
+             LOG.info("PUBKEY:"+node.getPubkey());
+             LOG.info("DNSIGN:"+res.getDNSIGN());
+             return io.yottachain.ytcrypto.YTCrypto.verify(node.getPubkey(), res.getVHF(), res.getDNSIGN());
          } catch (YTCryptoException ex) {
-         LOG.error("ERR:",ex);
-         return false;
-         }*/
+             LOG.error("ERR:",ex);
+             return false;
+         }
+         */
     }
 
     private List<ShardMeta> verify(UploadBlockEndReq req, List<UploadShardRes> resList, long VBI) throws ServiceException, NoSuchAlgorithmException, NodeMgmtException {
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         List<ShardMeta> ls = new ArrayList();
         UploadShardRes[] shards = new UploadShardRes[resList.size()];
-        // List<Integer> nodeidsls = new ArrayList();
+        List<Integer> nodeidsls = new ArrayList();
         resList.stream().forEach((res) -> {
             shards[res.getSHARDID()] = res;
-            //  nodeidsls.add(res.getNODEID());
+            if (!nodeidsls.contains(res.getNODEID())) {
+                nodeidsls.add(res.getNODEID());
+            }
         });
-        /*
-         List<Node> nodels = NodeManager.getNode(nodeidsls);
-         if (ls.size() != nodeidsls.size()) {
-         LOG.warn("Some Nodes have been cancelled.");
-         throw new ServiceException(NO_ENOUGH_NODE);
-         }
-         Map<Integer, Node> map = new HashMap();
-         nodels.stream().forEach((n) -> {
-         map.put(n.getId(), n);
-         });
-         */
+        List<Node> nodels = NodeManager.getNode(nodeidsls);
+        if (nodels.size() != nodeidsls.size()) {
+            LOG.warn("Some Nodes have been cancelled.");
+            throw new ServiceException(NO_ENOUGH_NODE);
+        }
+        Map<Integer, Node> map = new HashMap();
+        nodels.stream().forEach((n) -> {
+            map.put(n.getId(), n);
+        });
         for (int ii = 0; ii < shards.length; ii++) {
             UploadShardRes res = shards[ii];
-            if (req.isRsShard()) {
+            if (req.getAR() != ShardEncoder.AR_COPY_MODE) {
                 md5.update(res.getVHF());
             } else {
                 if (ii == 0) {
                     md5.update(res.getVHF());
                 }
             }
-            if (!verifySign(res, null)) {
+            if (!verifySign(res, map.get(res.getNODEID()))) {
                 throw new ServiceException(INVALID_SIGNATURE);
             }
             ShardMeta meta = new ShardMeta(VBI + ii, res.getNODEID(), res.getVHF());
@@ -192,27 +219,4 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         }
         return ls;
     }
-    
-   // public static boolean hasTest = false;
-/*
-    public static void test(byte[] DNI, int nodeid) {
-        if (!hasTest) {
-            try {
-                int snnum = (int) DNI[0];
-                TaskDispatchReq req = new TaskDispatchReq();
-                req.setDNI(DNI);
-                req.setNodeId(nodeid);
-                req.setExecNodeId(nodeid);
-                SuperNode sn = SuperNodeList.getSuperNode(snnum);
-                TaskDispatchHandler.taskDispatchCall(req, sn);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Query rebuild task " + Base58.encode(DNI));
-                }
-            } catch (Throwable r) {
-                LOG.error("Send rebuild task " + Base58.encode(DNI) + " ERR:", r);
-            }
-            hasTest = true;
-        }
-
-    }*/
 }

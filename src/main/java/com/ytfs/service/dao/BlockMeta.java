@@ -9,8 +9,9 @@ public class BlockMeta {
     private byte[] VHP;//该数据块的明文SHA256摘要
     private byte[] VHB;//每个加密后的数据分片的SHA256摘要，连接在一起后再计算出的MD5摘要
     private byte[] KED;//去重密钥
-    private int VNF;  //分片数目 0 表示存在数据库中 >1 RS <1 副本
+    private int VNF;  //分片数目 0 表示存在数据库中 
     private long NLINK;//引用计数，如果引用次数达到0xffffff，则该文件将永远不再删除
+    private int AR;   //0数据库  -1 RS  -2 多副本 >0 LRC
 
     public BlockMeta() {
     }
@@ -34,6 +35,9 @@ public class BlockMeta {
         if (doc.containsKey("NLINK")) {
             this.NLINK = doc.getLong("NLINK");
         }
+        if (doc.containsKey("AR")) {
+            this.AR = doc.getInteger("AR");
+        }
     }
 
     public Document toDocument() {
@@ -43,6 +47,7 @@ public class BlockMeta {
         doc.append("VHB", new Binary(VHB));
         doc.append("KED", new Binary(KED));
         doc.append("VNF", VNF);
+        doc.append("AR", AR);
         doc.append("NLINK", NLINK);
         return doc;
     }
@@ -130,4 +135,19 @@ public class BlockMeta {
     public void setVHB(byte[] VHB) {
         this.VHB = VHB;
     }
+
+    /**
+     * @return the AR
+     */
+    public int getAR() {
+        return AR;
+    }
+
+    /**
+     * @param AR the AR to set
+     */
+    public void setAR(int AR) {
+        this.AR = AR;
+    }
+
 }

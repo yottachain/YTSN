@@ -1,39 +1,70 @@
 package com.ytfs.service.servlet.bp;
 
-import com.ytfs.common.node.SuperNodeList;
-import com.ytfs.service.packet.bp.UpdateDNIReq;
+import com.ytfs.common.GlobleThreadPool;
+import com.ytfs.service.dao.CacheBaseAccessor;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.log4j.Logger;
+import org.bson.Document;
 
-public class DNISenderPool {
+public class DNISenderPool extends Thread {
 
-    private static DNISender[] senders;
+    private static final Logger LOG = Logger.getLogger(DNISenderPool.class);
+    private static DNISenderPool me;
 
-    public static final void start() {
-        int count = SuperNodeList.getSuperNodeCount();
-        senders = new DNISender[count];
-        for (int ii = 0; ii < count; ii++) {
-            DNISender sender = DNISender.startSender(ii);
-            senders[ii] = sender;
+    public static final void startup() {
+        if (me == null) {
+            me = new DNISenderPool();
+            me.start();
         }
     }
 
-    public static final void stop() {
-        List<DNISender> ls = new ArrayList(Arrays.asList(senders));
-        ls.stream().forEach((sender) -> {
-            sender.stopSend();
-        });
+    public static final void shutdown() {
+        if (me != null) {
+            me.interrupt();
+            me = null;
+        }
     }
 
-    public static void startSender(byte[] VHF, int nid, boolean delete) {
-        UpdateDNIReq req = new UpdateDNIReq();
-        req.setDni(VHF);
-        req.setNodeid(nid);
-        req.setDelete(delete);
-        SuperNode sn = SuperNodeList.getDNISuperNode(nid);
-        senders[sn.getId()].putMessage(req);
+    @Override
+    public void run() {
+        int max_size = 21 * 500;
+        while (!this.isInterrupted()) {
+            try {
+                int count = 0;
+                List<DNISender> sendList = new ArrayList();
+                Map<SuperNode, List<Document>> map = CacheBaseAccessor.queryDNI(max_size);
+                Set<Map.Entry<SuperNode, List<Document>>> set = map.entrySet();
+                for (Map.Entry<SuperNode, List<Document>> ent : set) {
+                    DNISender sender = new DNISender(ent.getKey(), ent.getValue(), sendList);
+                    sendList.add(sender);
+                    count = count + ent.getValue().size();
+                }
+                sendList.forEach((send) -> {
+                    GlobleThreadPool.execute(send);
+                });
+                synchronized (sendList) {
+                    while (!sendList.isEmpty()) {
+                        sendList.wait(15000);
+                    }
+                }
+                if (count <= max_size) {
+                    sleep(1000 * 60);
+                }
+            } catch (InterruptedException ie) {
+                break;
+            } catch (Throwable t) {
+                LOG.error("ERR:" + t.getMessage());
+                try {
+                    sleep(1000 * 10);
+                } catch (InterruptedException ex) {
+                    break;
+                }
+            }
+        }
     }
 
 }

@@ -1,18 +1,17 @@
 package com.ytfs.service;
 
 import com.ytfs.service.check.QueryRebuildNode;
-import com.ytfs.service.check.SendSpotCheckTask;
-import com.ytfs.service.dao.test.ShardInsertTest;
-import com.ytfs.service.dao.test.ShardUpdateTest;
-import com.ytfs.service.servlet.NewObjectScanner;
+import com.ytfs.service.cost.NewObjectScanner;
+import com.ytfs.service.cost.UserFeeStat;
 import com.ytfs.service.servlet.bp.DNISenderPool;
 import com.ytfs.service.servlet.bp.NodeStatSync;
 import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 public class ServiceWrapper implements WrapperListener {
-    public static int REBUILDER_NODEID=1172;
-    public static int REBUILDER_EXEC_NODEID=795;
+
+    public static int REBUILDER_NODEID = 0;
+    public static int REBUILDER_EXEC_NODEID = 0;
 
     public static void main(String[] args) {
         WrapperManager.start(new ServiceWrapper(), args);
@@ -21,20 +20,20 @@ public class ServiceWrapper implements WrapperListener {
     @Override
     public Integer start(String[] strings) {
         ServerInitor.init();
-        //ShardUpdateTest.start();
         //NewObjectScanner.startUp();
         QueryRebuildNode.startUp();
-        DNISenderPool.start();
+        UserFeeStat.startUp();
+        DNISenderPool.startup();
         NodeStatSync.startup();
         return null;
     }
 
     @Override
     public int stop(int exitCode) {
-        NewObjectScanner.shutdown();
-        //ShardUpdateTest.stop();
+        //NewObjectScanner.shutdown();
         QueryRebuildNode.shutdown();
-        DNISenderPool.stop();
+        UserFeeStat.shutdown();
+        DNISenderPool.shutdown();
         NodeStatSync.terminate();
         ServerInitor.stop();
         return exitCode;

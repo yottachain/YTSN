@@ -7,11 +7,11 @@ import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.NodeInfo;
 import com.ytfs.service.packet.SpotCheckTaskList;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
+import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.SpotCheckList;
 import io.yottachain.nodemgmt.core.vo.SpotCheckTask;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
@@ -20,7 +20,6 @@ public class SendSpotCheckTask implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(SendSpotCheckTask.class);
 
-    private static int checkInterval = 60;
     private static ArrayBlockingQueue<SendSpotCheckTask> queue = null;
 
     private static synchronized ArrayBlockingQueue<SendSpotCheckTask> getQueue() {
@@ -33,13 +32,9 @@ public class SendSpotCheckTask implements Runnable {
         return queue;
     }
 
-    static void startUploadShard(NodeInfo nodeinfo) throws InterruptedException {
-        if (checkInterval == 0) {
-            return;
-        }
-        Random b = new Random();
-        int a = b.nextInt(checkInterval * 10 + 1);
-        if (a <= 10) {
+    static void startUploadShard(NodeInfo nodeinfo) throws InterruptedException, NodeMgmtException {
+        boolean bool = YottaNodeMgmt.spotcheckSelected();
+        if (bool) {
             SendSpotCheckTask task = getQueue().poll();
             if (task == null) {
                 SendSpotCheckTask ct = new SendSpotCheckTask();
@@ -87,9 +82,9 @@ public class SendSpotCheckTask implements Runnable {
             myst.setNodeId(st.getNodeID());
             myst.setAddr(st.getAddr());
             byte[] vni = Base64.decodeBase64(st.getVni());
-            if (vni.length > 32) {
-                byte[] VHF = new byte[32];
-                System.arraycopy(vni, vni.length - 32, VHF, 0, 32);
+            if (vni.length > 16) {
+                byte[] VHF = new byte[16];
+                System.arraycopy(vni, vni.length - 16, VHF, 0, 16);
                 myst.setVHF(VHF);
             } else {
                 myst.setVHF(vni);

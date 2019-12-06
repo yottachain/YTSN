@@ -20,12 +20,11 @@ public class MongoSource {
     public static final String USER_TABLE_NAME = "users";
     private static final String USER_INDEX_NAME = "username";
 
-    public static final String OBJECT_NEW_TABLE_NAME = "objects_new";
-
     //数据块源信息表
     public static final String BLOCK_TABLE_NAME = "blocks";
-    private static final String BLOCK_INDEX_VHP_VHB = "VHP_VHB";//唯一
+    private static final String BLOCK_INDEX_VHP_VHB = "VHP_VHB";   //唯一
     public static final String BLOCK_DAT_TABLE_NAME = "blocks_data";
+
     //分片元数据
     public static final String SHARD_TABLE_NAME = "shards";
 
@@ -71,14 +70,9 @@ public class MongoSource {
         }
     }
 
-    static MongoCollection<Document> getUserCollection() {
+    public static MongoCollection<Document> getUserCollection() {
         newInstance();
         return source.user_collection;
-    }
-
-    static MongoCollection<Document> getObjectNewCollection() {
-        newInstance();
-        return source.object_new_collection;
     }
 
     static MongoCollection<Document> getBlockCollection() {
@@ -120,7 +114,7 @@ public class MongoSource {
         return usersource;
     }
 
-    static MongoCollection<Document> getObjectCollection(int userId) {
+    public static MongoCollection<Document> getObjectCollection(int userId) {
         UserMetaSource usersource = getUserMetaSource(userId);
         return usersource.getObject_collection();
     }
@@ -140,6 +134,11 @@ public class MongoSource {
         return source.client;
     }
 
+    public static DNIMetaSource getDNIMetaSource() {
+        newInstance();
+        return source.dnisource;
+    }
+
     public static void terminate() {
         synchronized (MongoSource.class) {
             if (source != null) {
@@ -154,11 +153,11 @@ public class MongoSource {
     private MongoClient client = null;
     private MongoDatabase database;
     private MongoCollection<Document> user_collection = null;
-    private MongoCollection<Document> object_new_collection = null;
     private MongoCollection<Document> block_collection = null;
     private MongoCollection<Document> block_dat_collection = null;
     private MongoCollection<Document> shard_collection = null;
     private Map<Integer, UserMetaSource> userbaseMap = new ConcurrentHashMap();
+    private DNIMetaSource dnisource;
 
     private List<ServerAddress> serverAddress;
     private String authString = "";
@@ -171,7 +170,7 @@ public class MongoSource {
             init(p);
             init_user_collection();
             init_block_collection();
-            init_newobject_collection();
+            dnisource = new DNIMetaSource(client);
         } catch (Exception e) {
             if (client != null) {
                 client.close();
@@ -265,10 +264,6 @@ public class MongoSource {
             user_collection.createIndex(Indexes.ascending("username"), indexOptions);
         }
         LOG.info("Successful creation of user tables.");
-    }
-
-    private void init_newobject_collection() {
-        object_new_collection = database.getCollection(OBJECT_NEW_TABLE_NAME);
     }
 
     private void init_block_collection() {

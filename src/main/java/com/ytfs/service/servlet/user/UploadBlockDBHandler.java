@@ -17,6 +17,7 @@ import static com.ytfs.common.ServiceErrorCode.INVALID_VHB;
 import static com.ytfs.common.ServiceErrorCode.INVALID_VHP;
 import static com.ytfs.common.ServiceErrorCode.TOO_BIG_BLOCK;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.codec.ShardEncoder;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
@@ -54,14 +55,14 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         }
         BlockEncrypted b = new BlockEncrypted();
         b.setData(request.getData());
-        verify(request, b.getVHB());
+        verify(b.getVHB());
         BlockAccessor.saveBlockData(VBI, request.getData());
         if (bmeta == null) {
-            BlockMeta meta = makeBlockMeta(request, VBI);
+            BlockMeta meta = makeBlockMeta(VBI);
             BlockAccessor.saveBlockMeta(meta);
         }
-        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(request, userid, VBI);
-        saveObjectMetaReq.setNlink(1);
+        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(userid, VBI);
+        saveObjectMetaReq.setUsedSpace(ServerConfig.PCM);
         try {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
             if (resp.isExists()) {
@@ -73,44 +74,45 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         return new VoidResp();
     }
 
-    private void verify(UploadBlockDBReq req, byte[] vhb) throws ServiceException {
-        if (!Arrays.equals(vhb, req.getVHB())) {
+    private void verify(byte[] vhb) throws ServiceException {
+        if (!Arrays.equals(vhb, request.getVHB())) {
             throw new ServiceException(INVALID_VHB);
         }
-        if (req.getVHP() == null || req.getVHP().length != 32) {
+        if (request.getVHP() == null || request.getVHP().length != 32) {
             throw new ServiceException(INVALID_VHP);
         }
-        if (req.getKEU() == null || req.getKEU().length != 32) {
+        if (request.getKEU() == null || request.getKEU().length != 32) {
             throw new ServiceException(INVALID_KEU);
         }
-        if (req.getKED() == null || req.getKED().length != 32) {
+        if (request.getKED() == null || request.getKED().length != 32) {
             throw new ServiceException(INVALID_KED);
         }
-        if (req.getData().length > ServerConfig.PL2 * 2) {
+        if (request.getData().length > ServerConfig.PL2 * 2) {
             throw new ServiceException(TOO_BIG_BLOCK);
         }
     }
 
-    private BlockMeta makeBlockMeta(UploadBlockDBReq req, long VBI) {
+    private BlockMeta makeBlockMeta(long VBI) {
         BlockMeta meta = new BlockMeta();
         meta.setVBI(VBI);
-        meta.setKED(req.getKED());
+        meta.setKED(request.getKED());
         meta.setNLINK(1);
         meta.setVNF(0);
-        meta.setVHB(req.getVHB());
-        meta.setVHP(req.getVHP());
+        meta.setAR(ShardEncoder.AR_DB_MODE);
+        meta.setVHB(request.getVHB());
+        meta.setVHP(request.getVHP());
         return meta;
     }
 
-    private SaveObjectMetaReq makeSaveObjectMetaReq(UploadBlockDBReq req, int userid, long vbi) {
+    private SaveObjectMetaReq makeSaveObjectMetaReq(int userid, long vbi) {
         SaveObjectMetaReq saveObjectMetaReq = new SaveObjectMetaReq();
         saveObjectMetaReq.setUserID(userid);
-        saveObjectMetaReq.setVNU(req.getVNU());
+        saveObjectMetaReq.setVNU(request.getVNU());
         ObjectRefer refer = new ObjectRefer();
-        refer.setId(req.getId());
-        refer.setKEU(req.getKEU());
-        refer.setOriginalSize(req.getOriginalSize());
-        refer.setRealSize(req.getData().length);
+        refer.setId(request.getId());
+        refer.setKEU(request.getKEU());
+        refer.setOriginalSize(request.getOriginalSize());
+        refer.setRealSize(request.getData().length);
         refer.setSuperID((byte) ServerConfig.superNodeID);
         refer.setVBI(vbi);
         saveObjectMetaReq.setRefer(refer);

@@ -96,9 +96,9 @@ public class SendSpotCheckTask extends Thread {
             myst.setNodeId(st.getNodeID());
             myst.setAddr(st.getAddr());
             byte[] vni = Base64.decodeBase64(st.getVni());
-            if (vni.length > 32) {
-                byte[] VHF = new byte[32];
-                System.arraycopy(vni, vni.length - 32, VHF, 0, 32);
+            if (vni.length > 16) {
+                byte[] VHF = new byte[16];
+                System.arraycopy(vni, vni.length - 16, VHF, 0, 16);
                 myst.setVHF(VHF);
             } else {
                 myst.setVHF(vni);
