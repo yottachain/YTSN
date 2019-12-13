@@ -14,7 +14,6 @@ import com.ytfs.service.packet.user.RegUserResp;
 import com.ytfs.service.servlet.Handler;
 import static com.ytfs.service.servlet.user.QueryUserHandler.queryAndReg;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
-import io.yottachain.p2phost.utils.Base58;
 import org.apache.log4j.Logger;
 
 public class RegUserHandler extends Handler<RegUserReq> {
@@ -50,7 +49,7 @@ public class RegUserHandler extends Handler<RegUserReq> {
         for (Object o : obs) {
             if (o != null) {
                 if (o instanceof ServiceException) {
-                    LOG.error("Sync userinfo ERR.");
+                    LOG.error("Sync userinfo ERR:" + ((ServiceException) o).getErrorCode());
                     return new ServiceException(SERVER_ERROR);
                 }
             }

@@ -66,6 +66,11 @@ public class CacheBaseAccessor {
         }
     }
 
+    public static Document findOneNewObject() throws Throwable {
+        //CacheBaseSource.getObjectNewCollection().find
+        return null;
+    }
+
     public static boolean listNewObject() throws Throwable {
         /*
         long curtime = System.currentTimeMillis();

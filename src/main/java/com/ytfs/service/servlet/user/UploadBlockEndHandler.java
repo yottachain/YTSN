@@ -18,6 +18,8 @@ import static com.ytfs.common.ServiceErrorCode.INVALID_VHP;
 import static com.ytfs.common.ServiceErrorCode.NO_ENOUGH_NODE;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.ShardEncoder;
+import static com.ytfs.common.conf.UserConfig.Default_PND;
+import static com.ytfs.common.conf.UserConfig.Max_Shard_Count;
 import com.ytfs.common.node.NodeManager;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.dao.CacheBaseAccessor;
@@ -57,7 +59,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         int userid = user.getUserID();
         LOG.debug("Receive UploadBlockEnd request:/" + request.getVNU() + "/" + request.getId());
         List<UploadShardRes> res = request.getOkList();
-        if (res.size() > 160) {
+        if (res.size() > Max_Shard_Count+Default_PND) {
             return new ServiceException(ServiceErrorCode.TOO_MANY_SHARDS);
         }
         long VBI = Sequence.generateBlockID(res.size());

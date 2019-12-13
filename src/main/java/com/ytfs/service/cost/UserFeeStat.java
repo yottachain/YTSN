@@ -41,24 +41,25 @@ public class UserFeeStat extends Thread {
             if (sn.getId() != ServerConfig.superNodeID) {
                 continue;
             }
-            long nextCycle = doc.getLong("nextCycle");
+            long nextCycle = doc.getLong("nextCycle") == null ? 0 : doc.getLong("nextCycle");
             if (System.currentTimeMillis() - nextCycle < ServerConfig.CostSumCycle) {
                 continue;
             }
             UserFileIterator userFileIterator = new UserFileIterator(userid);
             userFileIterator.iterate();
             long usedSpace = userFileIterator.getUsedSpace();
-            setCylceFee(usedSpace, userid, doc.getString("username"));
+            setCycleFee(usedSpace, userid, doc.getString("username"));
         }
     }
 
-    private void setCylceFee(long usedSpace, int userid, String username) {
+    private void setCycleFee(long usedSpace, int userid, String username) {
         long count = usedSpace / UserConfig.Default_Shard_Size
                 + (usedSpace % UserConfig.Default_Shard_Size > 0 ? 1 : 0);
         long costPerCycle = count * ServerConfig.unitcost;
         try {
-            EOSClient.setUserFee(costPerCycle, username, userid);
+            EOSClient.setUserFee(costPerCycle, username);
             UserAccessor.updateUser(userid, costPerCycle);
+            LOG.info("User " + userid + " set cycle fee:" + costPerCycle);
         } catch (Throwable r) {
             LOG.error("", r);
         }

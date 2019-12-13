@@ -1,5 +1,6 @@
 package com.ytfs.service.dao;
 
+import com.ytfs.common.node.SuperNodeList;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import java.nio.ByteBuffer;
@@ -9,12 +10,12 @@ import org.bson.types.ObjectId;
 public class Test {
 
     public static void main(String[] arg) throws Exception {
-        int a=-2;
-        byte b = (byte) a;
-        int cc=(int)b;
-        System.out.println(cc);
-        int ii = cc & 0xFF;
-        System.out.println(ii);
+        String prikey = "5JcDH48njDbUQLu1R8SWwKsfWLnqBpWXDDiCgxFC3hioDuwLhVx";
+        //byte[] kusp = Base58.decode(prikey);//si钥    
+        String ss = KeyUtil.toPublicKey(prikey);
+        String pubkey = ss;//ss.substring(3);
+        System.out.println(pubkey);    
+       // System.out.println(SuperNodeList.stringToName("sdsvgdfbvestbrtnrtn"));
     }
 
     public static byte[] makeBytes(int length) {

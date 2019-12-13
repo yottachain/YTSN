@@ -86,7 +86,11 @@ public class SNSynchronizer implements Runnable {
         try {
             if (node.getId() == ServerConfig.superNodeID) {
                 Handler handler = HandlerFactory.getHandler(req);
-                handler.setPubkey(node.getPubkey());
+                String pubkey = node.getPubkey();
+                if (pubkey.startsWith("EOS")) {
+                    pubkey = pubkey.substring(3);
+                }
+                handler.setPubkey(pubkey);
                 resp = handler.handle();
             } else {
                 resp = P2PUtils.requestBP(req, node);

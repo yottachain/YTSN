@@ -36,6 +36,7 @@ public class PreAllocNodeHandler extends Handler<PreAllocNodeReq> {
             nodes.stream().map((node) -> new PreAllocNode(node)).filter((n) -> (resp.addNode(n))).forEach((n) -> {
                 sign(n);
             });
+            LOG.info("User " + user.getUserID() + " AllocNodes OK,return " + resp.getList().size());
             return resp;
         } catch (NodeMgmtException ex) {
             LOG.error("AllocNodes ERR:" + ex.getMessage());

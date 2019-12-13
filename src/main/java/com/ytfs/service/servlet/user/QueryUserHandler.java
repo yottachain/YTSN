@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.user;
 
+import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.INVALID_USER_ID;
 import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.Sequence;
@@ -9,6 +10,7 @@ import com.ytfs.service.dao.UserCache;
 import com.ytfs.service.packet.user.QueryUserReq;
 import com.ytfs.service.packet.user.QueryUserResp;
 import com.ytfs.service.servlet.Handler;
+import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.p2phost.utils.Base58;
 import java.util.Arrays;
 import org.apache.log4j.Logger;
@@ -19,6 +21,13 @@ public class QueryUserHandler extends Handler<QueryUserReq> {
 
     @Override
     public Object handle() throws Throwable {
+        try {
+            getSuperNodeId();
+        } catch (NodeMgmtException e) {
+            LOG.error("Invalid super node pubkey:" + this.getPublicKey());
+            return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
+        }
+        LOG.debug("User '" + request.getUsername() + "' sync request.");
         return queryAndReg(request);
     }
 

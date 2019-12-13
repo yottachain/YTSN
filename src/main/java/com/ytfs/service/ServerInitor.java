@@ -4,9 +4,6 @@ import com.mongodb.ServerAddress;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.GlobleThreadPool;
 import com.ytfs.common.LogConfigurator;
-import com.ytfs.common.codec.BlockEncrypted;
-import com.ytfs.common.codec.lrc.MemoryCache;
-import com.ytfs.common.codec.lrc.ShardLRCEncoder;
 import static com.ytfs.common.conf.ServerConfig.*;
 import com.ytfs.common.eos.BpList;
 import com.ytfs.service.dao.MongoSource;
@@ -15,49 +12,23 @@ import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.NodeManager;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.dao.Sequence;
-import com.ytfs.service.servlet.FromBPMsgDispatcher;
-import com.ytfs.service.servlet.FromNodeMsgDispatcher;
-import com.ytfs.service.servlet.FromUserMsgDispatcher;
+import com.ytfs.service.servlet.MsgDispatcher;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
-import io.yottachain.p2phost.interfaces.BPNodeCallback;
-import io.yottachain.p2phost.interfaces.NodeCallback;
-import io.yottachain.p2phost.interfaces.UserCallback;
+import io.yottachain.p2phost.interfaces.Callback;
 import io.yottachain.p2phost.utils.Base58;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
-import java.util.logging.Level;
 import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 public class ServerInitor {
 
     private static final Logger LOG = Logger.getLogger(ServerInitor.class);
-
-    public static byte[] makeBytes(int length) {
-        Random ran = new Random();
-        ByteBuffer buf = ByteBuffer.allocate(length);
-        for (int ii = 0; ii < length / 8; ii++) {
-            long l = ran.nextLong();
-            buf.putLong(l);
-        }
-        return buf.array();
-    }
-
-    private static void testLRC() throws IOException {
-        MemoryCache.init();
-        BlockEncrypted b = new BlockEncrypted();
-        b.setData(makeBytes(1024 * 1024 * 2 - 1024 * 16));
-        ShardLRCEncoder encoder = new ShardLRCEncoder(b);
-        encoder.encode();
-
-    }
 
     public static void stop() {
         P2PUtils.stop();
@@ -77,11 +48,6 @@ public class ServerInitor {
             LOG.error("Init err.", e);
             System.exit(0);
         }
-        try {
-            testLRC();
-        } catch (IOException ex) {
-            LOG.error("Init err.", ex);
-        }
         for (int ii = 0; ii < 1000; ii++) {
             try {
                 List<ServerAddress> addrs = MongoSource.getServerAddress();
@@ -93,7 +59,7 @@ public class ServerInitor {
                 BpList.init(SuperNodeList.getSuperNodeList());
                 break;
             } catch (Throwable r) {
-                LOG.error("Mongo client initialization failed:" + r.getMessage());
+                LOG.error("Mongo client initialization failed:", r);
                 try {
                     Thread.sleep(30000);
                 } catch (InterruptedException ex) {
@@ -106,10 +72,8 @@ public class ServerInitor {
             try {
                 int port = ServerConfig.port + ii;
                 P2PUtils.start(port, ServerConfig.privateKey);
-                UserCallback userCallback = new FromUserMsgDispatcher();
-                BPNodeCallback bPNodeCallback = new FromBPMsgDispatcher();
-                NodeCallback nodeCallback = new FromNodeMsgDispatcher();
-                P2PUtils.register(userCallback, bPNodeCallback, nodeCallback);
+                Callback nodeCallback = new MsgDispatcher();
+                P2PUtils.register(nodeCallback);
                 break;
             } catch (Exception r) {
                 LOG.error("P2P initialization failed!", r);

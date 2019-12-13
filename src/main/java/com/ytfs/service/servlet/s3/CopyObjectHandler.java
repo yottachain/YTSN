@@ -3,7 +3,6 @@ package com.ytfs.service.servlet.s3;
 import com.ytfs.common.SerializationUtil;
 import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.*;
-import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.packet.s3.CopyObjectReq;
 import com.ytfs.service.packet.s3.CopyObjectResp;
 import com.ytfs.service.servlet.Handler;

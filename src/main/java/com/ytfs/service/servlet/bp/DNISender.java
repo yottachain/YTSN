@@ -31,7 +31,7 @@ public class DNISender implements Runnable {
     public void run() {
         try {
             List<UpdateDNIReq> list = new ArrayList();
-            ObjectId[] ids = new ObjectId[list.size()];
+            ObjectId[] ids = new ObjectId[ls.size()];
             int ii = 0;
             for (Document doc : ls) {
                 ids[ii++] = doc.getObjectId("_id");
@@ -39,11 +39,12 @@ public class DNISender implements Runnable {
                 req.setNodeid(doc.getInteger("nodeId"));
                 req.setDelete(doc.getBoolean("delete"));
                 req.setDni(((Binary) doc.get("vhf")).getData());
+                list.add(req);
             }
             send(list);
             CacheBaseAccessor.deleteDNI(ids);
         } catch (Throwable t) {
-            LOG.error("ERR:" + t.getMessage());
+            LOG.error("ERR:" + t);
         } finally {
             synchronized (sendList) {
                 sendList.remove(this);

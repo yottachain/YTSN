@@ -10,23 +10,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 
 public class UserFileIterator {
-
+    
+    private static final Logger LOG = Logger.getLogger(UserFileIterator.class);
     private static final long FIRST_CYCLE = PMS * PPC;
     private static final int MAX_IDLIST = 1000;
     private final int userId;
     private long usedSpace = 0;
     private int sumTimes = 0;
-
+    
     public UserFileIterator(int userId) {
         this.userId = userId;
     }
-
+    
     public void iterate() {
+        LOG.info("User " + userId + " sum fee...");
         Map<Integer, List<Long>> map = new HashMap();
         Document fields = new Document("blocks", 1);
         fields.append("VNU", 1);
@@ -71,13 +74,13 @@ public class UserFileIterator {
             }
         }
     }
-
+    
     private void addSumTimes() {
         synchronized (this) {
             sumTimes++;
         }
     }
-
+    
     public void addUsedSpace(long space) {
         synchronized (this) {
             usedSpace = usedSpace + space;
@@ -85,7 +88,7 @@ public class UserFileIterator {
             this.notify();
         }
     }
-
+    
     public long getUsedSpace() {
         return usedSpace;
     }

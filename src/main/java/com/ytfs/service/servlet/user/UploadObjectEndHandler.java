@@ -36,8 +36,8 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         long usedspace = meta.getUsedspace();
         UserAccessor.updateUser(userid, usedspace, 1, meta.getLength());
         try {
-            EOSClient.addUsedSpace(usedspace, user.getUsername(), userid);
-            LOG.info("Add usedSpace:" + user.getUserID());
+            EOSClient.addUsedSpace(usedspace, user.getUsername());
+            LOG.info("User " + user.getUserID() + " add usedSpace:" + usedspace);
         } catch (ServiceException e) {
             CacheBaseAccessor.addNewObject(meta.getVNU(), usedspace, user.getUserID(), user.getUsername(), 0);
             LOG.error("Add usedSpace ERR:" + e.getMessage());
@@ -47,8 +47,8 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         long costPerCycle = count * ServerConfig.unitcost;
         long firstCost = costPerCycle * ServerConfig.PMS;
         try {
-            EOSClient.deductHDD(firstCost, user.getUsername(), user.getUserID());
-            LOG.info("Sub Balance:" + user.getUserID());
+            EOSClient.deductHDD(firstCost, user.getUsername());
+            LOG.info("User " + user.getUserID() + " sub Balance:" + firstCost);
         } catch (ServiceException e) {
             CacheBaseAccessor.addNewObject(meta.getVNU(), usedspace, user.getUserID(), user.getUsername(), 1);
             LOG.error("Sub Balance ERR:" + e.getMessage());

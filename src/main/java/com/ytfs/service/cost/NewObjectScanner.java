@@ -22,8 +22,6 @@ public class NewObjectScanner extends Thread {
         }
     }
 
-    
-
     @Override
     public void run() {
         while (!this.isInterrupted()) {
