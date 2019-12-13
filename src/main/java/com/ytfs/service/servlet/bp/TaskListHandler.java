@@ -149,9 +149,9 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
                 P2PUtils.requestNode(task, execnode.getNodeid(), execnode.getId());
                 LOG.debug("Send rebuild task total " + task.getTasks().size() + " to " + req.getExecNodeId());
             } catch (Throwable ex) {
-                LOG.error("Send rebuild tasks to " + req.getExecNodeId() + " ERR:" + ex.getMessage());
                 try {
                     P2PUtils.requestNode(task, execnode);
+                    LOG.debug("Send rebuild task total " + task.getTasks().size() + " to " + req.getExecNodeId());
                 } catch (Throwable ex1) {
                     LOG.error("Send rebuild tasks to " + req.getExecNodeId() + " ERR:" + ex1.getMessage());
                 }

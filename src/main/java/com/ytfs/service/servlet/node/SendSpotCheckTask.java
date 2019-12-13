@@ -10,6 +10,7 @@ import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.SpotCheckList;
 import io.yottachain.nodemgmt.core.vo.SpotCheckTask;
+import io.yottachain.p2phost.utils.Base58;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -44,7 +45,7 @@ public class SendSpotCheckTask implements Runnable {
                 task.nodeinfo = nodeinfo;
                 GlobleThreadPool.execute(task);
             }
-        }
+        } 
     }
 
     private NodeInfo nodeinfo;
@@ -66,7 +67,12 @@ public class SendSpotCheckTask implements Runnable {
             P2PUtils.requestNode(task, nodeinfo.getPeerId(), nodeinfo.getId());
             LOG.info("Send task [" + task.getTaskId() + "] to " + nodeinfo.getId() + " OK.");
         } catch (Throwable e) {
-            LOG.error("Send task [" + task.getTaskId() + "] to " + nodeinfo.getId() + " ERR:" + e.getMessage());
+            try {
+                P2PUtils.requestNode(task, nodeinfo.getNode());
+                LOG.info("Send task [" + task.getTaskId() + "] to " + nodeinfo.getId() + " OK.");
+            } catch (Throwable ex1) {
+                LOG.error("Send task [" + task.getTaskId() + "] to " + nodeinfo.getId() + " ERR:" + e.getMessage());
+            }
         }
     }
 
@@ -91,6 +97,7 @@ public class SendSpotCheckTask implements Runnable {
             }
             return myst;
         }).forEach((myst) -> {
+            LOG.debug("Check VHF [" + Base58.encode(myst.getVHF()) + "] at " + myst.getId());
             mytask.getTaskList().add(myst);
         });
         return mytask;

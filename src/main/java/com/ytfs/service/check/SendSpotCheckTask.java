@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
-
+//作废
 public class SendSpotCheckTask extends Thread {
 
     private static final Logger LOG = Logger.getLogger(SendSpotCheckTask.class);
@@ -110,7 +110,7 @@ public class SendSpotCheckTask extends Thread {
 
         MessageWriter.write(mytask);
         LOG.info("Send task [" + mytask.getTaskId() + "] to " + n.getId() + ":" + P2PUtils.getAddrString(n.getAddrs()));
-        P2PUtils.requestNode(mytask, n);
+        //P2PUtils.requestNode(mytask, n);
         LOG.info("Send task [" + mytask.getTaskId() + "] OK!");
     }
 

@@ -3,6 +3,7 @@ package com.ytfs.service.servlet.node;
 import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.INVALID_NODE_ID;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.node.NodeInfo;
 import static com.ytfs.service.ServiceWrapper.REBUILDER_NODEID;
 import com.ytfs.service.packet.StatusRepReq;
 import com.ytfs.service.packet.StatusRepResp;
@@ -16,9 +17,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public class StatusRepHandler extends Handler<StatusRepReq> {
-
+    
     private static final Logger LOG = Logger.getLogger(StatusRepHandler.class);
-
+    
     @Override
     public Object handle() throws Throwable {
         int nodeid;
@@ -49,12 +50,14 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
             node.setAddrs(addrs);
             NodeStatSync.updateNode(node);
             LOG.debug("StatusRep Node:" + request.getId() + ",take times " + (System.currentTimeMillis() - l) + " ms");
-            //SendSpotCheckTask.startUploadShard(this.getNode());
+            NodeInfo nodeinfo = this.getNode();
+            nodeinfo.setAddr(addrs);
+            SendSpotCheckTask.startUploadShard(nodeinfo);
             return resp;
         } catch (NodeMgmtException e) {
             LOG.error("UpdateNodeStatus ERR:" + e.getMessage() + ",ID:" + request.getId() + ",take times " + (System.currentTimeMillis() - l) + " ms");
             return new ServiceException(INVALID_NODE_ID);
         }
     }
-
+    
 }
