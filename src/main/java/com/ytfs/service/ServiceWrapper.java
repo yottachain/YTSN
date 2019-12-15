@@ -21,8 +21,8 @@ public class ServiceWrapper implements WrapperListener {
     public Integer start(String[] strings) {
         ServerInitor.init();
         //NewObjectScanner.startUp();
-        //QueryRebuildNode.startUp();
-        //UserFeeStat.startUp();
+        QueryRebuildNode.startUp();
+        UserFeeStat.startUp();
         DNISenderPool.startup();
         NodeStatSync.startup();
         return null;
