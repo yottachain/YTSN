@@ -1,6 +1,7 @@
 package com.ytfs.service.servlet.bp;
 
 import com.ytfs.common.GlobleThreadPool;
+import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.dao.CacheBaseAccessor;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class DNISenderPool extends Thread {
 
     @Override
     public void run() {
-        int max_size = 21 * 500;
+        int max_size = SuperNodeList.getSuperNodeCount() * 500;
         while (!this.isInterrupted()) {
             try {
                 int count = 0;

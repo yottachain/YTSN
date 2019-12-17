@@ -1,7 +1,6 @@
 package com.ytfs.service.check;
 
 import com.ytfs.common.GlobleThreadPool;
-import static com.ytfs.common.conf.ServerConfig.REBULIDTHREAD;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.packet.TaskDispatchList;
 import com.ytfs.service.servlet.bp.TaskListHandler;
@@ -16,8 +15,7 @@ public class SendRebuildTask implements Runnable {
     private static final ArrayBlockingQueue<SendRebuildTask> queue;
 
     static {
-        int num = REBULIDTHREAD > 255 ? 255 : REBULIDTHREAD;
-        num = num < 5 ? 5 : num;
+        int num = SuperNodeList.getSuperNodeCount() * 2;
         queue = new ArrayBlockingQueue(num);
         for (int ii = 0; ii < num; ii++) {
             queue.add(new SendRebuildTask());

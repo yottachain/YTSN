@@ -16,6 +16,7 @@ public class DNICheckHandler extends Handler<ListDNIReq> {
     @Override
     public Object handle() throws Throwable {
         int nodeid;
+        LOG.info("Request:" + (request.getNextId() == null ? "" : Base58.encode(request.getNextId())) + ",count " + request.getCount());
         try {
             nodeid = this.getNodeId();
         } catch (Throwable e) {

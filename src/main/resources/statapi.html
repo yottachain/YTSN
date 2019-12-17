@@ -39,18 +39,35 @@
 <p class="content">ContentType:text/plain</p>
 <p class="content"> OK</p>
 <hr>
-<p class="content"><span class="titlestyle">本超级节点统计数据:</span></p>
+<p class="content"><span class="titlestyle">全网统计数据:</span></p>
 <p class="content">GET:/total</p>
-        <p class="content">返回所有用户合计</p>
-        <p class="content">fileTotal:文件总数<br>
-            spaceTotal:
-            文件实际总长度<br>
-            usedSpace:文件总占用空间<br>
-            costPerCycle:每周期总费用</p>
-        <pre class="content">{"_id":"ALL","usedspace":25210457,"spaceTotal":26651276,"fileTotal":133,"costPerCycle":12}
+        <p class="content">返回所有用户合计,访问21个SN任意一个</p>
+        <p class="content">
+        	  userTotal:用户总数<br>   
+        	  fileTotal:文件数量<br>       	  
+            spaceTotal:总存储量,文件实际总长度<br>
+            usedspace:去重后存储量,文件总占用空间<br>
+            bkTotal:存储块数<br>
+            actualBkTotal:去重后存储块数</p>
+        <pre class="content">{"userTotal":4,"usedspace":25210457,"spaceTotal":26651276,"fileTotal":133,"bkTotal":1112,"actualBkTotal":1100}
         </pre>
 
         <hr>
+        
+<p class="content"><span class="titlestyle">用户统计数据:</span></p>
+<p class="content">GET:/total?username=testuser</p>
+        <p class="content">返回用户testuser统计数据,访问21个SN任意一个</p>
+        <p class="content">
+        	  userID:用户ID<br>   
+        	  fileTotal:文件数量<br>       	  
+            spaceTotal:总存储量,文件实际总长度<br>
+            usedspace:去重后存储量,文件总占用空间</p>
+        <pre class="content">{"userID":4,"usedspace":25210457,"spaceTotal":26651276,"fileTotal":133}
+        </pre>
+
+        <hr>
+        
+        
         <p class="content"><span class="titlestyle">获取当前所有活跃节点:</span></p>
         <p class="content">GET:/active_nodes</p>
         <p class="content">返回当前所有活跃节点的id和公网ip</p>

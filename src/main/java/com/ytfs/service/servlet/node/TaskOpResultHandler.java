@@ -29,8 +29,8 @@ public class TaskOpResultHandler extends Handler<TaskOpResult> {
             LOG.error("Invalid node pubkey:" + this.getPublicKey());
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
         }
+        long l = System.currentTimeMillis();
         byte[] id = this.request.getId();
-        LOG.debug("Received " + Base58.encode(id));
         if (id == null || id.length != 39) {
             LOG.error("TaskID Length Less than 39.");
             return new VoidResp();
@@ -74,7 +74,7 @@ public class TaskOpResultHandler extends Handler<TaskOpResult> {
         } else {
             CacheBaseAccessor.addDNI(rebuildNodeId, DNI, true);
         }
-        LOG.debug("Rebuild OK: " + Base58.encode(id));
+        LOG.debug("Rebuild OK: " + Base58.encode(id) + ",take times " + (System.currentTimeMillis() - l) + " ms");
         return new VoidResp();
     }
 

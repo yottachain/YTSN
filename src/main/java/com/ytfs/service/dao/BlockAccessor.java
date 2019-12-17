@@ -100,6 +100,7 @@ public class BlockAccessor {
         Bson filter = Filters.eq("_id", VBI);
         Document fields = new Document("VNF", 1);
         fields.append("AR", 1);
+        fields.append("VHB", 1);
         Document doc = MongoSource.getBlockCollection().find(filter).projection(fields).first();
         if (doc == null) {
             throw new ServiceException(SERVER_ERROR);

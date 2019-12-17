@@ -39,7 +39,7 @@ public class QueryRebuildNode extends Thread {
         while (!exit) {
             try {
                 long time = System.currentTimeMillis();
-                long min = time % 1200000L;
+                long min = time % 3600000L;
                 try {
                     if (min < 60000 * 3) {
                         sc = YottaNodeMgmt.getInvalidNodes();

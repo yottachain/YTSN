@@ -2,9 +2,9 @@ package com.ytfs.service.servlet.node;
 
 import com.ytfs.common.GlobleThreadPool;
 import com.ytfs.common.conf.ServerConfig;
-import static com.ytfs.common.conf.ServerConfig.CHECKTHREAD;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.NodeInfo;
+import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.packet.SpotCheckTaskList;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
@@ -24,9 +24,10 @@ public class SendSpotCheckTask implements Runnable {
     private static ArrayBlockingQueue<SendSpotCheckTask> queue = null;
 
     private static synchronized ArrayBlockingQueue<SendSpotCheckTask> getQueue() {
+        int num = SuperNodeList.getSuperNodeCount()*2;
         if (queue == null) {
-            queue = new ArrayBlockingQueue(CHECKTHREAD);
-            for (int ii = 0; ii < CHECKTHREAD; ii++) {
+            queue = new ArrayBlockingQueue(num);
+            for (int ii = 0; ii < num; ii++) {
                 queue.add(new SendSpotCheckTask());
             }
         }
@@ -45,7 +46,7 @@ public class SendSpotCheckTask implements Runnable {
                 task.nodeinfo = nodeinfo;
                 GlobleThreadPool.execute(task);
             }
-        } 
+        }
     }
 
     private NodeInfo nodeinfo;
