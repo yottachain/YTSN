@@ -17,9 +17,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public class StatusRepHandler extends Handler<StatusRepReq> {
-    
+
     private static final Logger LOG = Logger.getLogger(StatusRepHandler.class);
-    
+
     @Override
     public Object handle() throws Throwable {
         int nodeid;
@@ -59,5 +59,5 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
             return new ServiceException(INVALID_NODE_ID);
         }
     }
-    
+
 }

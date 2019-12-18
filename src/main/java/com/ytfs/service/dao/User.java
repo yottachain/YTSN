@@ -11,7 +11,6 @@ public class User {
     private long usedspace;  //文件去重后占用空间总和
     private long spaceTotal;  //文件实际长度总和
     private long blockTotal; //数据块总数
-    private long dupBlockTotal;//重复的数据块总数
     private long fileTotal;   //文件数
 
     private String username;
@@ -41,9 +40,6 @@ public class User {
         if (doc.containsKey("blockTotal")) {
             this.blockTotal = doc.getLong("blockTotal");
         }
-        if (doc.containsKey("dupBlockTotal")) {
-            this.dupBlockTotal = doc.getLong("dupBlockTotal");
-        }
         if (doc.containsKey("username")) {
             this.username = doc.getString("username");
         }
@@ -64,7 +60,6 @@ public class User {
         doc.append("spaceTotal", spaceTotal);
         doc.append("fileTotal", fileTotal);
         doc.append("blockTotal", blockTotal);
-        doc.append("dupBlockTotal", dupBlockTotal);
         doc.append("username", username);
         doc.append("nextCycle", nextCycle);
         return doc;
@@ -194,20 +189,6 @@ public class User {
      */
     public void setBlockTotal(long blockTotal) {
         this.blockTotal = blockTotal;
-    }
-
-    /**
-     * @return the dupBlockTotal
-     */
-    public long getDupBlockTotal() {
-        return dupBlockTotal;
-    }
-
-    /**
-     * @param dupBlockTotal the dupBlockTotal to set
-     */
-    public void setDupBlockTotal(long dupBlockTotal) {
-        this.dupBlockTotal = dupBlockTotal;
     }
 
 }

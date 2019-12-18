@@ -1,8 +1,11 @@
 package com.ytfs.service.dao;
 
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.sync.LogMessage;
 import static com.ytfs.service.dao.sync.LogMessageCode.Op_User_New;
+import com.ytfs.service.packet.bp.UserSpace;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -19,25 +22,15 @@ public class UserAccessor {
         all.append("usedspace", new Document("$sum", "$usedspace"));
         all.append("spaceTotal", new Document("$sum", "$spaceTotal"));
         all.append("fileTotal", new Document("$sum", "$fileTotal"));
-        all.append("costPerCycle", new Document("$sum", "$costPerCycle"));
+        all.append("blockTotal", new Document("$sum", "$blockTotal"));
         Document sum = new Document("$group", all);
         ops.add(sum);
         Document document = MongoSource.getUserCollection().aggregate(ops).first();
         return document;
     }
 
-    public static Document userTotal(int uid) throws Exception {
-        Bson bson = Filters.eq("_id", uid);
-        Document fields = new Document("usedspace", 1);
-        fields.append("fileTotal", 1);
-        fields.append("spaceTotal", 1);
-        fields.append("costPerCycle", 1);
-        Document document = MongoSource.getUserCollection().find(bson).projection(fields).first();
-        if (document == null) {
-            throw new Exception("User '" + uid + "' doesn't exist");
-        } else {
-            return document;
-        }
+    public static long getUserCount() throws ServiceException {
+        return MongoSource.getUserCollection().countDocuments();
     }
 
     public static void updateUser(int uid, long costPerCycle) {
@@ -48,13 +41,40 @@ public class UserAccessor {
         MongoSource.getUserCollection().updateOne(bson, update);
     }
 
-    public static void updateUser(int uid, long usedSpace, long fileTotal, long spaceTotal) {
+    public static void updateUser(int uid, long usedSpace, long fileTotal, long spaceTotal, long blockTotal) {
         Bson bson = Filters.eq("_id", uid);
         Document doc = new Document("usedspace", usedSpace);
         doc.append("fileTotal", fileTotal);
         doc.append("spaceTotal", spaceTotal);
+        doc.append("blockTotal", blockTotal);
         Document update = new Document("$inc", doc);
         MongoSource.getUserCollection().updateOne(bson, update);
+    }
+
+    public static List<UserSpace> getUserList(int lastId, int limit) {
+        List<UserSpace> ls = new ArrayList();
+        if (limit < 10) {
+            limit = 10;
+        }
+        if (limit > 1000) {
+            limit = 1000;
+        }
+        Bson filter = Filters.gt("_id", lastId);
+        Document fields = new Document("_id", 1);
+        fields.append("username", 1);
+        fields.append("spaceTotal", 1);
+        Bson sort = new Document("_id", 1);
+        FindIterable<Document> it = MongoSource.getUserCollection().find(filter).projection(fields).sort(sort).limit(limit);
+        for (Document doc : it) {
+            UserSpace space = new UserSpace();
+            space.setUserId(doc.getInteger("_id"));
+            space.setUserName(doc.getString("username"));
+            space.setSpaceTotal(doc.getLong("spaceTotal"));
+            if (space.getSpaceTotal() > 0) {
+                ls.add(space);
+            }
+        }
+        return ls;
     }
 
     public static User getUser(int uid) {

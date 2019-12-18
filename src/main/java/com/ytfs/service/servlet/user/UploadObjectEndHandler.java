@@ -34,7 +34,7 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         ObjectMeta meta = new ObjectMeta(userid, request.getVHW());
         ObjectAccessor.getObjectAndUpdateNLINK(meta);
         long usedspace = meta.getUsedspace();
-        UserAccessor.updateUser(userid, usedspace, 1, meta.getLength());
+        UserAccessor.updateUser(userid, usedspace, 1, meta.getLength(), meta.getBlockList().length);
         try {
             EOSClient.addUsedSpace(usedspace, user.getUsername());
             LOG.info("User " + user.getUserID() + " add usedSpace:" + usedspace);

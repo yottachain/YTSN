@@ -1,7 +1,6 @@
 package com.ytfs.service;
 
 import com.ytfs.service.check.QueryRebuildNode;
-import com.ytfs.service.cost.NewObjectScanner;
 import com.ytfs.service.cost.UserFeeStat;
 import com.ytfs.service.servlet.bp.DNISenderPool;
 import com.ytfs.service.servlet.bp.NodeStatSync;
@@ -11,7 +10,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class ServiceWrapper implements WrapperListener {
 
     public static int REBUILDER_NODEID = 0;
-    public static int REBUILDER_EXEC_NODEID = 0;
+    public static int REBUILDER_EXEC_NODEID = 1028;
 
     public static void main(String[] args) {
         WrapperManager.start(new ServiceWrapper(), args);

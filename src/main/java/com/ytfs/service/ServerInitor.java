@@ -122,7 +122,13 @@ public class ServerInitor {
         } catch (Exception d) {
             throw new IOException("The 'httpPort' parameter is not configured.");
         }
-        httpBindip = p.getProperty("httpBindip", "").trim();
+        try {
+            String ss = p.getProperty("space_factor", "100").trim();
+            space_factor = Integer.parseInt(ss);
+        } catch (Exception d) {
+            throw new IOException("The 'space_factor' parameter is not configured.");
+        }
+        httpRemoteIp = p.getProperty("httpRemoteIp", "").trim().replaceAll(" ", "");
         eosURI = p.getProperty("eosURI");
         if (eosURI == null || eosURI.trim().isEmpty()) {
             throw new IOException("The 'eosURI' parameter is not configured.");

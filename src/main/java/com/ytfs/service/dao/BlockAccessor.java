@@ -78,7 +78,11 @@ public class BlockAccessor {
             int vnf = doc.getInteger("VNF");
             long nlink = doc.getLong("NLINK");
             if (ar != -1) {
-                space = space + ServerConfig.PFL * vnf / nlink;
+                if (nlink > 0) {
+                    space = space + ServerConfig.PFL * vnf * ServerConfig.space_factor / 100;
+                } else {
+                    space = space + ServerConfig.PFL * vnf;
+                }
             } else {
                 space = space + ServerConfig.PCM;
             }
@@ -94,6 +98,10 @@ public class BlockAccessor {
         } else {
             return new BlockMeta(doc);
         }
+    }
+
+    public static long getBlockCount() throws ServiceException {
+        return MongoSource.getBlockCollection().countDocuments();
     }
 
     public static BlockMeta getBlockMetaVNF(long VBI) throws ServiceException {

@@ -1,21 +1,38 @@
 package com.ytfs.service.dao;
 
-import com.ytfs.common.node.SuperNodeList;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import org.bson.types.ObjectId;
 
 public class Test {
 
     public static void main(String[] arg) throws Exception {
-        String prikey = "5JcDH48njDbUQLu1R8SWwKsfWLnqBpWXDDiCgxFC3hioDuwLhVx";
-        //byte[] kusp = Base58.decode(prikey);//si钥    
-        String ss = KeyUtil.toPublicKey(prikey);
-        String pubkey = ss;//ss.substring(3);
-        System.out.println(pubkey);    
-       // System.out.println(SuperNodeList.stringToName("sdsvgdfbvestbrtnrtn"));
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayNode node=mapper.createArrayNode();
+        ObjectNode map=node.addObject();
+  
+        map.put("userId", 1);
+        map.put("userName", "sanlsd");
+        map.put("spaceTotal", 121L);
+        ObjectNode map1 = node.addObject();
+        map1.put("userId", 2);
+        map1.put("userName", "sdfgg");
+        map1.put("spaceTotal", 1241L); 
+       
+        String json = mapper.writeValueAsString(node);
+        System.out.println("使用树型模型构建的json:"+json);
+         
+       // com.fasterxml.jackson.databind.
     }
 
     public static byte[] makeBytes(int length) {

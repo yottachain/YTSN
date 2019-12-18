@@ -57,6 +57,9 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
                     blocks[ii] = id;
                     cache.setBlockNum(id);
                 }
+                if (meta.getLength() != request.getLength()) {
+                    LOG.warn("File length inconsistency.");
+                }
                 resp.setBlocks(blocks);
             } else {
                 ObjectAccessor.incObjectNLINK(meta);
@@ -74,7 +77,7 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
             ObjectAccessor.insertOrUpdate(meta);
         } else {
             throw new ServiceException(ServiceErrorCode.NOT_ENOUGH_DHH);
-        }         
+        }
         CacheAccessor.putUploadObjectCache(meta.getVNU(), cache);
         sign(resp);
         return resp;

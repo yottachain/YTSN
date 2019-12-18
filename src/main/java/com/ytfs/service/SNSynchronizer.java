@@ -32,15 +32,20 @@ public class SNSynchronizer implements Runnable {
         }
     }
 
+    public static Object[] syncRequest(Object req, int exclude) throws InterruptedException {
+        return syncRequest(req, exclude, 0);
+    }
+
     /**
      * 并行执行
      *
      * @param req
      * @param exclude 该超级节点跳过
+     * @param retrytime
      * @return Object[]
      * @throws InterruptedException
      */
-    public static Object[] syncRequest(Object req, int exclude) throws InterruptedException {
+    public static Object[] syncRequest(Object req, int exclude, int retrytime) throws InterruptedException {
         SuperNode[] snlist = SuperNodeList.getSuperNodeList();
         Object[] res = new Object[snlist.length];
         AtomicInteger num = new AtomicInteger(0);
@@ -52,6 +57,7 @@ public class SNSynchronizer implements Runnable {
             SNSynchronizer sync = new SNSynchronizer(res, num);
             sync.req = req;
             sync.node = node;
+            sync.retryTimes = retrytime;
             GlobleThreadPool.execute(sync);
         }
         synchronized (res) {
@@ -66,6 +72,7 @@ public class SNSynchronizer implements Runnable {
     private SuperNode node;
     private final Object[] res;
     private final AtomicInteger count;
+    private int retryTimes = 0;
 
     private SNSynchronizer(Object[] res, AtomicInteger num) {
         this.res = res;
@@ -83,25 +90,46 @@ public class SNSynchronizer implements Runnable {
     @Override
     public void run() {
         Object resp;
-        try {
-            if (node.getId() == ServerConfig.superNodeID) {
-                Handler handler = HandlerFactory.getHandler(req);
-                String pubkey = node.getPubkey();
-                if (pubkey.startsWith("EOS")) {
-                    pubkey = pubkey.substring(3);
+        while (true) {
+            try {
+                if (node.getId() == ServerConfig.superNodeID) {
+                    Handler handler = HandlerFactory.getHandler(req);
+                    String pubkey = node.getPubkey();
+                    if (pubkey.startsWith("EOS")) {
+                        pubkey = pubkey.substring(3);
+                    }
+                    handler.setPubkey(pubkey);
+                    resp = handler.handle();
+                } else {
+                    resp = P2PUtils.requestBP(req, node);
                 }
-                handler.setPubkey(pubkey);
-                resp = handler.handle();
-            } else {
-                resp = P2PUtils.requestBP(req, node);
+                LOG.debug("Sync " + req.getClass().getSimpleName() + " to " + node.getId());
+                break;
+            } catch (ServiceException se) {
+                LOG.error("Sync " + req.getClass().getSimpleName() + " to " + node.getId() + " ERR.");
+                resp = se;
+                if (retryTimes == 0) {
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ex) {
+                    }
+                }
+                retryTimes--;
+            } catch (Throwable ex) {
+                LOG.error("Sync " + req.getClass().getSimpleName() + " to " + node.getId() + " ERR:" + ex.getMessage());
+                resp = new ServiceException(SERVER_ERROR);
+                if (retryTimes == 0) {
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                    }
+                }
+                retryTimes--;
             }
-            LOG.debug("Sync " + req.getClass().getSimpleName() + " to " + node.getId());
-        } catch (ServiceException se) {
-            LOG.error("Sync " + req.getClass().getSimpleName() + " to " + node.getId() + " ERR.");
-            resp = se;
-        } catch (Throwable ex) {
-            LOG.error("Sync " + req.getClass().getSimpleName() + " to " + node.getId() + " ERR:" + ex.getMessage());
-            resp = new ServiceException(SERVER_ERROR);
         }
         onResponse(resp, node.getId());
     }
