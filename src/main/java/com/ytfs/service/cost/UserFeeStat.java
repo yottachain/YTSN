@@ -53,9 +53,7 @@ public class UserFeeStat extends Thread {
     }
 
     private void setCycleFee(long usedSpace, int userid, String username) {
-        long count = usedSpace / UserConfig.Default_Shard_Size
-                + (usedSpace % UserConfig.Default_Shard_Size > 0 ? 1 : 0);
-        long costPerCycle = count * ServerConfig.unitcost;
+        long costPerCycle = ServerConfig.unitCycleCost * usedSpace / ServerConfig.unitSpace;
         try {
             EOSClient.setUserFee(costPerCycle, username);
             UserAccessor.updateUser(userid, costPerCycle);

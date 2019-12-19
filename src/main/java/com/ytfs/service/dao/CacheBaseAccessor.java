@@ -3,8 +3,6 @@ package com.ytfs.service.dao;
 import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
-import com.ytfs.common.conf.ServerConfig;
-import com.ytfs.common.eos.EOSClient;
 import com.ytfs.common.node.SuperNodeList;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
@@ -69,30 +67,6 @@ public class CacheBaseAccessor {
     public static Document findOneNewObject() throws Throwable {
         //CacheBaseSource.getObjectNewCollection().find
         return null;
-    }
-
-    public static boolean listNewObject() throws Throwable {
-        /*
-        long curtime = System.currentTimeMillis();
-        FindIterable<Document> fi = CacheBaseSource.getObjectNewCollection().find().limit(1000);
-        List<Document> needDelete = new ArrayList();
-        for (Document doc : fi) {
-            long time = doc.getLong("time");
-            if (curtime - time > ServerConfig.PPC * ServerConfig.PMS) {
-                needDelete.add(doc);
-            } else {
-                break;
-            }
-        }
-        for (Document doc : needDelete) {
-            int userid = doc.getInteger("userid");
-            long cost = doc.getLong("costPerCycle");
-            EOSClient.setUserFee(cost, doc.getString("username"), userid);
-            UserAccessor.updateUser(userid, cost);
-            Bson filter = Filters.eq("_id", doc.getObjectId("_id"));
-            CacheBaseSource.getObjectNewCollection().deleteOne(filter);
-        }*/
-        return false;
     }
 
 }

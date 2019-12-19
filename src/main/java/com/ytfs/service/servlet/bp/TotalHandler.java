@@ -29,11 +29,12 @@ public class TotalHandler extends Handler<TotalReq> {
     private static TotalResp getTotal() throws Throwable {
         TotalResp resp = new TotalResp();
         Document doc = UserAccessor.total();
-        resp.setBkTotal(doc.getLong("blockTotal"));
         resp.setFileTotal(doc.getLong("fileTotal"));
         resp.setSpaceTotal(doc.getLong("spaceTotal"));
         resp.setUsedspace(doc.getLong("usedspace"));
-        resp.setActualBkTotal(BlockAccessor.getBlockCount());
+        long blk = BlockAccessor.getBlockCount();
+        resp.setActualBkTotal(blk);
+        resp.setBkTotal(blk + BlockAccessor.getBlockNlinkCount());
         return resp;
     }
 }

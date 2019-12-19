@@ -2,7 +2,9 @@ package com.ytfs.service.dao;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
 import com.ytfs.common.Function;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
@@ -97,6 +99,33 @@ public class BlockAccessor {
             return null;
         } else {
             return new BlockMeta(doc);
+        }
+    }
+
+    public static void incBlockNlinkCount() {
+        try {
+            MongoCollection<Document> col = MongoSource.getCollection("block_count");
+            Bson filter = Filters.eq("_id", 0);
+            Document update = new Document("$inc", new Document("NLINK", 1));
+            UpdateOptions updateOptions = new UpdateOptions();
+            updateOptions.upsert(true);
+            col.updateOne(filter, update, updateOptions);
+        } catch (Throwable e) {
+        }
+    }
+
+    public static long getBlockNlinkCount() throws ServiceException {
+        Bson filter = Filters.eq("_id", 0);
+        Document doc = MongoSource.getCollection("block_count").find(filter).first();
+        if (doc == null) {
+            return 0;
+        } else {
+            Object obj = doc.get("_id");
+            if (obj instanceof Long) {
+                return doc.getLong("_id");
+            } else {
+                return doc.getInteger("_id");
+            }
         }
     }
 

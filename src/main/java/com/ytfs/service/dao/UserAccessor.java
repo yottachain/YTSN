@@ -22,7 +22,6 @@ public class UserAccessor {
         all.append("usedspace", new Document("$sum", "$usedspace"));
         all.append("spaceTotal", new Document("$sum", "$spaceTotal"));
         all.append("fileTotal", new Document("$sum", "$fileTotal"));
-        all.append("blockTotal", new Document("$sum", "$blockTotal"));
         Document sum = new Document("$group", all);
         ops.add(sum);
         Document document = MongoSource.getUserCollection().aggregate(ops).first();
@@ -41,12 +40,11 @@ public class UserAccessor {
         MongoSource.getUserCollection().updateOne(bson, update);
     }
 
-    public static void updateUser(int uid, long usedSpace, long fileTotal, long spaceTotal, long blockTotal) {
+    public static void updateUser(int uid, long usedSpace, long fileTotal, long spaceTotal) {
         Bson bson = Filters.eq("_id", uid);
         Document doc = new Document("usedspace", usedSpace);
         doc.append("fileTotal", fileTotal);
         doc.append("spaceTotal", spaceTotal);
-        doc.append("blockTotal", blockTotal);
         Document update = new Document("$inc", doc);
         MongoSource.getUserCollection().updateOne(bson, update);
     }

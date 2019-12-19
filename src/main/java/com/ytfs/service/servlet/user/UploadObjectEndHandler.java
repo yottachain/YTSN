@@ -34,7 +34,7 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         ObjectMeta meta = new ObjectMeta(userid, request.getVHW());
         ObjectAccessor.getObjectAndUpdateNLINK(meta);
         long usedspace = meta.getUsedspace();
-        UserAccessor.updateUser(userid, usedspace, 1, meta.getLength(), meta.getBlockList().length);
+        UserAccessor.updateUser(userid, usedspace, 1, meta.getLength());
         try {
             EOSClient.addUsedSpace(usedspace, user.getUsername());
             LOG.info("User " + user.getUserID() + " add usedSpace:" + usedspace);
@@ -42,10 +42,7 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
             CacheBaseAccessor.addNewObject(meta.getVNU(), usedspace, user.getUserID(), user.getUsername(), 0);
             LOG.error("Add usedSpace ERR:" + e.getMessage());
         }
-        long count = usedspace / UserConfig.Default_Shard_Size
-                + (usedspace % UserConfig.Default_Shard_Size > 0 ? 1 : 0);
-        long costPerCycle = count * ServerConfig.unitcost;
-        long firstCost = costPerCycle * ServerConfig.PMS;
+        long firstCost = ServerConfig.unitFirstCost * usedspace / ServerConfig.unitSpace;
         try {
             EOSClient.deductHDD(firstCost, user.getUsername());
             LOG.info("User " + user.getUserID() + " sub Balance:" + firstCost);

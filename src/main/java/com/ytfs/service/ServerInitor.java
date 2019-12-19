@@ -1,5 +1,6 @@
 package com.ytfs.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.ServerAddress;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.GlobleThreadPool;
@@ -21,7 +22,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
@@ -56,7 +59,7 @@ public class ServerInitor {
                 SNDSP = Base58.decode(privateKey);
                 SuperNodeList.isServer = true;
                 Sequence.initUserID_seq();
-                BpList.init(SuperNodeList.getSuperNodeList());
+                loadbplist();
                 break;
             } catch (Throwable r) {
                 LOG.error("Mongo client initialization failed:", r);
@@ -89,6 +92,31 @@ public class ServerInitor {
             HttpServerBoot.startHttpServer();
         } catch (Exception r) {
             LOG.error("Http server failed to start!", r);
+        }
+    }
+
+    private static void loadbplist() {
+        String path = System.getProperty("bplist.conf", "../conf/bplist.properties");
+        try {
+            InputStream is = new FileInputStream(path);
+            if (is == null) {
+                LOG.error("No properties file 'bplist.conf' could be found for ytfs service");
+                return;
+            }
+        } catch (Exception e) {
+            LOG.error("No properties file 'bplist.conf' could be found for ytfs service");
+            return;
+        }
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List ls = mapper.readValue(new File(path), List.class);
+            List<String> iplist = new ArrayList();
+            for (Object obj : ls) {
+                iplist.add(obj.toString());
+            }
+            BpList.init(iplist);
+        } catch (Exception e) {
+            LOG.error("No properties file 'bplist.conf' could be found for ytfs service");
         }
     }
 

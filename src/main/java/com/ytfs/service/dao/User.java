@@ -10,7 +10,6 @@ public class User {
 
     private long usedspace;  //文件去重后占用空间总和
     private long spaceTotal;  //文件实际长度总和
-    private long blockTotal; //数据块总数
     private long fileTotal;   //文件数
 
     private String username;
@@ -37,9 +36,6 @@ public class User {
         if (doc.containsKey("fileTotal")) {
             this.fileTotal = doc.getLong("fileTotal");
         }
-        if (doc.containsKey("blockTotal")) {
-            this.blockTotal = doc.getLong("blockTotal");
-        }
         if (doc.containsKey("username")) {
             this.username = doc.getString("username");
         }
@@ -59,7 +55,6 @@ public class User {
         doc.append("costPerCycle", costPerCycle);
         doc.append("spaceTotal", spaceTotal);
         doc.append("fileTotal", fileTotal);
-        doc.append("blockTotal", blockTotal);
         doc.append("username", username);
         doc.append("nextCycle", nextCycle);
         return doc;
@@ -175,20 +170,6 @@ public class User {
      */
     public void setNextCycle(long nextCycle) {
         this.nextCycle = nextCycle;
-    }
-
-    /**
-     * @return the blockTotal
-     */
-    public long getBlockTotal() {
-        return blockTotal;
-    }
-
-    /**
-     * @param blockTotal the blockTotal to set
-     */
-    public void setBlockTotal(long blockTotal) {
-        this.blockTotal = blockTotal;
     }
 
 }

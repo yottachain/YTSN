@@ -26,7 +26,7 @@ public class NewObjectScanner extends Thread {
     public void run() {
         while (!this.isInterrupted()) {
             try {
-                boolean b = CacheBaseAccessor.listNewObject();
+                boolean b =true;// CacheBaseAccessor.listNewObject();
                 if (!b) {
                     Thread.sleep(1000 * 60 * 10);
                 }

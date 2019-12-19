@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.ytfs.common.conf.ServerConfig;
+import com.ytfs.common.conf.UserConfig;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import java.nio.ByteBuffer;
@@ -17,22 +19,15 @@ import org.bson.types.ObjectId;
 public class Test {
 
     public static void main(String[] arg) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        ArrayNode node=mapper.createArrayNode();
-        ObjectNode map=node.addObject();
-  
-        map.put("userId", 1);
-        map.put("userName", "sanlsd");
-        map.put("spaceTotal", 121L);
-        ObjectNode map1 = node.addObject();
-        map1.put("userId", 2);
-        map1.put("userName", "sdfgg");
-        map1.put("spaceTotal", 1241L); 
-       
-        String json = mapper.writeValueAsString(node);
-        System.out.println("使用树型模型构建的json:"+json);
-         
-       // com.fasterxml.jackson.databind.
+        long usedspace = 134938624L;
+//v1:1976640
+//v1:2065830
+        long s=100000000L *60L /365L*usedspace /1024L/1024L/1024L;
+System.out.println("v1:" + s);
+
+        long ss=ServerConfig.unitFirstCost * usedspace / ServerConfig.unitSpace;
+System.out.println("v1:" + ss);
+        // com.fasterxml.jackson.databind.
     }
 
     public static byte[] makeBytes(int length) {
