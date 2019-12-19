@@ -130,8 +130,9 @@ public class BlockAccessor {
     public static List<BlockMeta> getBlockMeta(byte[] VHP) {
         List<BlockMeta> ls = new ArrayList();
         Bson filter = Filters.eq("VHP", new Binary(VHP));
-        Document fields = new Document("VHB", 1);
+        Document fields = new Document("VHB", 1);//int AR
         fields.append("KED", 1);
+        fields.append("AR", 1);
         FindIterable<Document> it = MongoSource.getBlockCollection().find(filter).projection(fields);
         for (Document doc : it) {
             ls.add(new BlockMeta(doc));

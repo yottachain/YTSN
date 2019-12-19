@@ -38,7 +38,7 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         try {
             EOSClient.addUsedSpace(usedspace, user.getUsername());
             LOG.info("User " + user.getUserID() + " add usedSpace:" + usedspace);
-        } catch (ServiceException e) {
+        } catch (Throwable e) {
             CacheBaseAccessor.addNewObject(meta.getVNU(), usedspace, user.getUserID(), user.getUsername(), 0);
             LOG.error("Add usedSpace ERR:" + e.getMessage());
         }
@@ -49,7 +49,7 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         try {
             EOSClient.deductHDD(firstCost, user.getUsername());
             LOG.info("User " + user.getUserID() + " sub Balance:" + firstCost);
-        } catch (ServiceException e) {
+        } catch (Throwable e) {
             CacheBaseAccessor.addNewObject(meta.getVNU(), usedspace, user.getUserID(), user.getUsername(), 1);
             LOG.error("Sub Balance ERR:" + e.getMessage());
         }

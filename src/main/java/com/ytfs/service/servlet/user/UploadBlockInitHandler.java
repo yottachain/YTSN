@@ -17,9 +17,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
-
+    
     private static final Logger LOG = Logger.getLogger(UploadBlockInitHandler.class);
-
+    
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
@@ -54,14 +54,17 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
     private void setKEDANDVHB(UploadBlockDupResp resp, List<BlockMeta> ls) {
         byte[][] VHB = new byte[ls.size()][];
         byte[][] KED = new byte[ls.size()][];
+        int[] ARS = new int[ls.size()];
         int index = 0;
         for (BlockMeta m : ls) {
             VHB[index] = m.getVHB();
             KED[index] = m.getKED();
+            ARS[index] = m.getAR();
             index++;
         }
         resp.setVHB(VHB);
         resp.setKED(KED);
+        resp.setAR(ARS);
     }
-
+    
 }
