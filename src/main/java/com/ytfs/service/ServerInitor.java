@@ -12,6 +12,7 @@ import com.ytfs.service.http.HttpServerBoot;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.NodeManager;
 import com.ytfs.common.node.SuperNodeList;
+import static com.ytfs.service.InitSuperNodeList.sha256;
 import com.ytfs.service.dao.Sequence;
 import com.ytfs.service.servlet.MsgDispatcher;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
@@ -26,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
 
@@ -59,7 +62,7 @@ public class ServerInitor {
                 SNDSP = Base58.decode(privateKey);
                 SuperNodeList.isServer = true;
                 Sequence.initUserID_seq();
-                loadbplist();
+                BpList.init(loadbplist());
                 break;
             } catch (Throwable r) {
                 LOG.error("Mongo client initialization failed:", r);
@@ -95,17 +98,17 @@ public class ServerInitor {
         }
     }
 
-    private static void loadbplist() {
+    private static List<String> loadbplist() {
         String path = System.getProperty("bplist.conf", "../conf/bplist.properties");
         try {
             InputStream is = new FileInputStream(path);
             if (is == null) {
                 LOG.error("No properties file 'bplist.conf' could be found for ytfs service");
-                return;
+                return null;
             }
         } catch (Exception e) {
             LOG.error("No properties file 'bplist.conf' could be found for ytfs service");
-            return;
+            return null;
         }
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -114,10 +117,11 @@ public class ServerInitor {
             for (Object obj : ls) {
                 iplist.add(obj.toString());
             }
-            BpList.init(iplist);
+            return iplist;
         } catch (Exception e) {
             LOG.error("No properties file 'bplist.conf' could be found for ytfs service");
         }
+        return null;
     }
 
     private static void load() throws IOException {
@@ -175,6 +179,19 @@ public class ServerInitor {
         ShadowPriKey = p.getProperty("ShadowPriKey");
         if (ShadowPriKey == null || ShadowPriKey.trim().isEmpty()) {
             throw new IOException("The 'ShadowPriKey' parameter is not configured.");
+        } else {
+            if (ShadowPriKey.startsWith("yotta:")) {
+                ShadowPriKey = ShadowPriKey.substring(6);
+                try {
+                    SecretKeySpec skeySpec = new SecretKeySpec(sha256(), "AES");
+                    Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+                    cipher.init(Cipher.DECRYPT_MODE, skeySpec);
+                    byte[] bs = cipher.doFinal(Base58.decode(ShadowPriKey.trim()));
+                    ShadowPriKey = new String(bs);
+                } catch (Exception d) {
+                    throw new IOException("The 'ShadowPriKey' parameter is not configured.");
+                }
+            }
         }
         contractAccount = p.getProperty("contractAccount");
         if (contractAccount == null || contractAccount.trim().isEmpty()) {
