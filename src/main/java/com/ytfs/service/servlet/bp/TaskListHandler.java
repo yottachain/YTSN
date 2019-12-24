@@ -11,6 +11,7 @@ import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.NodeManager;
 import static com.ytfs.service.ServiceWrapper.REBUILDER_EXEC_NODEID;
+import com.ytfs.service.check.QueryRebuildTaskQueue;
 import com.ytfs.service.dao.ShardAccessor;
 import com.ytfs.service.dao.ShardMeta;
 import com.ytfs.service.packet.P2PLocation;
@@ -53,7 +54,11 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
     }
 
     private static byte[] query(byte[] DNI, int nodeid) throws Throwable {
-        int shardCount = (int) DNI[1] & 0xFF;
+        int shardCount = DNI[1] & 0xFF;
+        if (shardCount > 164) {
+            LOG.warn(Base58.encode(DNI) + "Len :" + shardCount);
+            return null;
+        }
         int AR = (int) DNI[2];
         long VBI = Function.bytes2Integer(DNI, 3, 8);
         byte[] VHF = new byte[16];
@@ -168,12 +173,12 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
             LOG.error("Invalid super node pubkey:" + this.getPublicKey());
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
         }
-        try {
-            dispatch(request);
-        } catch (Throwable t) {
-            LOG.error("Dispatch task ERR:", t);
+        boolean b = QueryRebuildTaskQueue.putRequest(request);
+        if (b) {
+            return new VoidResp();
+        } else {
+            return new ServiceException(ServiceErrorCode.SERVER_ERROR);
         }
-        return new VoidResp();
     }
 
 }

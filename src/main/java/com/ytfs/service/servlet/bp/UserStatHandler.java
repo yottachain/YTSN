@@ -33,6 +33,9 @@ public class UserStatHandler extends Handler<UserSpaceReq> {
 
     public static String query(int id) throws JsonProcessingException {
         User user = UserAccessor.getUser(id);
+        if (user == null) {
+            user = new User(id);
+        }
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode node = mapper.createObjectNode();
         node.put("userID", user.getUserID());

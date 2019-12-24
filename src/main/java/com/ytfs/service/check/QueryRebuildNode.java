@@ -15,11 +15,16 @@ public class QueryRebuildNode extends Thread {
 
     private boolean exit = false;
     private static QueryRebuildNode instance;
+    private static QueryRebuildTaskQueue queryRebuildTaskQueue;
 
     public static synchronized void startUp() {
         if (instance == null) {
             instance = new QueryRebuildNode();
             instance.start();
+        }
+        if (queryRebuildTaskQueue == null) {
+            queryRebuildTaskQueue = new QueryRebuildTaskQueue();
+            queryRebuildTaskQueue.start();
         }
     }
 
@@ -27,6 +32,11 @@ public class QueryRebuildNode extends Thread {
         if (instance != null) {
             instance.exit = true;
             instance.interrupt();
+            instance = null;
+        }
+        if (queryRebuildTaskQueue != null) {
+            queryRebuildTaskQueue.interrupt();
+            queryRebuildTaskQueue = null;
         }
     }
 
@@ -40,6 +50,7 @@ public class QueryRebuildNode extends Thread {
             try {
                 long time = System.currentTimeMillis();
                 long min = time % 3600000L;
+                //long min = time % 600000L;
                 try {
                     if (min < 60000 * 3) {
                         sc = YottaNodeMgmt.getInvalidNodes();

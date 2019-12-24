@@ -50,7 +50,7 @@ public class TaskOpResultListHandler extends Handler<TaskOpResultList> {
                 continue;
             }
             if (res != 0) {
-                LOG.error("Rebuild task " + Base58.encode(id) + " at " + nodeid + " execution failed:" + res);
+                //LOG.error("Rebuild task " + Base58.encode(id) + " at " + nodeid + " execution failed:" + res);
                 continue;
             }
             long VFI = Function.bytes2Integer(id, 0, 8);

@@ -3,7 +3,6 @@ package com.ytfs.service.servlet.user;
 import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.ServerConfig;
-import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.eos.EOSClient;
 import com.ytfs.service.dao.CacheBaseAccessor;
 import com.ytfs.service.dao.ObjectAccessor;

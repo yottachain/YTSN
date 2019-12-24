@@ -1,32 +1,18 @@
 package com.ytfs.service.dao;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.ytfs.common.conf.ServerConfig;
-import com.ytfs.common.conf.UserConfig;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import org.bson.types.ObjectId;
 
 public class Test {
 
     public static void main(String[] arg) throws Exception {
-        long usedspace = 134938624L;
-//v1:1976640
-//v1:2065830
-        long s=100000000L *60L /365L*usedspace /1024L/1024L/1024L;
-System.out.println("v1:" + s);
-
-        long ss=ServerConfig.unitFirstCost * usedspace / ServerConfig.unitSpace;
-System.out.println("v1:" + ss);
+        byte[] DNI = Base58.decode("163A8qBk6XbaaMPSMq3wLDRoZU5Vo8GK74QjU");
+        int shardCount = (int)DNI[1] & 0xFF;
+ 
+        System.out.println("v1:" + shardCount);
         // com.fasterxml.jackson.databind.
     }
 

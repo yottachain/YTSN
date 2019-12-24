@@ -4,7 +4,6 @@ import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.packet.bp.NodeSyncReq;
-
 import com.ytfs.service.servlet.Handler;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;

@@ -36,7 +36,7 @@ public class TaskOpResultHandler extends Handler<TaskOpResult> {
             return new VoidResp();
         }
         if (request.getRES() != 0) {
-            LOG.error("Rebuild task " + Base58.encode(id) + " at " + nodeid + " execution failed:" + request.getRES());
+            //LOG.error("Rebuild task " + Base58.encode(id) + " at " + nodeid + " execution failed:" + request.getRES());
             return new VoidResp();
         }
         long VFI = Function.bytes2Integer(id, 0, 8);
