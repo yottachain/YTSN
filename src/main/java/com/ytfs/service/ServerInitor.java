@@ -12,7 +12,6 @@ import com.ytfs.service.http.HttpServerBoot;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.NodeManager;
 import com.ytfs.common.node.SuperNodeList;
-import static com.ytfs.service.InitSuperNodeList.sha256;
 import com.ytfs.service.dao.Sequence;
 import com.ytfs.service.servlet.MsgDispatcher;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
@@ -23,6 +22,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -123,6 +124,21 @@ public class ServerInitor {
         return null;
     }
 
+    public static byte[] sha256Digest() throws NoSuchAlgorithmException, IOException {
+        InputStream is = InitSuperNodeList.class.getResourceAsStream("/InitSuperNodeList.class");
+        try {
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            byte[] bs = new byte[1024];
+            int len = 0;
+            while ((len = is.read(bs)) != -1) {
+                sha256.update(bs, 0, len);
+            }
+            return sha256.digest();
+        } finally {
+            is.close();
+        }
+    }
+
     private static void load() throws IOException {
         String path = System.getProperty("server.conf", "../conf/server.properties");
         LOG.info("Read conf:" + path);
@@ -213,7 +229,7 @@ public class ServerInitor {
             if (ShadowPriKey.startsWith("yotta:")) {
                 ShadowPriKey = ShadowPriKey.substring(6);
                 try {
-                    SecretKeySpec skeySpec = new SecretKeySpec(sha256(), "AES");
+                    SecretKeySpec skeySpec = new SecretKeySpec(sha256Digest(), "AES");
                     Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
                     cipher.init(Cipher.DECRYPT_MODE, skeySpec);
                     byte[] bs = cipher.doFinal(Base58.decode(ShadowPriKey.trim()));

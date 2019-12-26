@@ -86,8 +86,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/*.properties</include>
-                    <include>**/*.html</include>
+                    <include>**/*</include>
                 </includes>
                 <filtering>false</filtering>
             </resource>
