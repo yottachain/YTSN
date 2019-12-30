@@ -6,7 +6,6 @@ import com.ytfs.service.dao.DNIAccessor;
 import com.ytfs.service.packet.node.ListDNIReq;
 import com.ytfs.service.packet.node.ListDNIResp;
 import com.ytfs.service.servlet.Handler;
-import io.jafka.jeos.util.Base58;
 import org.apache.log4j.Logger;
 
 public class DNICheckHandler extends Handler<ListDNIReq> {
@@ -16,16 +15,16 @@ public class DNICheckHandler extends Handler<ListDNIReq> {
     @Override
     public Object handle() throws Throwable {
         int nodeid;
-        LOG.info("Request:" + (request.getNextId() == null ? "" : Base58.encode(request.getNextId())) + ",count " + request.getCount());
+        LOG.info("Request:" + (request.getNextId() == null ? "" : request.getNextId()) + ",count " + request.getCount());
         try {
             nodeid = this.getNodeId();
         } catch (Throwable e) {
             LOG.error("Invalid node pubkey:" + this.getPublicKey());
             return new ServiceException(ServiceErrorCode.INVALID_NODE_ID, e.getMessage());
         }
-        LOG.info("Form " + nodeid + " DNI ls req:" + (request.getNextId() == null ? "" : Base58.encode(request.getNextId())));
+        LOG.info("Form " + nodeid + " DNI ls req:" + (request.getNextId() == null ? "" : request.getNextId()));
         ListDNIResp res = DNIAccessor.listDNI(nodeid, request.getNextId(), request.getCount());
-        LOG.info("To " + nodeid + " DNI ls resp:" + (res.getNextId() == null ? "" : Base58.encode(res.getNextId())));
+        LOG.info("To " + nodeid + " DNI ls resp:" + (res.getNextId() == null ? "" : res.getNextId()));
         return res;
     }
 

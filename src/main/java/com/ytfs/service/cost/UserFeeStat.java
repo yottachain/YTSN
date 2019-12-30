@@ -68,7 +68,9 @@ public class UserFeeStat extends Thread {
         while (!this.isInterrupted()) {
             try {
                 Thread.sleep(1000 * 60 * 30);
-                iterate();
+                if (SuperNodeList.isActive()) {
+                    iterate();
+                }
                 Thread.sleep(1000 * 60 * 30);
             } catch (InterruptedException ex) {
                 break;

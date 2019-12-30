@@ -2,6 +2,8 @@ package com.ytfs.service.dao;
 
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
+import java.net.InetAddress;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import org.bson.types.ObjectId;
@@ -9,10 +11,12 @@ import org.bson.types.ObjectId;
 public class Test {
 
     public static void main(String[] arg) throws Exception {
-        byte[] DNI = Base58.decode("163A8qBk6XbaaMPSMq3wLDRoZU5Vo8GK74QjU");
-        int shardCount = (int)DNI[1] & 0xFF;
- 
-        System.out.println("v1:" + shardCount);
+        String add = "/ip4/sn00.yottachain.net/tcp/9999";
+        String[] ips = add.split("\\/");
+        String host = ips[2];
+        InetAddress address= InetAddress.getByName(host);
+        String ip=address.getHostAddress();
+        System.out.println("v1:" + ip);
         // com.fasterxml.jackson.databind.
     }
 

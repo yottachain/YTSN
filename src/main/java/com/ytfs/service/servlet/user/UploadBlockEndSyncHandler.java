@@ -23,14 +23,12 @@ import static com.ytfs.common.conf.UserConfig.Max_Shard_Count;
 import com.ytfs.common.node.NodeManager;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.dao.CacheBaseAccessor;
-import com.ytfs.service.dao.Sequence;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
-import com.ytfs.service.packet.user.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.VoidResp;
-import com.ytfs.service.packet.user.UploadBlockEndResp;
+import com.ytfs.service.packet.user.UploadBlockEndSyncReq;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
@@ -46,9 +44,9 @@ import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.Binary;
 
-public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
+public class UploadBlockEndSyncHandler extends Handler<UploadBlockEndSyncReq> {
 
-    private static final Logger LOG = Logger.getLogger(UploadBlockEndHandler.class);
+    private static final Logger LOG = Logger.getLogger(UploadBlockEndSyncHandler.class);
 
     @Override
     public Object handle() throws Throwable {
@@ -58,25 +56,20 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         }
         long l = System.currentTimeMillis();
         int userid = user.getUserID();
-        LOG.debug("Receive UploadBlockEnd request:/" + request.getVNU() + "/" + request.getId());
+        LOG.debug("Receive UploadBlockEndSyncHandler request:/" + request.getVNU() + "/" + request.getId());
         List<UploadShardRes> res = request.getOkList();
         if (res.size() > Max_Shard_Count + Default_PND) {
             return new ServiceException(ServiceErrorCode.TOO_MANY_SHARDS);
         }
-        long VBI = Sequence.generateBlockID(res.size());
-        BlockMeta bmeta = BlockAccessor.getBlockMeta(request.getVHP(), request.getVHB());
-        if (bmeta != null) {
-            if (!Arrays.equals(bmeta.getKED(), request.getKED())) {
-                LOG.warn("Block meta duplicate writing.");
-            }
-            VBI = bmeta.getVBI();
+        long VBI = request.getVBI();
+        BlockMeta bmeta = BlockAccessor.getBlockMeta(VBI);
+        if (bmeta == null) {
+            return new VoidResp();
         }
         List<ShardMeta> ls = verify(request, res, VBI);
         ShardAccessor.saveShardMetas(ls);
-        if (bmeta == null) {
-            BlockMeta meta = makeBlockMeta(VBI, res.size());
-            BlockAccessor.saveBlockMeta(meta);
-        }
+        BlockMeta meta = makeBlockMeta(VBI, res.size());
+        BlockAccessor.saveBlockMeta(meta);
         long starttime = System.currentTimeMillis();
         SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(userid, VBI);
         saveObjectMetaReq.setUsedSpace(ServerConfig.PFL * res.size());
@@ -91,10 +84,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
         sendDNI(ls, VBI);
         LOG.info("Upload block:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");
-        UploadBlockEndResp resp = new UploadBlockEndResp();
-        resp.setHost(SuperNodeList.getSelfIp());
-        resp.setVBI(VBI);
-        return resp;
+        return new VoidResp();
     }
 
     private void sendDNI(List<ShardMeta> ls, long VBI) throws Throwable {
@@ -173,7 +163,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
          */
     }
 
-    private List<ShardMeta> verify(UploadBlockEndReq req, List<UploadShardRes> resList, long VBI) throws ServiceException, NoSuchAlgorithmException, NodeMgmtException {
+    private List<ShardMeta> verify(UploadBlockEndSyncReq req, List<UploadShardRes> resList, long VBI) throws ServiceException, NoSuchAlgorithmException, NodeMgmtException {
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         List<ShardMeta> ls = new ArrayList();
         UploadShardRes[] shards = new UploadShardRes[resList.size()];

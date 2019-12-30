@@ -1,6 +1,7 @@
 package com.ytfs.service.check;
 
 import com.ytfs.common.GlobleThreadPool;
+import com.ytfs.common.node.SuperNodeList;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.vo.ShardCount;
 import static java.lang.Thread.sleep;
@@ -52,7 +53,7 @@ public class QueryRebuildNode extends Thread {
                 long min = time % 3600000L;
                 //long min = time % 600000L;
                 try {
-                    if (min < 60000 * 3) {
+                    if (SuperNodeList.isActive() && min < 60000 * 3) {
                         sc = YottaNodeMgmt.getInvalidNodes();
                         LOG.info("Query returns " + (sc == null ? 0 : sc.size()) + " tasks.");
                     }

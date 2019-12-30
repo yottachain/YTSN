@@ -1,6 +1,7 @@
 package com.ytfs.service.servlet.bp;
 
 import com.ytfs.common.conf.ServerConfig;
+import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.SNSynchronizer;
 import com.ytfs.service.packet.bp.NodeSyncReq;
 import io.yottachain.nodemgmt.core.vo.Node;
@@ -47,7 +48,9 @@ public class NodeStatSync extends Thread {
         LOG.info("Node stat sync thread startup....");
         while (!this.isInterrupted()) {
             try {
-                sync();
+                if (SuperNodeList.isActive()) {
+                    sync();
+                }
                 sleep(sleeptimes);
             } catch (InterruptedException e) {
                 break;
@@ -61,9 +64,9 @@ public class NodeStatSync extends Thread {
         Collection<Node> coll = nodestats.values();
         List<Node> nodes = new ArrayList();
         for (Node node : coll) {
-            //if (System.currentTimeMillis() - node.getTimestamp() < 1000 * 60 * 3) {
-            nodes.add(node);
-            // }
+            if (System.currentTimeMillis() - node.getTimestamp() < 1000 * 60 * 4) {
+                nodes.add(node);
+            }
         }
         if (!nodes.isEmpty()) {
             NodeSyncReq req = new NodeSyncReq();

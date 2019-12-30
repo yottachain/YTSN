@@ -182,6 +182,22 @@ public class ServerInitor {
             throw new IOException("The 'space_factor' parameter is not configured.");
         }
         try {
+            String ss = p.getProperty("isBackup", "0").trim();
+            isBackup = Integer.parseInt(ss);
+            if (isBackup < 0) {
+                isBackup = 0;
+            }
+            if (isBackup > 1) {
+                isBackup = 1;
+            }
+        } catch (Exception d) {
+            throw new IOException("The 'isBackup' parameter is not configured.");
+        }
+        selfIp = p.getProperty("selfIp");
+        if (selfIp == null || selfIp.trim().isEmpty()) {
+            throw new IOException("The 'selfIp' parameter is not configured.");
+        }
+        try {
             String ss = p.getProperty("rebuildSpeed", "1000").trim();
             rebuildSpeed = Integer.parseInt(ss);
             if (rebuildSpeed < 1000) {

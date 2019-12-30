@@ -1,6 +1,5 @@
 package com.ytfs.service.cost;
 
-import com.ytfs.service.dao.CacheBaseAccessor;
 import org.apache.log4j.Logger;
 
 public class NewObjectScanner extends Thread {

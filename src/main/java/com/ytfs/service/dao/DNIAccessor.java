@@ -10,7 +10,7 @@ import org.bson.types.ObjectId;
 
 public class DNIAccessor {
 
-    public static ListDNIResp listDNI(int nodeId, byte[] nextId, int limit) {
+    public static ListDNIResp listDNI(int nodeId, String nextId, int limit) {
         if (limit < 10) {
             limit = 10;
         }
@@ -40,10 +40,12 @@ public class DNIAccessor {
             byte[] bs = ((Binary) doc.get("shard")).getData();
             byte[] VHF = new byte[16];
             System.arraycopy(bs, bs.length - 16, VHF, 0, 16);
-            resp.addVHF(nextId);
+            resp.addVHF(VHF);
         }
         if (lastdoc != null) {
-            resp.setNextId(lastdoc.getObjectId("_id").toByteArray());
+            resp.setNextId(lastdoc.getObjectId("_id").toHexString());
+        } else {
+            resp.setNextId(nextId);
         }
         return resp;
     }

@@ -53,7 +53,11 @@ public class Sequence {
     private static int getSequence(int inc) {
         int seq = BLKID_SEQ.getAndAdd(inc);
         byte[] bs = Function.int2bytes(seq);
-        bs[0] = (byte) ServerConfig.superNodeID;
+        if (ServerConfig.isBackup == 0) {
+            bs[0] = (byte) ServerConfig.superNodeID;
+        } else {
+            bs[0] = (byte) (ServerConfig.superNodeID + SuperNodeList.getSuperNodeCount());
+        }
         return Function.bytes2int(bs);
     }
 
