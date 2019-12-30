@@ -64,7 +64,7 @@ public class NodeStatSync extends Thread {
         Collection<Node> coll = nodestats.values();
         List<Node> nodes = new ArrayList();
         for (Node node : coll) {
-            if (System.currentTimeMillis() - node.getTimestamp() < 1000 * 60 * 4) {
+            if (System.currentTimeMillis() - (node.getTimestamp() * 1000) < 1000 * 60 * 4) {
                 nodes.add(node);
             }
         }
