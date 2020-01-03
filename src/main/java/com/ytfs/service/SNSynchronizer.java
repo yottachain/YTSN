@@ -16,7 +16,7 @@ public class SNSynchronizer implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(SNSynchronizer.class);
 
-    public static void ayncRequest(Object req, int exclude) throws InterruptedException {
+    public static void ayncRequest(Object req, int exclude,int retrytime) throws InterruptedException {
         SuperNode[] snlist = SuperNodeList.getSuperNodeList();
         Object[] res = new Object[snlist.length];
         AtomicInteger num = new AtomicInteger(0);
@@ -28,6 +28,7 @@ public class SNSynchronizer implements Runnable {
             SNSynchronizer sync = new SNSynchronizer(res, num);
             sync.req = req;
             sync.node = node;
+            sync.retryTimes = retrytime;
             GlobleThreadPool.execute(sync);
         }
     }
@@ -40,7 +41,7 @@ public class SNSynchronizer implements Runnable {
      * 并行执行
      *
      * @param req
-     * @param exclude 该超级节点跳过
+     * @param exclude 该超级节点跳过int retrytime
      * @param retrytime
      * @return Object[]
      * @throws InterruptedException

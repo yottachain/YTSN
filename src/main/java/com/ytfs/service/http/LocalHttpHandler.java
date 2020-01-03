@@ -44,7 +44,7 @@ public class LocalHttpHandler extends HttpHandler {
     static final String REQ_USER_LIST_PATH = "/list";
     static final String REQ_ACTIVE_NODES_PATH = "/active_nodes";
     static final String REQ_STAT_PATH = "/statistics";
-
+    static final String REQ_RELATION_SHIP_PATH = "/relationship";
     static final String REQ_NEW_NODEID = "/newnodeid";
     static final String REQ_PRE_REGNODE = "/preregnode";
     static final String REQ_CHG_MPOOL = "/changeminerpool";
@@ -60,6 +60,13 @@ public class LocalHttpHandler extends HttpHandler {
                 }
                 String json = gettotal();
                 rspns.getWriter().write(json);
+            } else if (path.equalsIgnoreCase(REQ_RELATION_SHIP_PATH)) {
+                if (!checkIp(rqst.getRemoteAddr())) {
+                    throw new Exception("Invalid IP:" + rqst.getRemoteAddr());
+                }
+                
+                
+                rspns.getWriter().write("OK");
             } else if (path.equalsIgnoreCase(REQ_USER_TOTAL_PATH)) {
                 if (!checkIp(rqst.getRemoteAddr())) {
                     throw new Exception("Invalid IP:" + rqst.getRemoteAddr());
@@ -142,6 +149,10 @@ public class LocalHttpHandler extends HttpHandler {
             String message = e.getMessage();
             rspns.sendError(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode(), message);
         }
+    }
+
+    private void doRelationship(String user) {
+
     }
 
     private String gettotal() throws Exception {

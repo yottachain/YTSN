@@ -71,7 +71,7 @@ public class NodeStatSync extends Thread {
         if (!nodes.isEmpty()) {
             NodeSyncReq req = new NodeSyncReq();
             req.setNode(nodes);
-            SNSynchronizer.ayncRequest(req, ServerConfig.superNodeID);
+            SNSynchronizer.ayncRequest(req, ServerConfig.superNodeID, 1);
             LOG.debug("Sync Node STAT,count:" + nodes.size());
         }
     }

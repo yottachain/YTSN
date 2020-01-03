@@ -5,6 +5,7 @@ import static com.ytfs.service.http.LocalHttpHandler.REQ_ACTIVE_NODES_PATH;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_CHG_MPOOL;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_NEW_NODEID;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_PRE_REGNODE;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_RELATION_SHIP_PATH;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_STAT_PATH;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_TOTAL_PATH;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_USER_LIST_PATH;
@@ -33,6 +34,7 @@ public class HttpServerBoot {
                         REQ_TOTAL_PATH,
                         REQ_USER_TOTAL_PATH,
                         REQ_ACTIVE_NODES_PATH,
+                        REQ_RELATION_SHIP_PATH,
                         REQ_USER_LIST_PATH,
                         REQ_STAT_PATH,
                         REQ_NEW_NODEID,
