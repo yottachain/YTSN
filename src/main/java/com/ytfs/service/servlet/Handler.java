@@ -4,6 +4,7 @@ import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache;
 import com.ytfs.common.node.NodeCache;
 import com.ytfs.common.node.NodeInfo;
+import com.ytfs.service.dao.UserCache.UserEx;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 
 public abstract class Handler<T> {
@@ -21,6 +22,10 @@ public abstract class Handler<T> {
 
     public final String getPublicKey() {
         return pubkey;
+    }
+
+    protected final UserEx getUserEx() {
+        return UserCache.getUserEx(pubkey);
     }
 
     protected final User getUser() {

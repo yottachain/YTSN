@@ -61,11 +61,13 @@ public class NodeStatSync extends Thread {
     }
 
     private void sync() throws InterruptedException {
-        Collection<Node> coll = nodestats.values();
+        List<Node> coll = new ArrayList(nodestats.values());
         List<Node> nodes = new ArrayList();
         for (Node node : coll) {
             if (System.currentTimeMillis() - (node.getTimestamp() * 1000) < 1000 * 60 * 4) {
                 nodes.add(node);
+            } else {
+                nodestats.remove(node.getId());
             }
         }
         if (!nodes.isEmpty()) {

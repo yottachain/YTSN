@@ -18,6 +18,7 @@ import static com.ytfs.common.ServiceErrorCode.INVALID_VHP;
 import static com.ytfs.common.ServiceErrorCode.TOO_BIG_BLOCK;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.ShardEncoder;
+import com.ytfs.service.dao.UserCache;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
@@ -33,10 +34,11 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
 
     @Override
     public Object handle() throws Throwable {
-        User user = this.getUser();
-        if (user == null) {
+        UserCache.UserEx userex = this.getUserEx();
+        if (userex == null) {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);
         }
+        User user = userex.user;
         int userid = user.getUserID();
         LOG.info("Save block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " to DB...");
         SuperNode n = SuperNodeList.getBlockSuperNode(request.getVHP());
@@ -61,7 +63,7 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
             BlockMeta meta = makeBlockMeta(VBI);
             BlockAccessor.saveBlockMeta(meta);
         }
-        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(userid, VBI);
+        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(userid, VBI, userex.keyNumber);
         saveObjectMetaReq.setUsedSpace(ServerConfig.PCM);
         try {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
@@ -104,7 +106,7 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         return meta;
     }
 
-    private SaveObjectMetaReq makeSaveObjectMetaReq(int userid, long vbi) {
+    private SaveObjectMetaReq makeSaveObjectMetaReq(int userid, long vbi,int keyNumber) {
         SaveObjectMetaReq saveObjectMetaReq = new SaveObjectMetaReq();
         saveObjectMetaReq.setUserID(userid);
         saveObjectMetaReq.setVNU(request.getVNU());
@@ -115,6 +117,7 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         refer.setRealSize(request.getData().length);
         refer.setSuperID((byte) ServerConfig.superNodeID);
         refer.setVBI(vbi);
+        refer.setKeyNumber(keyNumber);
         saveObjectMetaReq.setRefer(refer);
         return saveObjectMetaReq;
     }

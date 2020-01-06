@@ -11,6 +11,7 @@ import static com.ytfs.common.ServiceErrorCode.INVALID_KEU;
 import static com.ytfs.common.ServiceErrorCode.NO_SUCH_BLOCK;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.ShardEncoder;
+import com.ytfs.service.dao.UserCache;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
@@ -24,10 +25,11 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
 
     @Override
     public Object handle() throws Throwable {
-        User user = this.getUser();
-        if (user == null) {
+        UserCache.UserEx userex = this.getUserEx();
+        if (userex == null) {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);
         }
+        User user = userex.user;
         int userid = user.getUserID();
         LOG.info("Upload block " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId() + " exist...");
         BlockMeta meta = BlockAccessor.getBlockMeta(request.getVHP(), request.getVHB());
@@ -35,7 +37,7 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
             throw new ServiceException(NO_SUCH_BLOCK);
         }
         verify();
-        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(userid, meta.getVBI());
+        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(userid, meta.getVBI(), userex.keyNumber);
         long usedSpace = meta.getAR() == ShardEncoder.AR_DB_MODE ? ServerConfig.PCM : ServerConfig.PFL * meta.getVNF() * ServerConfig.space_factor / 100;
         saveObjectMetaReq.setUsedSpace(usedSpace);
         try {
@@ -58,7 +60,7 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
         }
     }
 
-    private SaveObjectMetaReq makeSaveObjectMetaReq(int userid, long vbi) {
+    private SaveObjectMetaReq makeSaveObjectMetaReq(int userid, long vbi, int keyNumber) {
         SaveObjectMetaReq saveObjectMetaReq = new SaveObjectMetaReq();
         saveObjectMetaReq.setUserID(userid);
         saveObjectMetaReq.setVNU(request.getVNU());
@@ -69,6 +71,7 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
         refer.setOriginalSize(request.getOriginalSize());
         refer.setRealSize(request.getRealSize());
         refer.setSuperID((byte) ServerConfig.superNodeID);
+        refer.setKeyNumber(keyNumber);
         saveObjectMetaReq.setRefer(refer);
         return saveObjectMetaReq;
     }

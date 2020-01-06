@@ -9,6 +9,7 @@ import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.SNSynchronizer;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserAccessor;
+import com.ytfs.service.packet.bp.Relationship;
 import com.ytfs.service.packet.bp.TotalReq;
 import com.ytfs.service.packet.bp.TotalResp;
 import com.ytfs.service.packet.bp.UserListReq;
@@ -17,6 +18,8 @@ import com.ytfs.service.packet.bp.UserSpace;
 import com.ytfs.service.packet.bp.UserSpace.UserSpaceComparator;
 import com.ytfs.service.packet.bp.UserSpaceReq;
 import com.ytfs.service.packet.bp.UserSpaceResp;
+import com.ytfs.service.servlet.Handler;
+import com.ytfs.service.servlet.HandlerFactory;
 import com.ytfs.service.servlet.bp.UserStatHandler;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
@@ -36,9 +39,9 @@ import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.util.HttpStatus;
 
 public class LocalHttpHandler extends HttpHandler {
-
+    
     private static final Logger LOG = Logger.getLogger(LocalHttpHandler.class);
-
+    
     static final String REQ_TOTAL_PATH = "/total";
     static final String REQ_USER_TOTAL_PATH = "/usertotal";
     static final String REQ_USER_LIST_PATH = "/list";
@@ -48,7 +51,7 @@ public class LocalHttpHandler extends HttpHandler {
     static final String REQ_NEW_NODEID = "/newnodeid";
     static final String REQ_PRE_REGNODE = "/preregnode";
     static final String REQ_CHG_MPOOL = "/changeminerpool";
-
+    
     @Override
     public void service(Request rqst, Response rspns) throws Exception {
         try {
@@ -64,8 +67,9 @@ public class LocalHttpHandler extends HttpHandler {
                 if (!checkIp(rqst.getRemoteAddr())) {
                     throw new Exception("Invalid IP:" + rqst.getRemoteAddr());
                 }
-                
-                
+                String username = rqst.getParameter("username");
+                String mPoolOwner = rqst.getParameter("mPoolOwner");
+                doRelationship(username, mPoolOwner);
                 rspns.getWriter().write("OK");
             } else if (path.equalsIgnoreCase(REQ_USER_TOTAL_PATH)) {
                 if (!checkIp(rqst.getRemoteAddr())) {
@@ -150,11 +154,32 @@ public class LocalHttpHandler extends HttpHandler {
             rspns.sendError(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode(), message);
         }
     }
-
-    private void doRelationship(String user) {
-
+    
+    private void doRelationship(String user, String mPoolOwner) {
+        if (user == null || mPoolOwner == null || user.trim().isEmpty() || mPoolOwner.trim().isEmpty()) {
+            return;
+        }
+        SuperNode node = SuperNodeList.getUserRegSuperNode(user);
+        Relationship relationship = new Relationship();
+        relationship.setUsername(user);
+        relationship.setMpoolOwner(mPoolOwner);
+        try {
+            if (node.getId() == ServerConfig.superNodeID) {
+                Handler handler = HandlerFactory.getHandler(relationship);
+                String pubkey = node.getPubkey();
+                if (pubkey.startsWith("EOS")) {
+                    pubkey = pubkey.substring(3);
+                }
+                handler.setPubkey(pubkey);
+                handler.handle();
+            } else {
+                P2PUtils.requestBP(relationship, node);
+            }
+        } catch (Throwable r) {
+            LOG.error("DoRelationship err:" + r.getMessage());
+        }
     }
-
+    
     private String gettotal() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode node = mapper.createObjectNode();
@@ -169,7 +194,7 @@ public class LocalHttpHandler extends HttpHandler {
         resp.putNode(node);
         return mapper.writeValueAsString(node);
     }
-
+    
     private String listuser(int lId, int count) throws Exception {
         UserListReq req = new UserListReq();
         req.setLastId(lId);
@@ -197,7 +222,7 @@ public class LocalHttpHandler extends HttpHandler {
         String json = mapper.writeValueAsString(node);
         return json;
     }
-
+    
     private String getusertotal(String username) throws Exception {
         User user = UserAccessor.getUser(username);
         if (user == null) {
@@ -213,7 +238,7 @@ public class LocalHttpHandler extends HttpHandler {
             return resp.getJson();
         }
     }
-
+    
     private static boolean checkIp(String ip) {
         for (String mask : HttpServerBoot.ipList) {
             if (mask.trim().isEmpty()) {
@@ -225,7 +250,7 @@ public class LocalHttpHandler extends HttpHandler {
         }
         return true;
     }
-
+    
     public static void main(String[] args) throws IOException {
         HttpServerBoot.ipList = new String[]{"192.168.1.21"};
         System.out.println(checkIp("192.168.1.21"));

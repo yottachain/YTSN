@@ -34,14 +34,28 @@ public class QueryUserHandler extends Handler<QueryUserReq> {
     public static QueryUserResp queryAndReg(QueryUserReq req) throws ServiceException {
         byte[] KUEp = Base58.decode(req.getPubkey());
         User user = UserAccessor.getUser(req.getUsername());
+        int keyNumber = 0;
         if (user != null) {
-            if (!Arrays.equals(KUEp, user.getKUEp())) {
-                LOG.error("User pubkey '" + req.getPubkey() + "' invalid.");
-                throw new ServiceException(INVALID_USER_ID);
-            }
             if (req.getUserId() != -1 && req.getUserId() != user.getUserID()) {//不大可能
                 LOG.error("UserID '" + user.getUserID() + "' invalid.");
-                throw new ServiceException(INVALID_USER_ID);
+            }
+            byte[][] kueps = user.getKUEp();
+            boolean exists = false;
+            for (int ii = 0; ii < kueps.length; ii++) {
+                byte[] bs = kueps[ii];
+                if (Arrays.equals(bs, KUEp)) {
+                    keyNumber = ii;
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                UserAccessor.updateUser(user.getUserID(), KUEp);
+                byte[][] nkueps = new byte[kueps.length + 1][];
+                System.arraycopy(kueps, 0, nkueps, 0, kueps.length);
+                nkueps[kueps.length] = KUEp;
+                user.setKUEp(nkueps);
+                keyNumber = kueps.length;
             }
         } else {
             if (req.getUserId() == -1) {
@@ -49,13 +63,15 @@ public class QueryUserHandler extends Handler<QueryUserReq> {
             } else {
                 user = new User(req.getUserId());
             }
-            user.setKUEp(KUEp);
+            user.setKUEp(new byte[][]{KUEp});
             user.setUsername(req.getUsername());
             UserAccessor.addUser(user);
+            keyNumber = 0;
         }
         QueryUserResp resp = new QueryUserResp();
         resp.setUserId(user.getUserID());
-        UserCache.putUser(req.getCacheKey(), user);
+        resp.setKeyNumber(keyNumber);
+        UserCache.putUser(req.getCacheKey(), user, keyNumber);
         return resp;
     }
 }

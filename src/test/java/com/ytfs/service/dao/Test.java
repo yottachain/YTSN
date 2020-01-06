@@ -1,10 +1,7 @@
 package com.ytfs.service.dao;
 
-import com.ytfs.common.MessageFactory;
-import com.ytfs.common.SerializationUtil;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
-import io.yottachain.nodemgmt.core.vo.Node;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import org.bson.types.ObjectId;
@@ -58,7 +55,7 @@ public class Test {
         String pubkey = ss.substring(3);
         System.out.println(pubkey);
         byte[] kuep = Base58.decode(pubkey);
-        usr.setKUEp(kuep);
+ 
         UserAccessor.addUser(usr);
     }
 

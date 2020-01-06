@@ -7,7 +7,6 @@ import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.dao.BlockMeta;
 import com.ytfs.service.dao.ShardAccessor;
 import com.ytfs.service.dao.ShardMeta;
-import com.ytfs.service.dao.User;
 import com.ytfs.service.servlet.Handler;
 import com.ytfs.service.servlet.bp.SaveObjectMetaHandler;
 import static com.ytfs.common.ServiceErrorCode.INVALID_KED;
@@ -24,12 +23,13 @@ import com.ytfs.common.node.NodeManager;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.dao.CacheBaseAccessor;
 import com.ytfs.service.dao.Sequence;
+import com.ytfs.service.dao.User;
+import com.ytfs.service.dao.UserCache.UserEx;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.packet.user.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadShardRes;
-import com.ytfs.service.packet.VoidResp;
 import com.ytfs.service.packet.user.UploadBlockEndResp;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
@@ -52,10 +52,11 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
 
     @Override
     public Object handle() throws Throwable {
-        User user = this.getUser();
-        if (user == null) {
+        UserEx userex = this.getUserEx();
+        if (userex == null) {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);
         }
+        User user = userex.user;
         long l = System.currentTimeMillis();
         int userid = user.getUserID();
         LOG.debug("Receive UploadBlockEnd request:/" + request.getVNU() + "/" + request.getId());
@@ -78,7 +79,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             BlockAccessor.saveBlockMeta(meta);
         }
         long starttime = System.currentTimeMillis();
-        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(userid, VBI);
+        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(userid, VBI, userex.keyNumber);
         saveObjectMetaReq.setUsedSpace(ServerConfig.PFL * res.size());
         try {
             SaveObjectMetaResp resp = SaveObjectMetaHandler.saveObjectMetaCall(saveObjectMetaReq);
@@ -132,7 +133,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         }
     }
 
-    private SaveObjectMetaReq makeSaveObjectMetaReq(int userid, long vbi) {
+    private SaveObjectMetaReq makeSaveObjectMetaReq(int userid, long vbi, int keyNumber) {
         SaveObjectMetaReq saveObjectMetaReq = new SaveObjectMetaReq();
         saveObjectMetaReq.setUserID(userid);
         saveObjectMetaReq.setVNU(request.getVNU());
@@ -143,6 +144,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         refer.setRealSize(request.getRealSize());
         refer.setSuperID((byte) ServerConfig.superNodeID);
         refer.setVBI(vbi);
+        refer.setKeyNumber(keyNumber);
         saveObjectMetaReq.setRefer(refer);
         return saveObjectMetaReq;
     }

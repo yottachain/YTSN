@@ -2,19 +2,26 @@ package com.ytfs.service.dao;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
 import com.ytfs.common.ServiceException;
-import com.ytfs.service.dao.sync.LogMessage;
-import static com.ytfs.service.dao.sync.LogMessageCode.Op_User_New;
 import com.ytfs.service.packet.bp.UserSpace;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.Binary;
 
 public class UserAccessor {
 
     private static final Logger LOG = Logger.getLogger(UserAccessor.class);
+
+    public static void updateRelationship(String relationship, String username) {
+        Bson bson = Filters.eq("username", username);
+        Document doc = new Document("relationship", relationship);
+        Document update = new Document("$set", doc);
+        MongoSource.getUserCollection().updateOne(bson, update);
+    }
 
     public static Document total() {
         List<Document> ops = new ArrayList();
@@ -95,13 +102,16 @@ public class UserAccessor {
         }
     }
 
+    public static void updateUser(int uid, byte[] kuep) {
+        Bson filter = Filters.eq("_id", uid);
+        Document update = new Document("$addToSet", new Document("KUEp", new Binary(kuep)));
+        UpdateOptions updateOptions = new UpdateOptions();
+        updateOptions.upsert(true);
+        MongoSource.getUserCollection().updateOne(filter, update, updateOptions);
+    }
+
     public static void addUser(User user) {
         MongoSource.getUserCollection().insertOne(user.toDocument());
-        if (MongoSource.getProxy() != null) {
-            LogMessage log = new LogMessage(Op_User_New, user);
-            MongoSource.getProxy().post(log);
-            LOG.debug("DBlog: sync user " + user.getUsername());
-        }
     }
 
 }

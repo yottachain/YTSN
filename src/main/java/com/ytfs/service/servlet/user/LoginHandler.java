@@ -16,12 +16,12 @@ public class LoginHandler extends Handler<LoginReq> {
     @Override
     public Object handle() throws Throwable {
         try {
-            User user = UserCache.getUser(this.getPublicKey(), this.request.getUserId(), this.request.getSignData());
+            User user = UserCache.getUser(this.getPublicKey(), this.request.getUserId(), this.request.getSignData(), request.getKeyNumber());
             LOG.info("User [" + user.getUsername() + "] login,id:" + user.getUserID());
             return new VoidResp();
         } catch (ServiceException se) {
-            if(se.getErrorCode()==ServiceErrorCode.INVALID_USER_ID){
-                LOG.info("Login err:"+this.request.getUserId());
+            if (se.getErrorCode() == ServiceErrorCode.INVALID_USER_ID) {
+                LOG.info("Login err:" + this.request.getUserId());
             }
             return se;
         }

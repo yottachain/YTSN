@@ -1,12 +1,14 @@
 package com.ytfs.service.dao;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.bson.Document;
 import org.bson.types.Binary;
 
 public class User {
 
     private int userID;
-    private byte[] KUEp;    //用户公钥
+    private byte[][] KUEp;    //用户公钥
 
     private long usedspace;  //文件去重后占用空间总和
     private long spaceTotal;  //文件实际长度总和
@@ -15,6 +17,7 @@ public class User {
     private String username;
     private long costPerCycle;//每周期总费用
     private long nextCycle;
+    private String relationship;
 
     public User(int userid) {
         this.userID = userid;
@@ -24,8 +27,13 @@ public class User {
         if (doc.containsKey("_id")) {
             this.userID = doc.getInteger("_id");
         }
-        if (doc.containsKey("KUEp")) {
-            this.KUEp = ((Binary) doc.get("KUEp")).getData();
+        if (doc.get("KUEp") != null) {
+            List ls = (List) doc.get("KUEp");
+            this.KUEp = new byte[ls.size()][];
+            int index = 0;
+            for (Object obj : ls) {
+                this.KUEp[index++] = ((Binary) obj).getData();
+            }
         }
         if (doc.containsKey("usedspace")) {
             this.usedspace = doc.getLong("usedspace");
@@ -45,18 +53,28 @@ public class User {
         if (doc.containsKey("nextCycle")) {
             this.nextCycle = doc.getLong("nextCycle");
         }
+        if (doc.containsKey("relationship")) {
+            this.relationship = doc.getString("relationship");
+        }
     }
 
     public Document toDocument() {
         Document doc = new Document();
         doc.append("_id", userID);
-        doc.append("KUEp", new Binary(KUEp));
+        List<Binary> kueps = new ArrayList();
+        if (KUEp != null) {
+            for (byte[] bs : KUEp) {
+                kueps.add(new Binary(bs));
+            }
+        }
+        doc.append("KUEp", kueps);
         doc.append("usedspace", usedspace);
         doc.append("costPerCycle", costPerCycle);
         doc.append("spaceTotal", spaceTotal);
         doc.append("fileTotal", fileTotal);
         doc.append("username", username);
         doc.append("nextCycle", nextCycle);
+        doc.append("relationship", relationship);
         return doc;
     }
 
@@ -77,14 +95,14 @@ public class User {
     /**
      * @return the KUEp
      */
-    public byte[] getKUEp() {
+    public byte[][] getKUEp() {
         return KUEp;
     }
 
     /**
      * @param KUEp the KUEp to set
      */
-    public void setKUEp(byte[] KUEp) {
+    public void setKUEp(byte[][] KUEp) {
         this.KUEp = KUEp;
     }
 
@@ -170,6 +188,20 @@ public class User {
      */
     public void setNextCycle(long nextCycle) {
         this.nextCycle = nextCycle;
+    }
+
+    /**
+     * @return the relationship
+     */
+    public String getRelationship() {
+        return relationship;
+    }
+
+    /**
+     * @param relationship the relationship to set
+     */
+    public void setRelationship(String relationship) {
+        this.relationship = relationship;
     }
 
 }

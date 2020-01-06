@@ -33,16 +33,16 @@ import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 public class ServerInitor {
-    
+
     private static final Logger LOG = Logger.getLogger(ServerInitor.class);
-    
+
     public static void stop() {
         P2PUtils.stop();
         HttpServerBoot.stopHttpServer();
         MongoSource.terminate();
         GlobleThreadPool.shutdown();
     }
-    
+
     public static void init() {
         System.out.println("SN is starting......");
         try {
@@ -60,7 +60,7 @@ public class ServerInitor {
                 NodeManager.start(addrs, MongoSource.getAuth(), eosURI, BPAccount, ShadowAccount, ShadowPriKey, contractAccount, contractOwnerD, superNodeID);
                 privateKey = YottaNodeMgmt.getSuperNodePrivateKey(superNodeID);
                 SNDSP = Base58.decode(privateKey);
-                SuperNodeList.isServer = true;
+                SuperNodeList.isServer = true;                
                 Sequence.initUserID_seq();
                 BpList.init(loadbplist());
                 break;
@@ -97,7 +97,7 @@ public class ServerInitor {
             LOG.error("Http server failed to start!", r);
         }
     }
-    
+
     private static List<String> loadbplist() {
         String path = System.getProperty("bplist.conf", "../conf/bplist.properties");
         try {
@@ -123,7 +123,7 @@ public class ServerInitor {
         }
         return null;
     }
-    
+
     public static byte[] sha256Digest() throws NoSuchAlgorithmException, IOException {
         InputStream is = InitSuperNodeList.class.getResourceAsStream("/InitSuperNodeList.class");
         try {
@@ -138,7 +138,7 @@ public class ServerInitor {
             is.close();
         }
     }
-    
+
     private static void load() throws IOException {
         String path = System.getProperty("server.conf", "../conf/server.properties");
         LOG.info("Read conf:" + path);
@@ -195,7 +195,10 @@ public class ServerInitor {
         }
         selfIp = p.getProperty("selfIp");
         if (selfIp == null || selfIp.trim().isEmpty()) {
-            throw new IOException("The 'selfIp' parameter is not configured.");
+            selfIp = null;
+            LOG.warn("The 'selfIp' parameter is not configured.");
+        } else {
+            selfIp = selfIp.trim();
         }
         try {
             String ss = p.getProperty("rebuildSpeed", "1000").trim();
@@ -221,7 +224,7 @@ public class ServerInitor {
         } catch (Exception d) {
             throw new IOException("The 'rebuildTaskSize' parameter is not configured.");
         }
-        
+
         httpRemoteIp = p.getProperty("httpRemoteIp", "").trim().replaceAll(" ", "");
         eosURI = p.getProperty("eosURI");
         if (eosURI == null || eosURI.trim().isEmpty()) {

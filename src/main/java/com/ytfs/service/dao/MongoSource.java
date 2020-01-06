@@ -19,6 +19,7 @@ public class MongoSource {
     //用户表
     public static final String USER_TABLE_NAME = "users";
     private static final String USER_INDEX_NAME = "username";
+    private static final String USER_REL_INDEX_NAME = "relationship";
 
     //数据块源信息表
     public static final String BLOCK_TABLE_NAME = "blocks";
@@ -262,6 +263,19 @@ public class MongoSource {
             IndexOptions indexOptions = new IndexOptions().unique(true);
             indexOptions = indexOptions.name(USER_INDEX_NAME);
             user_collection.createIndex(Indexes.ascending("username"), indexOptions);
+        }
+        indexCreated = false;
+        indexs = user_collection.listIndexes();
+        for (Document index : indexs) {
+            if (index.get("name").equals(USER_REL_INDEX_NAME)) {
+                indexCreated = true;
+                break;
+            }
+        }
+        if (!indexCreated) {
+            IndexOptions indexOptions = new IndexOptions();
+            indexOptions = indexOptions.name(USER_REL_INDEX_NAME);
+            user_collection.createIndex(Indexes.ascending(USER_REL_INDEX_NAME), indexOptions);
         }
         LOG.info("Successful creation of user tables.");
     }

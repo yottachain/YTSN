@@ -17,9 +17,9 @@ import io.yottachain.nodemgmt.core.vo.SuperNode;
 import org.apache.log4j.Logger;
 
 public class RegUserHandler extends Handler<RegUserReq> {
-
+    
     private static final Logger LOG = Logger.getLogger(RegUserHandler.class);
-
+    
     @Override
     public Object handle() throws Throwable {
         String cachekey = this.getPublicKey();
@@ -64,7 +64,8 @@ public class RegUserHandler extends Handler<RegUserReq> {
         regUserResp.setSuperNodeID(ressn.getNodeid());
         regUserResp.setSuperNodeNum(ressn.getId());
         regUserResp.setUserId(resp.getUserId());
+        regUserResp.setKeyNumber(resp.getKeyNumber());
         return regUserResp;
     }
-
+    
 }
