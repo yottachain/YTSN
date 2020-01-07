@@ -2,7 +2,9 @@ package com.ytfs.service.servlet.user;
 
 import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.INVALID_USER_ID;
+import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.eos.EOSClient;
 import com.ytfs.service.dao.Sequence;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserAccessor;
@@ -31,7 +33,16 @@ public class QueryUserHandler extends Handler<QueryUserReq> {
         return queryAndReg(request);
     }
 
-    public static QueryUserResp queryAndReg(QueryUserReq req) throws ServiceException {
+    public static Object queryAndReg(QueryUserReq req) throws ServiceException {
+        try {
+            if (req.getUserId() == -1) {
+                EOSClient.getBalance(req.getUsername());
+                LOG.info("[" + req.getUsername() + "] Certification passed.");
+            }
+        } catch (Throwable e) {
+            LOG.error("", e);
+            return new ServiceException(SERVER_ERROR);
+        }
         byte[] KUEp = Base58.decode(req.getPubkey());
         User user = UserAccessor.getUser(req.getUsername());
         int keyNumber = 0;
