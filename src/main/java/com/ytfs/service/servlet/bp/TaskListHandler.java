@@ -71,6 +71,10 @@ public class TaskListHandler extends Handler<TaskDispatchList> {
             return null;
         }
         for (ShardMeta meta : metas) {
+            if (meta == null) {
+                LOG.error("Query shard metas [" + Base58.encode(DNI) + "] Err!");
+                return null;
+            }
             if (!nodeidsls.contains(meta.getNodeId())) {
                 nodeidsls.add(meta.getNodeId());
             }
