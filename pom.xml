@@ -104,7 +104,6 @@
             <artifactId>grizzly-http-server</artifactId>
             <version>2.3.24</version>
         </dependency>
-<<<<<<< HEAD
         <dependency>
             <groupId>nodemgmt-java-binding</groupId>
             <artifactId>nodemgmt-java-binding</artifactId>
@@ -251,8 +250,6 @@
             <artifactId>zipkin-sender-okhttp3</artifactId>
             <version>2.10.0</version>
         </dependency>
-=======
->>>>>>> ce1be3bdac5c2287fde1b8338727203524b40916
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
