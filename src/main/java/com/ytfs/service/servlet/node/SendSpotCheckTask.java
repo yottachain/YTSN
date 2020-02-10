@@ -18,13 +18,13 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 
 public class SendSpotCheckTask implements Runnable {
-
+    
     private static final Logger LOG = Logger.getLogger(SendSpotCheckTask.class);
-
+    
     private static ArrayBlockingQueue<SendSpotCheckTask> queue = null;
-
+    
     private static synchronized ArrayBlockingQueue<SendSpotCheckTask> getQueue() {
-        int num = SuperNodeList.getSuperNodeCount()*2;
+        int num = SuperNodeList.getSuperNodeCount() * 2;
         if (queue == null) {
             queue = new ArrayBlockingQueue(num);
             for (int ii = 0; ii < num; ii++) {
@@ -33,9 +33,10 @@ public class SendSpotCheckTask implements Runnable {
         }
         return queue;
     }
-
+    
     static void startUploadShard(NodeInfo nodeinfo) throws InterruptedException, NodeMgmtException {
         boolean bool = YottaNodeMgmt.spotcheckSelected();
+        //LOG.info("Node " + nodeinfo.getId() + " spotcheck select return " + bool);
         if (bool) {
             SendSpotCheckTask task = getQueue().poll();
             if (task == null) {
@@ -48,9 +49,9 @@ public class SendSpotCheckTask implements Runnable {
             }
         }
     }
-
+    
     private NodeInfo nodeinfo;
-
+    
     private void execute() {
         List<SpotCheckList> sc;
         try {
@@ -76,7 +77,7 @@ public class SendSpotCheckTask implements Runnable {
             }
         }
     }
-
+    
     private SpotCheckTaskList doTask(SpotCheckList scheck) {
         SpotCheckTaskList mytask = new SpotCheckTaskList();
         mytask.setSnid(ServerConfig.superNodeID);
@@ -103,7 +104,7 @@ public class SendSpotCheckTask implements Runnable {
         });
         return mytask;
     }
-
+    
     @Override
     public void run() {
         try {
@@ -112,5 +113,5 @@ public class SendSpotCheckTask implements Runnable {
             getQueue().add(this);
         }
     }
-
+    
 }

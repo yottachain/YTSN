@@ -3,7 +3,6 @@ package com.ytfs.service.servlet.user;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.ServerConfig;
-import com.ytfs.common.eos.EOSClient;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.SNSynchronizer;
@@ -37,7 +36,7 @@ public class RegUserHandler extends Handler<RegUserReq> {
             obj = P2PUtils.requestBP(req, sn);
         }
         if (!(obj instanceof QueryUserResp)) {
-            throw obj instanceof ServiceException ? (ServiceException) obj : new ServiceException(SERVER_ERROR);
+            return obj instanceof ServiceException ? (ServiceException) obj : new ServiceException(SERVER_ERROR);
         }
         QueryUserResp resp = (QueryUserResp) obj;
         req.setUserId(resp.getUserId());

@@ -3,7 +3,6 @@ package com.ytfs.service.cost;
 import com.mongodb.client.FindIterable;
 import static com.ytfs.common.Function.bytes2Integer;
 import static com.ytfs.common.conf.ServerConfig.PMS;
-import static com.ytfs.common.conf.ServerConfig.PPC;
 import com.ytfs.service.dao.MongoSource;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,18 +15,18 @@ import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 
 public class UserFileIterator {
-    
+
     private static final Logger LOG = Logger.getLogger(UserFileIterator.class);
-    private static final long FIRST_CYCLE = PMS * PPC;
+    private static final long FIRST_CYCLE = PMS * 1000L * 60L * 60L * 24L;
     private static final int MAX_IDLIST = 1000;
     private final int userId;
     private long usedSpace = 0;
     private int sumTimes = 0;
-    
+
     public UserFileIterator(int userId) {
         this.userId = userId;
     }
-    
+
     public void iterate() {
         LOG.info("User " + userId + " sum fee...");
         Map<Integer, List<Long>> map = new HashMap();
@@ -36,7 +35,7 @@ public class UserFileIterator {
         FindIterable<Document> it = MongoSource.getObjectCollection(userId).find().projection(fields);
         for (Document doc : it) {
             ObjectId id = doc.getObjectId("VNU");
-            if (System.currentTimeMillis() - id.getTimestamp() * 1000 < FIRST_CYCLE) {
+            if (System.currentTimeMillis() - id.getTimestamp() * 1000L < FIRST_CYCLE) {
                 continue;
             }
             if (doc.get("blocks") != null) {
@@ -74,13 +73,13 @@ public class UserFileIterator {
             }
         }
     }
-    
+
     private void addSumTimes() {
         synchronized (this) {
             sumTimes++;
         }
     }
-    
+
     public void addUsedSpace(long space) {
         synchronized (this) {
             usedSpace = usedSpace + space;
@@ -88,7 +87,7 @@ public class UserFileIterator {
             this.notify();
         }
     }
-    
+
     public long getUsedSpace() {
         return usedSpace;
     }

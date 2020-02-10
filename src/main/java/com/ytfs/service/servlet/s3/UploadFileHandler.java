@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.s3;
 
+import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.service.dao.*;
 import com.ytfs.service.servlet.Handler;
 import static com.ytfs.common.ServiceErrorCode.INVALID_BUCKET_NAME;
@@ -16,6 +17,9 @@ public class UploadFileHandler extends Handler<UploadFileReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
+        if (user == null) {
+            return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
         LOG.info("Create object:" + user.getUserID() + "/" + request.getBucketname() + "/" + request.getFileName());
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketname(), request.getMeta());
         if (meta == null) {

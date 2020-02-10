@@ -35,6 +35,7 @@ import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
+import io.yottachain.p2phost.utils.Base58;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -126,6 +127,9 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
                 adddoc.append("vhf", new Binary(data));
                 adddoc.append("delete", false);
                 docs.add(adddoc);
+            }
+            if (!ServerConfig.httpServlet.isEmpty()) {
+                LOG.info("Write VHF:" + Base58.encode(vhf) + " to " + nid);
             }
         }
         if (!docs.isEmpty()) {

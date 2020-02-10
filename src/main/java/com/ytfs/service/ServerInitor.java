@@ -60,7 +60,8 @@ public class ServerInitor {
                 NodeManager.start(addrs, MongoSource.getAuth(), eosURI, BPAccount, ShadowAccount, ShadowPriKey, contractAccount, contractOwnerD, superNodeID);
                 privateKey = YottaNodeMgmt.getSuperNodePrivateKey(superNodeID);
                 SNDSP = Base58.decode(privateKey);
-                SuperNodeList.isServer = true;                
+                SuperNodeList.isServer = true;
+                YottaNodeMgmt.setMaster(SuperNodeList.isMaster());
                 Sequence.initUserID_seq();
                 BpList.init(loadbplist());
                 break;
@@ -224,7 +225,7 @@ public class ServerInitor {
         } catch (Exception d) {
             throw new IOException("The 'rebuildTaskSize' parameter is not configured.");
         }
-
+        httpServlet = p.getProperty("httpServlet", "").trim().replaceAll(" ", "");
         httpRemoteIp = p.getProperty("httpRemoteIp", "").trim().replaceAll(" ", "");
         eosURI = p.getProperty("eosURI");
         if (eosURI == null || eosURI.trim().isEmpty()) {

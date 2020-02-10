@@ -1,5 +1,7 @@
 package com.ytfs.service.servlet.s3;
 
+import com.ytfs.common.ServiceErrorCode;
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.BucketAccessor;
 import com.ytfs.service.dao.BucketMeta;
 import com.ytfs.service.dao.User;
@@ -15,6 +17,9 @@ public class GetBucketHandler extends Handler<GetBucketReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
+        if (user == null) {
+            return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
         LOG.info("GET bucket::::::" + user.getUserID() + "/" + request.getBucketName());
 //        BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(),new byte[0]);
         BucketMeta meta = BucketAccessor.getBucketMeta(user.getUserID(), request.getBucketName());

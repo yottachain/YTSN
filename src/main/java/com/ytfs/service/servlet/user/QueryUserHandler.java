@@ -1,7 +1,6 @@
 package com.ytfs.service.servlet.user;
 
 import com.ytfs.common.ServiceErrorCode;
-import static com.ytfs.common.ServiceErrorCode.INVALID_USER_ID;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.eos.EOSClient;
@@ -49,6 +48,7 @@ public class QueryUserHandler extends Handler<QueryUserReq> {
         if (user != null) {
             if (req.getUserId() != -1 && req.getUserId() != user.getUserID()) {//不大可能
                 LOG.error("UserID '" + user.getUserID() + "' invalid.");
+                return new ServiceException(SERVER_ERROR);
             }
             byte[][] kueps = user.getKUEp();
             boolean exists = false;

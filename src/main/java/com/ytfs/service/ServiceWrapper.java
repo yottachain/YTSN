@@ -1,6 +1,8 @@
 package com.ytfs.service;
 
 import com.ytfs.service.check.QueryRebuildNode;
+import com.ytfs.service.cost.NewObjectScanner;
+import com.ytfs.service.cost.SumRelationShip;
 import com.ytfs.service.cost.UserFeeStat;
 import com.ytfs.service.servlet.bp.DNISenderPool;
 import com.ytfs.service.servlet.bp.NodeStatSync;
@@ -19,7 +21,8 @@ public class ServiceWrapper implements WrapperListener {
     @Override
     public Integer start(String[] strings) {
         ServerInitor.init();
-        //NewObjectScanner.startUp();
+        NewObjectScanner.startUp();
+        SumRelationShip.startUp();
         QueryRebuildNode.startUp();
         UserFeeStat.startUp();
         DNISenderPool.startup();
@@ -29,7 +32,8 @@ public class ServiceWrapper implements WrapperListener {
 
     @Override
     public int stop(int exitCode) {
-        //NewObjectScanner.shutdown();
+        NewObjectScanner.shutdown();
+        SumRelationShip.shutdown();
         QueryRebuildNode.shutdown();
         UserFeeStat.shutdown();
         DNISenderPool.shutdown();
