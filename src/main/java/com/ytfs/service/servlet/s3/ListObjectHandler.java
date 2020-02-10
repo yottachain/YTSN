@@ -1,5 +1,7 @@
 package com.ytfs.service.servlet.s3;
 
+import com.ytfs.common.ServiceErrorCode;
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.*;
 import com.ytfs.service.packet.s3.ListObjectReq;
 import com.ytfs.service.packet.s3.ListObjectResp;
@@ -19,13 +21,16 @@ public class ListObjectHandler extends Handler<ListObjectReq> {
     public Object handle() throws Throwable {
         try {
             User user = this.getUser();
+            if (user == null) {
+                return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+            }
             LOG.info("LIST object:" + user.getUserID());
             int limit = request.getLimit();
             String prefix = request.getPrefix();
             ObjectId nextVersionId = request.getNextVersionId();
             BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(), null);
             String fileName = request.getFileName();
-            List<FileMetaV2> fileMetaV2s = FileAccessorV2.listBucket(user.getUserID(),meta.getBucketId(), fileName, nextVersionId, prefix, limit);
+            List<FileMetaV2> fileMetaV2s = FileAccessorV2.listBucket(user.getUserID(), meta.getBucketId(), fileName, nextVersionId, prefix, limit);
             List<FileMetaMsg> fileMetaMsgs = new ArrayList<>();
             if (fileMetaV2s.size() > 0) {
                 for (FileMetaV2 fileMetaV2 : fileMetaV2s) {

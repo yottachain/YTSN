@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.s3;
 
+import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.BucketAccessor;
 import com.ytfs.service.dao.BucketCache;
@@ -19,13 +20,16 @@ public class UpdateBucketHandler extends Handler<UpdateBucketReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
+        if (user == null) {
+            return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
         LOG.info("Update bucket:" + user.getUserID() + "/" + request.getBucketName());
         String name = request.getBucketName();
         name = name == null ? "" : name.trim();
         if (name.isEmpty() || name.length() > 20) {
             throw new ServiceException(INVALID_BUCKET_NAME);
         }
-        BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(),request.getMeta());
+        BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(), request.getMeta());
         BucketAccessor.updateBucketMeta(meta);
         return new VoidResp();
     }

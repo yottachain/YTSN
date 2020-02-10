@@ -33,13 +33,18 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
         ObjectMeta meta = new ObjectMeta(userid, request.getVHW());
         ObjectAccessor.getObjectAndUpdateNLINK(meta);
         long usedspace = meta.getUsedspace();
+        long ll = 1024L * 16L;
+        long addusedspace = usedspace % ll > 0 ? (usedspace / ll + 1) : (usedspace / ll);
         UserAccessor.updateUser(userid, usedspace, 1, meta.getLength());
         try {
-            EOSClient.addUsedSpace(usedspace, user.getUsername());
+            EOSClient.addUsedSpace(addusedspace, user.getUsername());
             LOG.info("User " + user.getUserID() + " add usedSpace:" + usedspace);
         } catch (Throwable e) {
-            CacheBaseAccessor.addNewObject(meta.getVNU(), usedspace, user.getUserID(), user.getUsername(), 0);
+            CacheBaseAccessor.addNewObject(meta.getVNU(), addusedspace, user.getUserID(), user.getUsername(), 0);
             LOG.error("Add usedSpace ERR:" + e.getMessage());
+            LOG.info("Upload object " + user.getUserID() + "/" + meta.getVNU() + " OK.");
+            CacheAccessor.delUploadObjectCache(meta.getVNU());
+            return new VoidResp();
         }
         long firstCost = ServerConfig.unitFirstCost * usedspace / ServerConfig.unitSpace;
         try {

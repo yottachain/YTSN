@@ -7,6 +7,7 @@ import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.SNSynchronizer;
+import com.ytfs.service.dao.DNIAccessor;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserAccessor;
 import com.ytfs.service.packet.bp.Relationship;
@@ -21,6 +22,7 @@ import com.ytfs.service.packet.bp.UserSpaceResp;
 import com.ytfs.service.servlet.Handler;
 import com.ytfs.service.servlet.HandlerFactory;
 import com.ytfs.service.servlet.bp.UserStatHandler;
+import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.BufferedInputStream;
@@ -39,9 +41,9 @@ import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.util.HttpStatus;
 
 public class LocalHttpHandler extends HttpHandler {
-    
+
     private static final Logger LOG = Logger.getLogger(LocalHttpHandler.class);
-    
+
     static final String REQ_TOTAL_PATH = "/total";
     static final String REQ_USER_TOTAL_PATH = "/usertotal";
     static final String REQ_USER_LIST_PATH = "/list";
@@ -51,19 +53,22 @@ public class LocalHttpHandler extends HttpHandler {
     static final String REQ_NEW_NODEID = "/newnodeid";
     static final String REQ_PRE_REGNODE = "/preregnode";
     static final String REQ_CHG_MPOOL = "/changeminerpool";
-    
+    static String REQ_QUERY_VHF = "/findvhf";
+
     @Override
     public void service(Request rqst, Response rspns) throws Exception {
         try {
-            rspns.setContentType("text/json");
+            rspns.setCharacterEncoding("UTF-8");
             String path = rqst.getContextPath();
             if (path.equalsIgnoreCase(REQ_TOTAL_PATH)) {
+                rspns.setContentType("text/json");
                 if (!checkIp(rqst.getRemoteAddr())) {
                     throw new Exception("Invalid IP:" + rqst.getRemoteAddr());
                 }
                 String json = gettotal();
                 rspns.getWriter().write(json);
             } else if (path.equalsIgnoreCase(REQ_RELATION_SHIP_PATH)) {
+                rspns.setContentType("text/plain");
                 if (!checkIp(rqst.getRemoteAddr())) {
                     throw new Exception("Invalid IP:" + rqst.getRemoteAddr());
                 }
@@ -72,12 +77,14 @@ public class LocalHttpHandler extends HttpHandler {
                 doRelationship(username, mPoolOwner);
                 rspns.getWriter().write("OK");
             } else if (path.equalsIgnoreCase(REQ_USER_TOTAL_PATH)) {
+                rspns.setContentType("text/json");
                 if (!checkIp(rqst.getRemoteAddr())) {
                     throw new Exception("Invalid IP:" + rqst.getRemoteAddr());
                 }
                 String username = rqst.getParameter("username");
                 rspns.getWriter().write(getusertotal(username));
             } else if (path.equalsIgnoreCase(REQ_USER_LIST_PATH)) {
+                rspns.setContentType("text/json");
                 if (!checkIp(rqst.getRemoteAddr())) {
                     throw new Exception("Invalid IP:" + rqst.getRemoteAddr());
                 }
@@ -95,20 +102,24 @@ public class LocalHttpHandler extends HttpHandler {
                 }
                 rspns.getWriter().write(listuser(lId, count));
             } else if (path.equalsIgnoreCase(REQ_ACTIVE_NODES_PATH)) {
+                rspns.setContentType("text/json");
                 List<Map<String, String>> ls = YottaNodeMgmt.activeNodesList();
                 ObjectMapper mapper = new ObjectMapper();
                 String json = mapper.writeValueAsString(ls);
                 rspns.getWriter().write(json);
             } else if (path.equalsIgnoreCase(REQ_STAT_PATH)) {
+                rspns.setContentType("text/json");
                 Map<String, Long> map = YottaNodeMgmt.statistics();
                 ObjectMapper mapper = new ObjectMapper();
                 String json = mapper.writeValueAsString(map);
                 rspns.getWriter().write(json);
             } else if (path.equalsIgnoreCase(REQ_NEW_NODEID)) {
+                rspns.setContentType("text/json");
                 int id = YottaNodeMgmt.newNodeID();
                 String res = "{\"nodeid\": " + id + "}";
                 rspns.getWriter().write(res);
             } else if (path.equalsIgnoreCase(REQ_PRE_REGNODE)) {
+                rspns.setContentType("text/plain");
                 if (rqst.getMethod() == Method.POST) {
                     InputStream is = new BufferedInputStream(rqst.getInputStream());
                     ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -123,6 +134,7 @@ public class LocalHttpHandler extends HttpHandler {
                     rspns.getWriter().write("OK");
                 }
             } else if (path.equalsIgnoreCase(REQ_CHG_MPOOL)) {
+                rspns.setContentType("text/plain");
                 if (rqst.getMethod() == Method.POST) {
                     InputStream is = new BufferedInputStream(rqst.getInputStream());
                     ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -138,6 +150,10 @@ public class LocalHttpHandler extends HttpHandler {
                 } else {
                     rspns.sendError(500);
                 }
+            } else if (path.equalsIgnoreCase(REQ_QUERY_VHF)) {
+                rspns.setContentType("text/plain");
+                String res = lookup(rqst);
+                rspns.getWriter().write(res);
             } else {
                 rspns.setContentType("text/html");
                 InputStream is = this.getClass().getResourceAsStream("/statapi.html");
@@ -154,7 +170,32 @@ public class LocalHttpHandler extends HttpHandler {
             rspns.sendError(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode(), message);
         }
     }
-    
+
+    private String lookup(Request rqst) throws Exception {
+        String vhf = rqst.getParameter("vhf");
+        String nodeid = rqst.getParameter("nodeid");
+        int id = 0;
+        try {
+            id = Integer.parseInt(nodeid);
+        } catch (Throwable r) {
+            throw new Exception("Invalid nodeid:" + nodeid);
+        }
+        if (SuperNodeList.getNodeSuperNode(id).getId() != ServerConfig.superNodeID) {
+            throw new Exception("ID '" + nodeid + "' does not belong to current SN management.");
+        }
+        byte[] VHF;
+        try {
+            VHF = Base58.decode(vhf);
+        } catch (Throwable r) {
+            throw new Exception("Invalid VHF:" + vhf);
+        }
+        if (VHF.length != 16) {
+            throw new Exception("Invalid VHF:" + vhf + ",len:" + VHF.length);
+        }
+        boolean b = DNIAccessor.findDNI(id, VHF);
+        return b ? "True" : "False";
+    }
+
     private void doRelationship(String user, String mPoolOwner) {
         if (user == null || mPoolOwner == null || user.trim().isEmpty() || mPoolOwner.trim().isEmpty()) {
             return;
@@ -179,7 +220,7 @@ public class LocalHttpHandler extends HttpHandler {
             LOG.error("DoRelationship err:" + r.getMessage());
         }
     }
-    
+
     private String gettotal() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode node = mapper.createObjectNode();
@@ -194,7 +235,7 @@ public class LocalHttpHandler extends HttpHandler {
         resp.putNode(node);
         return mapper.writeValueAsString(node);
     }
-    
+
     private String listuser(int lId, int count) throws Exception {
         UserListReq req = new UserListReq();
         req.setLastId(lId);
@@ -222,7 +263,7 @@ public class LocalHttpHandler extends HttpHandler {
         String json = mapper.writeValueAsString(node);
         return json;
     }
-    
+
     private String getusertotal(String username) throws Exception {
         User user = UserAccessor.getUser(username);
         if (user == null) {
@@ -238,7 +279,7 @@ public class LocalHttpHandler extends HttpHandler {
             return resp.getJson();
         }
     }
-    
+
     private static boolean checkIp(String ip) {
         for (String mask : HttpServerBoot.ipList) {
             if (mask.trim().isEmpty()) {
@@ -250,7 +291,7 @@ public class LocalHttpHandler extends HttpHandler {
         }
         return true;
     }
-    
+
     public static void main(String[] args) throws IOException {
         HttpServerBoot.ipList = new String[]{"192.168.1.21"};
         System.out.println(checkIp("192.168.1.21"));

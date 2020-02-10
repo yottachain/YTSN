@@ -2,7 +2,6 @@ package com.ytfs.service.cost;
 
 import com.mongodb.client.FindIterable;
 import com.ytfs.common.conf.ServerConfig;
-import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.eos.EOSClient;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.dao.MongoSource;
@@ -41,7 +40,7 @@ public class UserFeeStat extends Thread {
             if (sn.getId() != ServerConfig.superNodeID) {
                 continue;
             }
-            long nextCycle = doc.getLong("nextCycle") == null ? 0 : doc.getLong("nextCycle");
+            long nextCycle = doc.getLong("nextCycle") == null ? System.currentTimeMillis() : doc.getLong("nextCycle");
             if (System.currentTimeMillis() - nextCycle < ServerConfig.CostSumCycle) {
                 continue;
             }
@@ -55,9 +54,11 @@ public class UserFeeStat extends Thread {
     private void setCycleFee(long usedSpace, int userid, String username) {
         long costPerCycle = ServerConfig.unitCycleCost * usedSpace / ServerConfig.unitSpace;
         try {
-            EOSClient.setUserFee(costPerCycle, username);
+            if (costPerCycle > 0) {
+                EOSClient.setUserFee(costPerCycle, username);
+            }
             UserAccessor.updateUser(userid, costPerCycle);
-            LOG.info("User " + userid + " set cycle fee:" + costPerCycle);
+            LOG.info("User " + userid + " set cycle fee:" + costPerCycle + ", usedSpace:" + usedSpace);
         } catch (Throwable r) {
             LOG.error("", r);
         }

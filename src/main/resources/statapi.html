@@ -26,25 +26,25 @@
         <p class="content">{"nodeid": 1234}</p>
         <hr>
         <p class="content"><span class="titlestyle">矿机预注册</span></p>
-<p class="content">POST:/preregnode</p>
-<p class="content">body:一个签名过的事务，其中包括抵押币和其他矿机参数,字符串形式</p>
-<p class="content">返回</p>
-<p class="content">ContentType:text/plain</p>
-<p class="content"> OK</p>
-<hr>
-<p class="content"><span class="titlestyle">修改矿池</span></p>
-<p class="content">POST:/changeminerpool</p>
-<p class="content">body:一个签名过的事务，其中包括矿机ID、矿池ID及配额等参数,字符串形式</p>
-<p class="content">返回</p>
-<p class="content">ContentType:text/plain</p>
-<p class="content"> OK</p>
-<hr>
-<p class="content"><span class="titlestyle">全网统计数据:</span></p>
-<p class="content">GET:/total</p>
+        <p class="content">POST:/preregnode</p>
+        <p class="content">body:一个签名过的事务，其中包括抵押币和其他矿机参数,字符串形式</p>
+        <p class="content">返回</p>
+        <p class="content">ContentType:text/plain</p>
+        <p class="content"> OK</p>
+        <hr>
+        <p class="content"><span class="titlestyle">修改矿池</span></p>
+        <p class="content">POST:/changeminerpool</p>
+        <p class="content">body:一个签名过的事务，其中包括矿机ID、矿池ID及配额等参数,字符串形式</p>
+        <p class="content">返回</p>
+        <p class="content">ContentType:text/plain</p>
+        <p class="content"> OK</p>
+        <hr>
+        <p class="content"><span class="titlestyle">全网统计数据:</span></p>
+        <p class="content">GET:/total</p>
         <p class="content">返回所有用户合计,访问21个SN任意一个</p>
         <p class="content">
-        	  userTotal:用户总数<br>   
-        	  fileTotal:文件数量<br>       	  
+            userTotal:用户总数<br>   
+            fileTotal:文件数量<br>       	  
             spaceTotal:总存储量,文件实际总长度<br>
             usedspace:去重后存储量,文件总占用空间<br>
             bkTotal:存储块数<br>
@@ -53,56 +53,65 @@
         </pre>
 
         <hr>
-        
-<p class="content"><span class="titlestyle">用户统计数据:</span></p>
-<p class="content">GET:/usertotal?username=testuser</p>
+
+        <p class="content"><span class="titlestyle">用户统计数据:</span></p>
+        <p class="content">GET:/usertotal?username=testuser</p>
         <p class="content">返回用户testuser统计数据,访问21个SN任意一个</p>
         <p class="content">
-        	  userID:用户ID<br>   
-        	  fileTotal:文件数量<br>       	  
+            userID:用户ID<br>   
+            fileTotal:文件数量<br>       	  
             spaceTotal:总存储量,文件实际总长度<br>
             usedspace:去重后存储量,文件总占用空间</p>
         <pre class="content">{"userID":4,"usedspace":25210457,"spaceTotal":26651276,"fileTotal":133}
         </pre>
 
         <hr>
-        
-<p class="content"><span class="titlestyle">遍历用户列表:</span></p>
-<p class="content">GET:/list?lastId=-1&count=1000</p>
+
+        <p class="content"><span class="titlestyle">遍历用户列表:</span></p>
+        <p class="content">GET:/list?lastId=-1&count=1000</p>
         <p class="content">返回用户列表,访问21个SN任意一个<br>   
-        	  lastId:下一次遍历的起点ID,返回大于该用户ID的记录<br>   
-        	  count:返回个数(10-1000)
-        	</p>
-        
+            lastId:下一次遍历的起点ID,返回大于该用户ID的记录<br>   
+            count:返回个数(10-1000)
+        </p>
+
         <p class="content">
-        	  userId:用户ID<br>   
-        	  userName:用户名<br>       	  
+            userId:用户ID<br>   
+            userName:用户名<br>       	  
             spaceTotal:总存储量,文件实际总长度</p>
         <pre class="content">[{"userId":1,"userName":"sanlsd","spaceTotal":121},{"userId":2,"userName":"sdfgg","spaceTotal":1241}]
         </pre>
 
         <hr>
 
- <p class="content"><span class="titlestyle">创建用户和矿池对应关系:</span></p>
-<p class="content">GET:/relationship?username=XXX&mPoolOwner=XXX</p>
+        <p class="content"><span class="titlestyle">创建用户和矿池对应关系:</span></p>
+        <p class="content">GET:/relationship?username=XXX&mPoolOwner=XXX</p>
         <p class="content">访问21个SN任意一个<br>   	  
-        	</p>
+        </p>
         <p class="content">
-        	  username:用户名<br>   
-        	  mPoolOwner:矿池所有者</p>
+            username:用户名<br>   
+            mPoolOwner:矿池所有者</p>
         <pre class="content">返回:OK
         </pre>
-        
-
         <hr>
-        
+
+        <p class="content"><span class="titlestyle">查询分片是否存在:</span></p>
+        <p class="content">GET:/findvhf?nodeid=XXX&vhf=XXX</p>
+        <p class="content">访问nodeid对应的SN<br>   	  
+        </p>
+        <p class="content">
+            nodeid:矿机ID<br>   
+            vhf:分片Base58(HASH)</p>
+        <pre class="content">返回:true/false
+        </pre>
+        <hr>
+
         <p class="content"><span class="titlestyle">获取当前所有活跃节点:</span></p>
         <p class="content">GET:/active_nodes</p>
         <p class="content">返回当前所有活跃节点的id和公网ip</p>
         <pre class="content">[{"ip":"/ip4/152.136.18.74/tcp/9001","id":"222"},{"ip":"/ip4/223.72.87.110/tcp/9001","id":"243"},{"ip":"/ip4/122.227.151.182/tcp/9001","id":"258"},{"ip":"/ip4/122.227.151.182/tcp/9001","id":"261"}]
         </pre>
 
-    <hr>
+        <hr>
         <p class="content"><span class="titlestyle">获取当前超级节点的空间和矿工数统计信息:</span></p>
         <p class="content">GET:/statistics</p>
         <p class="content">返回</p>
@@ -113,10 +122,10 @@
             "assignedSpace":xxx,       //所有矿机已分配空间的累加值<br>
             "productiveSpace":xxx,     //所有矿机生产空间的累加值<br>
             "usedSpace":xxx            //所有矿机已使用空间的累加值</p>
-    <p class="content">
-{"assignedSpace":0,"productiveSpace":0,"usedSpace":0,"totalMiner":0,"activeMiner":0,"maxDataSpace":0}    </p>
-<hr>
+        <p class="content">
+            {"assignedSpace":0,"productiveSpace":0,"usedSpace":0,"totalMiner":0,"activeMiner":0,"maxDataSpace":0}    </p>
+        <hr>
         <div class="titlestyle"></div>
-<p class="content">&nbsp;</p>
+        <p class="content">&nbsp;</p>
     </body>
 </html>

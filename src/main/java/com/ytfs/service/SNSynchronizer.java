@@ -16,7 +16,7 @@ public class SNSynchronizer implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(SNSynchronizer.class);
 
-    public static void ayncRequest(Object req, int exclude,int retrytime) throws InterruptedException {
+    public static void ayncRequest(Object req, int exclude, int retrytime) throws InterruptedException {
         SuperNode[] snlist = SuperNodeList.getSuperNodeList();
         Object[] res = new Object[snlist.length];
         AtomicInteger num = new AtomicInteger(0);
@@ -103,8 +103,8 @@ public class SNSynchronizer implements Runnable {
                     resp = handler.handle();
                 } else {
                     resp = P2PUtils.requestBP(req, node);
+                    LOG.debug("Sync " + req.getClass().getSimpleName() + " to " + node.getId());
                 }
-                LOG.debug("Sync " + req.getClass().getSimpleName() + " to " + node.getId());
                 break;
             } catch (ServiceException se) {
                 LOG.error("Sync " + req.getClass().getSimpleName() + " to " + node.getId() + " ERR.");

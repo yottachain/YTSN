@@ -1,16 +1,20 @@
 package com.ytfs.service.http;
 
 import com.ytfs.common.conf.ServerConfig;
+import static com.ytfs.common.conf.ServerConfig.httpServlet;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_ACTIVE_NODES_PATH;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_CHG_MPOOL;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_NEW_NODEID;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_PRE_REGNODE;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_QUERY_VHF;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_RELATION_SHIP_PATH;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_STAT_PATH;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_TOTAL_PATH;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_USER_LIST_PATH;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_USER_TOTAL_PATH;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
@@ -29,17 +33,22 @@ public class HttpServerBoot {
             networkListener.getTransport().setWorkerThreadPoolConfig(threadPoolConfig);
             httpServer.addListener(networkListener);
             HttpHandler httpHandler = new LocalHttpHandler();
-            httpServer.getServerConfiguration().addHttpHandler(httpHandler,
-                    new String[]{"/",
-                        REQ_TOTAL_PATH,
-                        REQ_USER_TOTAL_PATH,
-                        REQ_ACTIVE_NODES_PATH,
-                        REQ_RELATION_SHIP_PATH,
-                        REQ_USER_LIST_PATH,
-                        REQ_STAT_PATH,
-                        REQ_NEW_NODEID,
-                        REQ_PRE_REGNODE,
-                        REQ_CHG_MPOOL});
+            List<String> servlets = new ArrayList();
+            servlets.add("/");
+            servlets.add(REQ_TOTAL_PATH);
+            servlets.add(REQ_USER_TOTAL_PATH);
+            servlets.add(REQ_ACTIVE_NODES_PATH);
+            servlets.add(REQ_RELATION_SHIP_PATH);
+            servlets.add(REQ_USER_LIST_PATH);
+            servlets.add(REQ_STAT_PATH);
+            servlets.add(REQ_NEW_NODEID);
+            servlets.add(REQ_PRE_REGNODE);
+            servlets.add(REQ_CHG_MPOOL);
+            if (httpServlet != null && !httpServlet.isEmpty()) {
+                REQ_QUERY_VHF = httpServlet.startsWith("/") ? httpServlet : ("/" + httpServlet);
+                servlets.add(REQ_QUERY_VHF);
+            }
+            httpServer.getServerConfiguration().addHttpHandler(httpHandler, servlets.toArray(new String[servlets.size()]));
             httpServer.start();
         }
         ipList = ServerConfig.httpRemoteIp.split(";");

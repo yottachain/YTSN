@@ -65,8 +65,9 @@ public class CacheBaseAccessor {
     }
 
     public static Document findOneNewObject() throws Throwable {
-        //CacheBaseSource.getObjectNewCollection().find
-        return null;
+        Document update = new Document();
+        Document doc = CacheBaseSource.getObjectNewCollection().findOneAndDelete(update);
+        return doc;
     }
 
 }

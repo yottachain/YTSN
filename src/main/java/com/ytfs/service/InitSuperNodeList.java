@@ -106,7 +106,7 @@ public class InitSuperNodeList {
     }
 
     public static byte[] sha256() throws NoSuchAlgorithmException, IOException {
-        InputStream is = InitSuperNodeList.class.getResourceAsStream("InitSuperNodeList.class");
+        InputStream is = InitSuperNodeList.class.getResourceAsStream("/InitSuperNodeList.class");
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             byte[] bs = new byte[1024];

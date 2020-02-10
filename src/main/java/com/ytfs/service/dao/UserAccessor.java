@@ -6,7 +6,9 @@ import com.mongodb.client.model.UpdateOptions;
 import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.bp.UserSpace;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -15,6 +17,34 @@ import org.bson.types.Binary;
 public class UserAccessor {
 
     private static final Logger LOG = Logger.getLogger(UserAccessor.class);
+
+    public static Map<String, Long> sumRelationship() {
+        Bson filter = Filters.ne("relationship", null);
+        Document fields = new Document("usedspace", 1);
+        fields.append("relationship", 1);
+        Bson sort = new Document("relationship", 1);
+        Map<String, Long> map = new HashMap();
+        FindIterable<Document> it = MongoSource.getUserCollection().find(filter).projection(fields).sort(sort);
+        for (Document doc : it) {
+            String relationship = doc.getString("relationship");
+            if (map.containsKey(relationship)) {
+                map.put(relationship, map.get(relationship) + doc.getLong("usedspace"));
+            } else {
+                map.put(relationship, doc.getLong("usedspace"));
+            }
+        }
+        return map;
+    }
+
+    public static void updateRelationshipCache(int snid, String mowner, long usedspace) {
+        Bson bson1 = Filters.eq("snid", snid);
+        Bson bson2 = Filters.eq("mowner", mowner);
+        Bson bson = Filters.and(bson1, bson2);
+        Document update = new Document("$set", new Document("usedspace", usedspace));
+        UpdateOptions updateOptions = new UpdateOptions();
+        updateOptions.upsert(true);
+        MongoSource.getDNIMetaSource().getSpaceSum_collection().updateOne(bson, update, updateOptions);
+    }
 
     public static void updateRelationship(String relationship, String username) {
         Bson bson = Filters.eq("username", username);

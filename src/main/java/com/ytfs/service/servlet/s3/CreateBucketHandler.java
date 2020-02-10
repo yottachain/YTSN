@@ -1,5 +1,6 @@
 package com.ytfs.service.servlet.s3;
 
+import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.service.dao.BucketAccessor;
 import com.ytfs.service.dao.BucketMeta;
 import com.ytfs.service.dao.User;
@@ -18,6 +19,9 @@ public class CreateBucketHandler extends Handler<CreateBucketReq> {
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
+        if (user == null) {
+            return new ServiceException(ServiceErrorCode.NEED_LOGIN);
+        }
         LOG.info("Crate bucket:" + user.getUserID() + "/" + request.getBucketName());
         String name = request.getBucketName();
         name = name == null ? "" : name.trim();
@@ -25,7 +29,7 @@ public class CreateBucketHandler extends Handler<CreateBucketReq> {
             throw new ServiceException(INVALID_BUCKET_NAME);
         }
         byte[] byte_meta = request.getMeta();
-        BucketMeta meta = new BucketMeta(user.getUserID(), new ObjectId(), name,byte_meta);
+        BucketMeta meta = new BucketMeta(user.getUserID(), new ObjectId(), name, byte_meta);
         meta.setMeta(request.getMeta());
         BucketAccessor.saveBucketMeta(meta);
         return new VoidResp();

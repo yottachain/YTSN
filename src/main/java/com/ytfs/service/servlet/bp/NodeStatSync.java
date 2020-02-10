@@ -6,7 +6,6 @@ import com.ytfs.service.SNSynchronizer;
 import com.ytfs.service.packet.bp.NodeSyncReq;
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,7 +63,7 @@ public class NodeStatSync extends Thread {
         List<Node> coll = new ArrayList(nodestats.values());
         List<Node> nodes = new ArrayList();
         for (Node node : coll) {
-            if (System.currentTimeMillis() - (node.getTimestamp() * 1000) < 1000 * 60 * 4) {
+            if (System.currentTimeMillis() - (node.getTimestamp() * 1000L) < 1000 * 60 * 4) {
                 nodes.add(node);
             } else {
                 nodestats.remove(node.getId());

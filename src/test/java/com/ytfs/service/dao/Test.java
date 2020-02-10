@@ -9,7 +9,13 @@ import org.bson.types.ObjectId;
 public class Test {
 
     public static void main(String[] arg) throws Exception {
-        String username="storename123";
+        long st = System.currentTimeMillis();
+        ObjectId id = new ObjectId();
+        long et = id.getTimestamp() * 1000L;
+
+        System.out.println(st);
+        System.out.println(et);
+
         // com.fasterxml.jackson.databind.
     }
 
@@ -55,7 +61,7 @@ public class Test {
         String pubkey = ss.substring(3);
         System.out.println(pubkey);
         byte[] kuep = Base58.decode(pubkey);
- 
+
         UserAccessor.addUser(usr);
     }
 
