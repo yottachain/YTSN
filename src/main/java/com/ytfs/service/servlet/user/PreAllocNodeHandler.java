@@ -32,10 +32,17 @@ public class PreAllocNodeHandler extends Handler<PreAllocNodeReq> {
         PreAllocNodeResp resp = new PreAllocNodeResp();
         try {
             LOG.info("User " + user.getUserID() + " AllocNodes,count:" + count);
-            List<Node> nodes = NodeManager.getNode(count, request.getExcludes());
-            nodes.stream().map((node) -> new PreAllocNode(node)).filter((n) -> (resp.addNode(n))).forEach((n) -> {
-                sign(n);
-            });
+            List<Node> nodes = NodeManager.getNode(1000, request.getExcludes());
+            for (Node node : nodes) {
+                if (resp.getList().size() >= count) {
+                    break;
+                } else {
+                    PreAllocNode n = new PreAllocNode(node);
+                    if (resp.addNode(n)) {
+                        sign(n);
+                    }
+                }
+            }
             LOG.info("User " + user.getUserID() + " AllocNodes OK,return " + resp.getList().size());
             return resp;
         } catch (NodeMgmtException ex) {
