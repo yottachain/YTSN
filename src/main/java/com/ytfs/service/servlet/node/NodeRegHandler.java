@@ -5,8 +5,6 @@ import static com.ytfs.common.ServiceErrorCode.NODE_EXISTS;
 import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.NodeRegReq;
 import com.ytfs.service.packet.NodeRegResp;
-import io.yottachain.nodemgmt.YottaNodeMgmt;
-import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -19,9 +17,10 @@ public class NodeRegHandler extends Handler<NodeRegReq> {
     public Object handle() throws Throwable {
         LOG.info("Reg Node:" + request.getNodeid());
         try {
-            Node node = YottaNodeMgmt.registerNode(request.getId(), request.getNodeid(),
-                    this.getPublicKey(), request.getOwner(),
-                    request.getMaxDataSpace(), request.getAddrs(), request.isRelay());
+            //Node node = YottaNodeMgmt.registerNode(request.getId(), request.getNodeid(),
+            //  this.getPublicKey(), request.getOwner(),
+            //  request.getMaxDataSpace(), request.getAddrs(), request.isRelay());
+            Node node = null;
             NodeRegResp resp = new NodeRegResp();
             resp.setId(node.getId());
             resp.setAssignedSpace(node.getAssignedSpace());
@@ -31,7 +30,7 @@ public class NodeRegHandler extends Handler<NodeRegReq> {
             }
             LOG.info("Node Registered,Id:" + node.getId());
             return resp;
-        } catch (NodeMgmtException e) {
+        } catch (Exception e) {
             if (e.getMessage().contains("multiple write")) {
                 LOG.warn("Nodes exist,ID:" + request.getNodeid());
                 return new ServiceException(NODE_EXISTS);
