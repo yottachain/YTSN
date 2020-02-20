@@ -20,10 +20,13 @@ public class ServiceWrapper implements WrapperListener {
 
     @Override
     public Integer start(String[] strings) {
+        String rebuild = WrapperManager.getProperties().getProperty("wrapper.ytsn.rebuild", "on");
         ServerInitor.init();
         NewObjectScanner.startUp();
         SumRelationShip.startUp();
-        QueryRebuildNode.startUp();
+        if (rebuild.equalsIgnoreCase("on")) {
+            QueryRebuildNode.startUp();
+        }
         UserFeeStat.startUp();
         DNISenderPool.startup();
         NodeStatSync.startup();

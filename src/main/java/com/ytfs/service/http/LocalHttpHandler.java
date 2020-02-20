@@ -24,10 +24,10 @@ import com.ytfs.service.servlet.HandlerFactory;
 import com.ytfs.service.servlet.bp.UserStatHandler;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
+import io.yottachain.nodemgmt.core.vo.ApiName;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +53,12 @@ public class LocalHttpHandler extends HttpHandler {
     static final String REQ_NEW_NODEID = "/newnodeid";
     static final String REQ_PRE_REGNODE = "/preregnode";
     static final String REQ_CHG_MPOOL = "/changeminerpool";
+    static final String REQ_API_1 = "/ChangeAdminAcc";
+    static final String REQ_API_2 = "/ChangeProfitAcc";
+    static final String REQ_API_3 = "/ChangePoolID";
+    static final String REQ_API_4 = "/ChangeAssignedSpace";
+    static final String REQ_API_5 = "/ChangeDepAcc";
+    static final String REQ_API_6 = "/ChangeDeposit";
     static String REQ_QUERY_VHF = "/findvhf";
 
     @Override
@@ -119,37 +125,21 @@ public class LocalHttpHandler extends HttpHandler {
                 String res = "{\"nodeid\": " + id + "}";
                 rspns.getWriter().write(res);
             } else if (path.equalsIgnoreCase(REQ_PRE_REGNODE)) {
-                rspns.setContentType("text/plain");
-                if (rqst.getMethod() == Method.POST) {
-                    InputStream is = new BufferedInputStream(rqst.getInputStream());
-                    ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    int b = 0;
-                    while ((b = is.read()) != -1) {
-                        os.write(b);
-                    }
-                    String trx = new String(os.toByteArray(), "utf-8");
-                    LOG.info("PreRegisterNode:" + trx);
-                    YottaNodeMgmt.preRegisterNode(trx);
-                    rspns.setContentType("text/plain");
-                    rspns.getWriter().write("OK");
-                }
+                callApi(rqst, rspns, ApiName.PreRegisterNode);
             } else if (path.equalsIgnoreCase(REQ_CHG_MPOOL)) {
-                rspns.setContentType("text/plain");
-                if (rqst.getMethod() == Method.POST) {
-                    InputStream is = new BufferedInputStream(rqst.getInputStream());
-                    ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    int b = 0;
-                    while ((b = is.read()) != -1) {
-                        os.write(b);
-                    }
-                    String trx = new String(os.toByteArray(), "utf-8");
-                    LOG.info("ChangeMinerPool:" + trx);
-                    YottaNodeMgmt.changeMinerPool(trx);
-                    rspns.setContentType("text/plain");
-                    rspns.getWriter().write("OK");
-                } else {
-                    rspns.sendError(500);
-                }
+                callApi(rqst, rspns, ApiName.ChangeMinerPool);
+            } else if (path.equalsIgnoreCase(REQ_API_1)) {
+                callApi(rqst, rspns, ApiName.ChangeAdminAcc);
+            } else if (path.equalsIgnoreCase(REQ_API_2)) {
+                callApi(rqst, rspns, ApiName.ChangeProfitAcc);
+            } else if (path.equalsIgnoreCase(REQ_API_3)) {
+                callApi(rqst, rspns, ApiName.ChangePoolID);
+            } else if (path.equalsIgnoreCase(REQ_API_4)) {
+                callApi(rqst, rspns, ApiName.ChangeAssignedSpace);
+            } else if (path.equalsIgnoreCase(REQ_API_5)) {
+                callApi(rqst, rspns, ApiName.ChangeDepAcc);
+            } else if (path.equalsIgnoreCase(REQ_API_6)) {
+                callApi(rqst, rspns, ApiName.ChangeDeposit);
             } else if (path.equalsIgnoreCase(REQ_QUERY_VHF)) {
                 rspns.setContentType("text/plain");
                 String res = lookup(rqst);
@@ -168,6 +158,24 @@ public class LocalHttpHandler extends HttpHandler {
             LOG.error("", e);
             String message = e.getMessage();
             rspns.sendError(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode(), message);
+        }
+    }
+
+    private void callApi(Request rqst, Response rspns, ApiName apiname) throws Exception {
+        rspns.setContentType("text/plain");
+        if (rqst.getMethod() == Method.POST) {
+            InputStream is = new BufferedInputStream(rqst.getInputStream());
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            int b = 0;
+            while ((b = is.read()) != -1) {
+                os.write(b);
+            }
+            String trx = new String(os.toByteArray(), "utf-8");
+            LOG.info("Call API:" + apiname + ",trx:" + trx);
+            YottaNodeMgmt.callAPI(trx, apiname);
+            rspns.getWriter().write("OK");
+        } else {
+            rspns.sendError(500);
         }
     }
 
@@ -290,10 +298,5 @@ public class LocalHttpHandler extends HttpHandler {
             }
         }
         return true;
-    }
-
-    public static void main(String[] args) throws IOException {
-        HttpServerBoot.ipList = new String[]{"192.168.1.21"};
-        System.out.println(checkIp("192.168.1.21"));
     }
 }

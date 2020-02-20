@@ -3,6 +3,12 @@ package com.ytfs.service.http;
 import com.ytfs.common.conf.ServerConfig;
 import static com.ytfs.common.conf.ServerConfig.httpServlet;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_ACTIVE_NODES_PATH;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_API_1;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_API_2;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_API_3;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_API_4;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_API_5;
+import static com.ytfs.service.http.LocalHttpHandler.REQ_API_6;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_CHG_MPOOL;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_NEW_NODEID;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_PRE_REGNODE;
@@ -44,6 +50,12 @@ public class HttpServerBoot {
             servlets.add(REQ_NEW_NODEID);
             servlets.add(REQ_PRE_REGNODE);
             servlets.add(REQ_CHG_MPOOL);
+            servlets.add(REQ_API_1);
+            servlets.add(REQ_API_2);
+            servlets.add(REQ_API_3);
+            servlets.add(REQ_API_4);
+            servlets.add(REQ_API_5);
+            servlets.add(REQ_API_6);
             if (httpServlet != null && !httpServlet.isEmpty()) {
                 REQ_QUERY_VHF = httpServlet.startsWith("/") ? httpServlet : ("/" + httpServlet);
                 servlets.add(REQ_QUERY_VHF);
