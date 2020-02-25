@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.Method;
+import org.glassfish.grizzly.http.server.ErrorPageGenerator;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
@@ -157,6 +158,15 @@ public class LocalHttpHandler extends HttpHandler {
         } catch (Throwable e) {
             LOG.error("", e);
             String message = e.getMessage();
+            rspns.setContentType("text/plain");
+            rspns.setErrorPageGenerator(new ErrorPageGenerator() {
+                @Override
+                public String generate(final Request request,
+                        final int status, final String reasonPhrase,
+                        final String description, final Throwable exception) {
+                    return description;
+                }
+            });
             rspns.sendError(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode(), message);
         }
     }
