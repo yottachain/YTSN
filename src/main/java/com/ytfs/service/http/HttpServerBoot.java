@@ -34,6 +34,7 @@ public class HttpServerBoot {
     public static void startHttpServer() throws IOException {
         if (httpServer == null) {
             httpServer = new HttpServer();
+            
             NetworkListener networkListener = new NetworkListener("ytsn", "0.0.0.0", ServerConfig.httpPort);
             ThreadPoolConfig threadPoolConfig = ThreadPoolConfig.defaultConfig().setCorePoolSize(2).setMaxPoolSize(20);
             networkListener.getTransport().setWorkerThreadPoolConfig(threadPoolConfig);

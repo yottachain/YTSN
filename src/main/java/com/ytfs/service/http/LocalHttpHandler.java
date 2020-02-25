@@ -8,7 +8,6 @@ import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.SNSynchronizer;
 import com.ytfs.service.dao.DNIAccessor;
-import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserAccessor;
 import com.ytfs.service.packet.bp.Relationship;
 import com.ytfs.service.packet.bp.TotalReq;
@@ -17,11 +16,8 @@ import com.ytfs.service.packet.bp.UserListReq;
 import com.ytfs.service.packet.bp.UserListResp;
 import com.ytfs.service.packet.bp.UserSpace;
 import com.ytfs.service.packet.bp.UserSpace.UserSpaceComparator;
-import com.ytfs.service.packet.bp.UserSpaceReq;
-import com.ytfs.service.packet.bp.UserSpaceResp;
 import com.ytfs.service.servlet.Handler;
 import com.ytfs.service.servlet.HandlerFactory;
-import com.ytfs.service.servlet.bp.UserStatHandler;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.vo.ApiName;
@@ -35,10 +31,13 @@ import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.Method;
+import org.glassfish.grizzly.http.server.ErrorPageGenerator;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
+import org.glassfish.grizzly.http.server.util.HtmlHelper;
 import org.glassfish.grizzly.http.util.HttpStatus;
+import org.glassfish.grizzly.http.util.HttpUtils;
 
 public class LocalHttpHandler extends HttpHandler {
 
@@ -157,7 +156,16 @@ public class LocalHttpHandler extends HttpHandler {
         } catch (Throwable e) {
             LOG.error("", e);
             String message = e.getMessage();
-            rspns.sendError(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode(), message);
+            rspns.setContentType("text/plain");            
+            rspns.setErrorPageGenerator(new ErrorPageGenerator() {
+                @Override
+                public String generate(final Request request,
+                        final int status, final String reasonPhrase,
+                        final String description, final Throwable exception) {                   
+                    return description;
+                }
+            });
+            rspns.sendError(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode(),message);
         }
     }
 
@@ -273,6 +281,8 @@ public class LocalHttpHandler extends HttpHandler {
     }
 
     private String getusertotal(String username) throws Exception {
+        throw new Exception("Invalid username:" + username);
+        /*
         User user = UserAccessor.getUser(username);
         if (user == null) {
             throw new Exception("Invalid username:" + username);
@@ -285,7 +295,7 @@ public class LocalHttpHandler extends HttpHandler {
         } else {
             UserSpaceResp resp = (UserSpaceResp) P2PUtils.requestBP(req, sn);
             return resp.getJson();
-        }
+        }*/
     }
 
     private static boolean checkIp(String ip) {
