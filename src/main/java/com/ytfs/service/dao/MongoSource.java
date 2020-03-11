@@ -5,6 +5,7 @@ import com.mongodb.*;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.*;
 import com.mongodb.client.model.*;
+import com.ytfs.common.conf.ServerConfig;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
@@ -14,7 +15,17 @@ import org.bson.Document;
 
 public class MongoSource {
 
-    private static final String DATABASENAME = "metabase";
+    private static final String DATABASENAME;
+
+    static {
+        String s = System.getenv("IPFS_DBNAME_SNID");
+        boolean IPFS_DBNAME_SNID = s != null && s.trim().equalsIgnoreCase("yes");
+        if (IPFS_DBNAME_SNID) {
+            DATABASENAME = "metabase" + "_" + ServerConfig.superNodeID;
+        } else {
+            DATABASENAME = "metabase";
+        }
+    }
 
     //用户表
     public static final String USER_TABLE_NAME = "users";

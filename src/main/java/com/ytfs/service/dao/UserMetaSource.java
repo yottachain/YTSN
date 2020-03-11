@@ -6,6 +6,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
+import com.ytfs.common.conf.ServerConfig;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 
@@ -13,7 +14,18 @@ public class UserMetaSource {
 
     private static final Logger LOG = Logger.getLogger(UserMetaSource.class);
 
-    private static final String DATABASENAME = "usermeta_";
+    private static final String DATABASENAME;
+
+    static {
+        String s = System.getenv("IPFS_DBNAME_SNID");
+        boolean IPFS_DBNAME_SNID = s != null && s.trim().equalsIgnoreCase("yes");
+        if (IPFS_DBNAME_SNID) {
+            DATABASENAME = "usermeta_" + ServerConfig.superNodeID + "_";
+        } else {
+            DATABASENAME = "usermeta_";
+        }
+    }
+
     //bucket
     public static final String BUCKET_TABLE_NAME = "buckets";
     private static final String BUCKET_INDEX_NAME = "BUKNAME";//唯一

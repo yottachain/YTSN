@@ -1485,6 +1485,8 @@ docommand() {
 	    export IPFS_LOGGING=error
             export P2PHOST_ENABLEPPROF=true
             export NODEMGMT_IPDBPATH=/app/ytsn/yotta.ipdb
+            export IPFS_BP_ENABLE=no
+            export IPFS_DBNAME_SNID=yes
             if [ "$DIST_OS" = "macosx" -a -f "/Library/LaunchDaemons/${APP_PLIST}" ] ; then
                 macosxstart
             elif [ "$DIST_OS" = "linux" -a -f "/etc/init/${APP_NAME}.conf" ] ; then
@@ -1511,6 +1513,8 @@ docommand() {
             export IPFS_LOGGING=error
             export P2PHOST_ENABLEPPROF=true
             export NODEMGMT_IPDBPATH=/app/ytsn/yotta.ipdb
+            export IPFS_BP_ENABLE=no
+            export IPFS_DBNAME_SNID=yes
 	    checkUser touchlock "$COMMAND"
             if [ ! -n "$FIXED_COMMAND" ] ; then
                 shift
