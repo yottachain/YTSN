@@ -17,7 +17,7 @@ public class DNIMetaSource {
         String s = System.getenv("IPFS_DBNAME_SNID");
         boolean IPFS_DBNAME_SNID = s != null && s.trim().equalsIgnoreCase("yes");
         if (IPFS_DBNAME_SNID) {
-            DATABASENAME = "yotta" + "_" + ServerConfig.superNodeID;
+            DATABASENAME = "yotta" + ServerConfig.superNodeID;
         } else {
             DATABASENAME = "yotta";
         }

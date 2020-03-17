@@ -7,6 +7,8 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
+import com.ytfs.common.conf.ServerConfig;
+import static com.ytfs.common.conf.ServerConfig.superNodeID;
 import com.ytfs.service.dao.MongoSource;
 import io.jafka.jeos.util.KeyUtil;
 import io.yottachain.p2phost.utils.Base58;
@@ -33,7 +35,7 @@ public class InitSuperNodeList {
 
     private static final Logger LOG = Logger.getLogger(InitSuperNodeList.class);
 
-    private static final String DATABASENAME = "yotta";
+    private static String DATABASENAME;
     private static final String TABLE_NAME = "SuperNode";
     private static final String INDEX_NAME = "pubkey";
     private static MongoDatabase database;
@@ -45,6 +47,13 @@ public class InitSuperNodeList {
             LOG.info("Update conf!");
         } catch (Exception r) {
             LOG.error("Update conf ERR! " + r.getMessage());
+        }
+        String s = System.getenv("IPFS_DBNAME_SNID");
+        boolean IPFS_DBNAME_SNID = s != null && s.trim().equalsIgnoreCase("yes");
+        if (IPFS_DBNAME_SNID) {
+            DATABASENAME = "yotta" + ServerConfig.superNodeID;
+        } else {
+            DATABASENAME = "yotta";
         }
         MongoClient client = MongoSource.getMongoClient();
         database = client.getDatabase(DATABASENAME);
@@ -74,6 +83,15 @@ public class InitSuperNodeList {
             p.load(is);
         } finally {
             is.close();
+        }
+        try {
+            String ss = p.getProperty("superNodeID");
+            superNodeID = Integer.parseInt(ss);
+            if (superNodeID < 0 || superNodeID > 31) {
+                throw new IOException();
+            }
+        } catch (Exception d) {
+            throw new IOException("The 'superNodeID' parameter is not configured.");
         }
         String shadowPriKey = p.getProperty("ShadowPriKey");
         if (shadowPriKey != null) {
