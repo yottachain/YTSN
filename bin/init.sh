@@ -1,6 +1,7 @@
 # ! /bin/sh
 # ---------------------surfs-----------------------
 source ytsn.ev
+export IPFS_DBNAME_SNID=yes
 
 if [ -z $YTFS_HOME ]; then  
     echo "Environment variable 'YTFS_HOME' not found "
