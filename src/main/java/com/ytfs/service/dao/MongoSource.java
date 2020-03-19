@@ -15,10 +15,12 @@ import org.bson.Document;
 
 public class MongoSource {
 
+    private static final Logger LOG = Logger.getLogger(MongoSource.class);
     private static final String DATABASENAME;
 
     static {
         String s = System.getenv("IPFS_DBNAME_SNID");
+        LOG.info("READ dev IPFS_DBNAME_SNID:" + s);
         boolean IPFS_DBNAME_SNID = s != null && s.trim().equalsIgnoreCase("yes");
         if (IPFS_DBNAME_SNID) {
             DATABASENAME = "metabase" + "_" + ServerConfig.superNodeID;
@@ -160,7 +162,6 @@ public class MongoSource {
         }
     }
 
-    private static final Logger LOG = Logger.getLogger(MongoSource.class);
     private Proxy proxy = null;
     private MongoClient client = null;
     private MongoDatabase database;
@@ -258,6 +259,7 @@ public class MongoSource {
         client = MongoClients.create(settings);
         LOG.info("Successful connection to Mongo server.");
         database = client.getDatabase(DATABASENAME);
+        LOG.info("Successful creation of DB:" + DATABASENAME);
     }
 
     private void init_user_collection() {
