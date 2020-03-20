@@ -6,11 +6,22 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
+import com.ytfs.common.conf.ServerConfig;
 import org.bson.Document;
 
 public class DNIMetaSource {
 
-    private static final String DATABASENAME = "yotta";
+    private static final String DATABASENAME;
+
+    static {
+        String s = System.getenv("IPFS_DBNAME_SNID");
+        boolean IPFS_DBNAME_SNID = s != null && s.trim().equalsIgnoreCase("yes");
+        if (IPFS_DBNAME_SNID) {
+            DATABASENAME = "yotta" + ServerConfig.superNodeID;
+        } else {
+            DATABASENAME = "yotta";
+        }
+    }
 
     public static final String DNI_TABLE_NAME = "Shards";
     public static final String SPACESUN_TABLE_NAME = "SpaceSum";

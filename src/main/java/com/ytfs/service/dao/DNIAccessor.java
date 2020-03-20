@@ -1,15 +1,79 @@
 package com.ytfs.service.dao;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
+import static com.ytfs.common.ServiceErrorCode.INVALID_NEXTID;
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.node.ListDNIResp;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 
 public class DNIAccessor {
+
+    private static final Logger LOG = Logger.getLogger(DNIAccessor.class);
+
+    public static class LastIterable {
+
+        private List<Document> lastList; 
+        private FindIterable<Document> iterable = null;
+        private boolean exec = false;
+
+        private ListDNIResp query(int nodeId, String nextId, int limit) throws ServiceException {
+            ListDNIResp resp = new ListDNIResp();
+            if (exec) {
+                resp.setNextId(nextId);
+                resp.setVhfList(new ArrayList());
+                return resp;
+            }
+            synchronized (this) {
+                try {
+                    ObjectId nid = null;
+                    if (!(nextId == null || nextId.trim().isEmpty())) {
+                        try {
+                            nid = new ObjectId(nextId);
+                        } catch (Exception d) {
+                            LOG.warn("Invalid parameter nextId=" + nextId);
+                            throw new ServiceException(INVALID_NEXTID);
+                        }
+                    }
+                    if (iterable != null) {
+                        for(Document doc:lastList){
+                            ObjectId id=doc.getObjectId("_id");
+                            if(id.equals(nid)){
+                                //OK
+                            }
+                        }                       
+                    }
+                    return null;
+                } finally {
+                    exec = false;
+                }
+            }
+        }
+    }
+
+    private static final Cache<Integer, LastIterable> its = CacheBuilder.newBuilder()
+            .expireAfterAccess(5, TimeUnit.MINUTES)
+            .maximumSize(10000)
+            .build();
+
+    public static ListDNIResp listDNI1(int nodeId, String nextId, int limit) throws ServiceException {
+        LastIterable lastit = its.getIfPresent(nodeId);
+        if (lastit == null) {
+            lastit = new LastIterable();
+            its.put(nodeId, lastit);
+        }
+        return lastit.query(nodeId, nextId, limit);
+    }
 
     public static boolean findDNI(int nodeId, byte[] vhf) {
         Bson filter = Filters.eq("minerID", nodeId);
@@ -50,6 +114,8 @@ public class DNIAccessor {
         FindIterable<Document> it = MongoSource.getDNIMetaSource().getDNI_collection().find(filter).projection(fields).sort(sort).limit(limit);
         ListDNIResp resp = new ListDNIResp();
         ObjectId lastObjectId = null;
+        it.batchSize(limit);
+ 
         for (Document doc : it) {
             if (System.currentTimeMillis() - doc.getObjectId("_id").getTimestamp() * 1000L < 1000L * 60L * 5L) {
                 break;

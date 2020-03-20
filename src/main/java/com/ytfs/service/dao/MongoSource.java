@@ -5,6 +5,7 @@ import com.mongodb.*;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.*;
 import com.mongodb.client.model.*;
+import com.ytfs.common.conf.ServerConfig;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
@@ -14,7 +15,19 @@ import org.bson.Document;
 
 public class MongoSource {
 
-    private static final String DATABASENAME = "metabase";
+    private static final Logger LOG = Logger.getLogger(MongoSource.class);
+    private static final String DATABASENAME;
+
+    static {
+        String s = System.getenv("IPFS_DBNAME_SNID");
+        LOG.info("READ dev IPFS_DBNAME_SNID:" + s);
+        boolean IPFS_DBNAME_SNID = s != null && s.trim().equalsIgnoreCase("yes");
+        if (IPFS_DBNAME_SNID) {
+            DATABASENAME = "metabase" + "_" + ServerConfig.superNodeID;
+        } else {
+            DATABASENAME = "metabase";
+        }
+    }
 
     //用户表
     public static final String USER_TABLE_NAME = "users";
@@ -149,7 +162,6 @@ public class MongoSource {
         }
     }
 
-    private static final Logger LOG = Logger.getLogger(MongoSource.class);
     private Proxy proxy = null;
     private MongoClient client = null;
     private MongoDatabase database;
@@ -247,6 +259,7 @@ public class MongoSource {
         client = MongoClients.create(settings);
         LOG.info("Successful connection to Mongo server.");
         database = client.getDatabase(DATABASENAME);
+        LOG.info("Successful creation of DB:" + DATABASENAME);
     }
 
     private void init_user_collection() {

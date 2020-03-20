@@ -4,11 +4,23 @@ import com.mongodb.MongoException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.ytfs.common.conf.ServerConfig;
 import org.bson.Document;
 
 public class CacheBaseSource {
 
-    private static final String DATABASENAME = "cache";
+    private static final String DATABASENAME;
+
+    static {
+        String s = System.getenv("IPFS_DBNAME_SNID");
+        boolean IPFS_DBNAME_SNID = s != null && s.trim().equalsIgnoreCase("yes");
+        if (IPFS_DBNAME_SNID) {
+            DATABASENAME = "cache" + "_" + ServerConfig.superNodeID;
+        } else {
+            DATABASENAME = "cache";
+        }
+    }
+
     public static final String DNI_CACHE_NAME = "dnis";
     public static final String OBJECT_NEW_TABLE_NAME = "objects_new";
 
