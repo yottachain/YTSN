@@ -3,7 +3,9 @@ package com.ytfs.service.dao;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.ytfs.common.ServiceErrorCode;
+import static com.ytfs.common.ServiceErrorCode.INVALID_SIGNATURE;
 import com.ytfs.common.ServiceException;
+import com.ytfs.service.packet.v2.AuthReq;
 import io.yottachain.p2phost.utils.Base58;
 import io.yottachain.ytcrypto.core.exception.YTCryptoException;
 import java.nio.charset.Charset;
@@ -13,6 +15,37 @@ public class UserCache {
 
     private static final long MAX_SIZE = 5000000;
     private static final long READ_EXPIRED_TIME = 60;
+
+    private static final Cache<String, User> usersv2 = CacheBuilder.newBuilder()
+            .expireAfterAccess(READ_EXPIRED_TIME, TimeUnit.MINUTES)
+            .maximumSize(MAX_SIZE)
+            .build();
+
+    public static void putUser(int userid, int keyNumber, User user) {
+        String key = userid + "-" + keyNumber;
+        byte[] pubkey = user.getKUEp()[keyNumber];
+        user.setKUEp(new byte[][]{pubkey});
+        usersv2.put(key, user);
+    }
+
+    public static User getUser(AuthReq req) {
+        String key = req.getUserId() + "-" + req.getKeyNumber();
+        User user = usersv2.getIfPresent(key);
+        if (user == null) {
+            user = UserAccessor.getUser(req.getUserId());
+            if (user == null) {
+                return null;
+            } else {
+                byte[] pubkey = user.getKUEp()[req.getKeyNumber()];
+                user.setKUEp(new byte[][]{pubkey});
+                usersv2.put(key, user);
+            }
+        }
+        if (!req.verify(user.getKUEp()[0])) {
+            return null;
+        }
+        return user;
+    }
 
     private static final Cache<String, UserEx> users = CacheBuilder.newBuilder()
             .expireAfterAccess(READ_EXPIRED_TIME, TimeUnit.MINUTES)
