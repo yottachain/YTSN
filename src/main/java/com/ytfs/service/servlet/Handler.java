@@ -1,10 +1,12 @@
 package com.ytfs.service.servlet;
 
+import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache;
 import com.ytfs.common.node.NodeCache;
 import com.ytfs.common.node.NodeInfo;
 import com.ytfs.service.dao.UserCache.UserEx;
+import com.ytfs.service.packet.v2.AuthReq;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 
 public abstract class Handler<T> {
@@ -26,6 +28,10 @@ public abstract class Handler<T> {
 
     protected final UserEx getUserEx() {
         return UserCache.getUserEx(pubkey);
+    }
+
+    protected final User getUser(AuthReq req) {
+        return UserCache.getUser(req);
     }
 
     protected final User getUser() {
