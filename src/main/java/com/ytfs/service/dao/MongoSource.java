@@ -12,12 +12,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 public class MongoSource {
-
+    
     private static final Logger LOG = Logger.getLogger(MongoSource.class);
     private static final String DATABASENAME;
-
+    
     static {
         String s = System.getenv("IPFS_DBNAME_SNID");
         LOG.info("READ dev IPFS_DBNAME_SNID:" + s);
@@ -41,7 +42,7 @@ public class MongoSource {
 
     //分片元数据
     public static final String SHARD_TABLE_NAME = "shards";
-
+    
     private static MongoSource source = null;
 
     /**
@@ -59,12 +60,12 @@ public class MongoSource {
         newInstance();
         return source.authString;
     }
-
+    
     public static MongoSource getMongoSource() {
         newInstance();
         return source;
     }
-
+    
     private static void newInstance() {
         if (source != null) {
             return;
@@ -83,37 +84,37 @@ public class MongoSource {
             throw new MongoException(r.getMessage());
         }
     }
-
+    
     public static MongoCollection<Document> getUserCollection() {
         newInstance();
         return source.user_collection;
     }
-
+    
     static MongoCollection<Document> getBlockCollection() {
         newInstance();
         return source.block_collection;
     }
-
+    
     static MongoCollection<Document> getBlockDatCollection() {
         newInstance();
         return source.block_dat_collection;
     }
-
+    
     static MongoCollection<Document> getShardCollection() {
         newInstance();
         return source.shard_collection;
     }
-
+    
     static MongoCollection<Document> getBucketCollection(int userId) {
         UserMetaSource usersource = getUserMetaSource(userId);
         return usersource.getBucket_collection();
     }
-
+    
     static MongoCollection<Document> getFileCollection(int userId) {
         UserMetaSource usersource = getUserMetaSource(userId);
         return usersource.getFile_collection();
     }
-
+    
     private static UserMetaSource getUserMetaSource(int userId) {
         newInstance();
         UserMetaSource usersource = source.userbaseMap.get(userId);
@@ -127,32 +128,32 @@ public class MongoSource {
         }
         return usersource;
     }
-
+    
     public static MongoCollection<Document> getObjectCollection(int userId) {
         UserMetaSource usersource = getUserMetaSource(userId);
         return usersource.getObject_collection();
     }
-
+    
     public static MongoCollection<Document> getCollection(String tabname) {
         newInstance();
         return source.database.getCollection(tabname);
     }
-
+    
     static Proxy getProxy() {
         newInstance();
         return source.proxy;
     }
-
+    
     public static MongoClient getMongoClient() {
         newInstance();
         return source.client;
     }
-
+    
     public static DNIMetaSource getDNIMetaSource() {
         newInstance();
         return source.dnisource;
     }
-
+    
     public static void terminate() {
         synchronized (MongoSource.class) {
             if (source != null) {
@@ -161,7 +162,7 @@ public class MongoSource {
             }
         }
     }
-
+    
     private Proxy proxy = null;
     private MongoClient client = null;
     private MongoDatabase database;
@@ -171,10 +172,10 @@ public class MongoSource {
     private MongoCollection<Document> shard_collection = null;
     private Map<Integer, UserMetaSource> userbaseMap = new ConcurrentHashMap();
     private DNIMetaSource dnisource;
-
+    
     private List<ServerAddress> serverAddress;
     private String authString = "";
-
+    
     private MongoSource() throws MongoException {
         String path = System.getProperty("mongo.conf", "conf/mongo.properties");
         try (InputStream inStream = new FileInputStream(path)) {
@@ -191,7 +192,7 @@ public class MongoSource {
             throw e instanceof MongoException ? (MongoException) e : new MongoException(e.getMessage());
         }
     }
-
+    
     private ServerAddress toAddress(String host) {
         if (host.trim().isEmpty()) {
             return null;
@@ -204,7 +205,7 @@ public class MongoSource {
             return null;
         }
     }
-
+    
     private void init(Properties p) {
         String hostlist = p.getProperty("serverlist");
         if (hostlist == null || hostlist.trim().isEmpty()) {
@@ -261,7 +262,7 @@ public class MongoSource {
         database = client.getDatabase(DATABASENAME);
         LOG.info("Successful creation of DB:" + DATABASENAME);
     }
-
+    
     private void init_user_collection() {
         user_collection = database.getCollection(USER_TABLE_NAME);
         boolean indexCreated = false;
@@ -292,7 +293,7 @@ public class MongoSource {
         }
         LOG.info("Successful creation of user tables.");
     }
-
+    
     private void init_block_collection() {
         block_collection = database.getCollection(BLOCK_TABLE_NAME);
         boolean indexCreated = false;
@@ -310,6 +311,15 @@ public class MongoSource {
         }
         block_dat_collection = database.getCollection(BLOCK_DAT_TABLE_NAME);
         shard_collection = database.getCollection(SHARD_TABLE_NAME);
+        MongoCollection<Document> col = database.getCollection("block_count");
+        Bson filter = Filters.eq("_id", 1);
+        Document doc = col.find(filter).first();
+        if (doc == null) {
+            long count = block_collection.countDocuments();
+            doc = new Document("_id", 1);
+            doc.append("NLINK", count);
+            col.insertOne(doc);
+        }
         LOG.info("Successful creation of data block tables.");
     }
 }

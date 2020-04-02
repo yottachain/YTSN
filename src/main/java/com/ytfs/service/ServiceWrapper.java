@@ -13,7 +13,7 @@ public class ServiceWrapper implements WrapperListener {
 
     public static int REBUILDER_NODEID = 0;
     public static int REBUILDER_EXEC_NODEID = 0;
-        
+    public static boolean SPOTCHECK = false;
 
     public static void main(String[] args) {
         WrapperManager.start(new ServiceWrapper(), args);
@@ -22,10 +22,14 @@ public class ServiceWrapper implements WrapperListener {
     @Override
     public Integer start(String[] strings) {
         String rebuild = WrapperManager.getProperties().getProperty("wrapper.ytsn.rebuild", "on");
+        String spot = WrapperManager.getProperties().getProperty("wrapper.ytsn.spotcheck", "on");
+        if (spot != null && spot.trim().equalsIgnoreCase("on")) {
+            SPOTCHECK = true;
+        }
         ServerInitor.init();
         NewObjectScanner.startUp();
         SumRelationShip.startUp();
-        if (rebuild.equalsIgnoreCase("on")) {
+        if (rebuild != null && rebuild.trim().equalsIgnoreCase("on")) {
             QueryRebuildNode.startUp();
         }
         UserFeeStat.startUp();

@@ -27,6 +27,7 @@ public class BlockAccessor {
 
     public static void saveBlockMeta(BlockMeta meta) {
         MongoSource.getBlockCollection().insertOne(meta.toDocument());
+        BlockAccessor.incBlockCount();
         if (MongoSource.getProxy() != null) {
             LogMessage log = new LogMessage(Op_Block_New, meta);
             MongoSource.getProxy().post(log);
@@ -60,6 +61,7 @@ public class BlockAccessor {
             Bson filter = Filters.eq("_id", meta.getVBI());
             Document update = new Document("$inc", new Document("NLINK", num));
             MongoSource.getBlockCollection().findOneAndUpdate(filter, update);
+            BlockAccessor.incBlockNlinkCount();
             if (MongoSource.getProxy() != null) {
                 LogMessage log = new LogMessage(Op_Block_NLINK_INC, Function.long2bytes(meta.getVBI()));
                 MongoSource.getProxy().post(log);
@@ -102,7 +104,19 @@ public class BlockAccessor {
         }
     }
 
-    public static void incBlockNlinkCount() {
+    private static void incBlockCount() {
+        try {
+            MongoCollection<Document> col = MongoSource.getCollection("block_count");
+            Bson filter = Filters.eq("_id", 1);
+            Document update = new Document("$inc", new Document("NLINK", 1));
+            UpdateOptions updateOptions = new UpdateOptions();
+            updateOptions.upsert(true);
+            col.updateOne(filter, update, updateOptions);
+        } catch (Throwable e) {
+        }
+    }
+
+    private static void incBlockNlinkCount() {
         try {
             MongoCollection<Document> col = MongoSource.getCollection("block_count");
             Bson filter = Filters.eq("_id", 0);
@@ -114,23 +128,34 @@ public class BlockAccessor {
         }
     }
 
-    public static long getBlockNlinkCount() throws ServiceException {
+    public static long getBlockCount() {
+        Bson filter = Filters.eq("_id", 1);
+        Document doc = MongoSource.getCollection("block_count").find(filter).first();
+        if (doc == null) {
+            return 0;
+        } else {
+            Object obj = doc.get("NLINK");
+            if (obj instanceof Long) {
+                return doc.getLong("NLINK");
+            } else {
+                return doc.getInteger("NLINK");
+            }
+        }
+    }
+
+    public static long getBlockNlinkCount() {
         Bson filter = Filters.eq("_id", 0);
         Document doc = MongoSource.getCollection("block_count").find(filter).first();
         if (doc == null) {
             return 0;
         } else {
-            Object obj = doc.get("_id");
+            Object obj = doc.get("NLINK");
             if (obj instanceof Long) {
-                return doc.getLong("_id");
+                return doc.getLong("NLINK");
             } else {
-                return doc.getInteger("_id");
+                return doc.getInteger("NLINK");
             }
         }
-    }
-
-    public static long getBlockCount() throws ServiceException {
-        return MongoSource.getBlockCollection().countDocuments();
     }
 
     public static BlockMeta getBlockMetaVNF(long VBI) throws ServiceException {

@@ -5,6 +5,7 @@ import static com.ytfs.common.ServiceErrorCode.INVALID_NODE_ID;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.node.NodeInfo;
 import static com.ytfs.service.ServiceWrapper.REBUILDER_NODEID;
+import static com.ytfs.service.ServiceWrapper.SPOTCHECK;
 import com.ytfs.service.packet.StatusRepReq;
 import com.ytfs.service.packet.StatusRepResp;
 import com.ytfs.service.packet.VoidResp;
@@ -54,7 +55,9 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
             LOG.debug("StatusRep Node:" + request.getId() + ",take times " + (System.currentTimeMillis() - l) + " ms");
             NodeInfo nodeinfo = this.getNode();
             nodeinfo.setAddr(addrs);
-            SendSpotCheckTask.startUploadShard(nodeinfo);
+            if (SPOTCHECK) {
+                SendSpotCheckTask.startUploadShard(nodeinfo);
+            }
             return resp;
         } catch (NodeMgmtException e) {
             LOG.error("UpdateNodeStatus ERR:" + e.getMessage() + ",ID:" + request.getId() + ",take times " + (System.currentTimeMillis() - l) + " ms");

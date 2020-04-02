@@ -2,6 +2,7 @@ package com.ytfs.service.http;
 
 import com.ytfs.common.conf.ServerConfig;
 import static com.ytfs.common.conf.ServerConfig.httpServlet;
+import com.ytfs.service.ServerInitor;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_ACTIVE_NODES_PATH;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_API_1;
 import static com.ytfs.service.http.LocalHttpHandler.REQ_API_2;
@@ -34,7 +35,7 @@ public class HttpServerBoot {
     public static void startHttpServer() throws IOException {
         if (httpServer == null) {
             httpServer = new HttpServer();
-            
+
             NetworkListener networkListener = new NetworkListener("ytsn", "0.0.0.0", ServerConfig.httpPort);
             ThreadPoolConfig threadPoolConfig = ThreadPoolConfig.defaultConfig().setCorePoolSize(2).setMaxPoolSize(20);
             networkListener.getTransport().setWorkerThreadPoolConfig(threadPoolConfig);
@@ -74,6 +75,10 @@ public class HttpServerBoot {
     }
 
     public static void main(String[] args) throws IOException {
+        try {
+            ServerInitor.init();
+        } catch (Exception e) {
+        }
         startHttpServer();
         System.in.read();
         stopHttpServer();

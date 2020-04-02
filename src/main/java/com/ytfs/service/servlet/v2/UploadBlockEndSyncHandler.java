@@ -80,7 +80,7 @@ public class UploadBlockEndSyncHandler extends Handler<UploadBlockEndSyncReqV2> 
             }
         } catch (ServiceException r) {
             throw r;
-        }
+        } 
         LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
         sendDNI(ls, VBI);
         LOG.info("Upload block:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");

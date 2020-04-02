@@ -48,7 +48,6 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReqV2> {
         } catch (ServiceException r) {
             throw r;
         }
-        BlockAccessor.incBlockNlinkCount();
         return new VoidResp();
     }
 
