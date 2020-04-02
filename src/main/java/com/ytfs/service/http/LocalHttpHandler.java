@@ -299,6 +299,9 @@ public class LocalHttpHandler extends HttpHandler {
     }
 
     private static boolean checkIp(String ip) {
+        if(HttpServerBoot.ipList==null||HttpServerBoot.ipList.length==0){
+            return true;
+        }
         for (String mask : HttpServerBoot.ipList) {
             if (mask.trim().isEmpty()) {
                 continue;
