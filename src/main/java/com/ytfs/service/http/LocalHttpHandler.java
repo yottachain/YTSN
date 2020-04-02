@@ -45,10 +45,10 @@ public class LocalHttpHandler extends HttpHandler {
 
     private static final Logger LOG = Logger.getLogger(LocalHttpHandler.class);
 
-    static final String REQ_TOTAL_PATH = "/total";
-    static final String REQ_USER_TOTAL_PATH = "/usertotal";
-    static final String REQ_USER_LIST_PATH = "/list";
-    static final String REQ_ACTIVE_NODES_PATH = "/active_nodes";
+    static final String REQ_TOTAL_PATH = "/total";//可验证
+    static final String REQ_USER_TOTAL_PATH = "/usertotal";//可验证
+    static final String REQ_USER_LIST_PATH = "/list";//可验证
+    static final String REQ_ACTIVE_NODES_PATH = "/active_nodes"; 
     static final String REQ_STAT_PATH = "/statistics";
     static final String REQ_RELATION_SHIP_PATH = "/relationship";
     static final String REQ_NEW_NODEID = "/newnodeid";
@@ -303,10 +303,10 @@ public class LocalHttpHandler extends HttpHandler {
             if (mask.trim().isEmpty()) {
                 continue;
             }
-            if (!ip.matches(mask)) {
-                return false;
+            if (ip.matches(mask)) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }
