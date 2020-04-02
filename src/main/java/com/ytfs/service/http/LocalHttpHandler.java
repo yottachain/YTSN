@@ -156,7 +156,7 @@ public class LocalHttpHandler extends HttpHandler {
             }
             rspns.flush();
         } catch (Throwable e) {
-            LOG.error("", e);
+            LOG.error(e.getMessage());
             String message = e.getMessage();
             rspns.setContentType("text/plain");
             rspns.setErrorPageGenerator(new ErrorPageGenerator() {
