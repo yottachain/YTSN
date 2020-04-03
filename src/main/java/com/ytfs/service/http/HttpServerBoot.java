@@ -22,6 +22,7 @@ import static com.ytfs.service.http.LocalHttpHandler.REQ_USER_TOTAL_PATH;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
@@ -29,13 +30,13 @@ import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
 public class HttpServerBoot {
 
+    private static final Logger LOG = Logger.getLogger(HttpServerBoot.class);
     static HttpServer httpServer = null;
-    static String[] ipList;
+    static List<String> ipList = new ArrayList();
 
     public static void startHttpServer() throws IOException {
         if (httpServer == null) {
             httpServer = new HttpServer();
-
             NetworkListener networkListener = new NetworkListener("ytsn", "0.0.0.0", ServerConfig.httpPort);
             ThreadPoolConfig threadPoolConfig = ThreadPoolConfig.defaultConfig().setCorePoolSize(2).setMaxPoolSize(20);
             networkListener.getTransport().setWorkerThreadPoolConfig(threadPoolConfig);
@@ -65,7 +66,14 @@ public class HttpServerBoot {
             httpServer.getServerConfiguration().addHttpHandler(httpHandler, servlets.toArray(new String[servlets.size()]));
             httpServer.start();
         }
-        ipList = ServerConfig.httpRemoteIp.split(";");
+        String[] ss = ServerConfig.httpRemoteIp.split(";");
+        for (String s : ss) {
+            if (s.trim().isEmpty()) {
+                continue;
+            }
+            ipList.add(s.trim());
+            LOG.info("Allow IP:"+s.trim());
+        }
     }
 
     public static void stopHttpServer() {
