@@ -156,7 +156,7 @@ public class LocalHttpHandler extends HttpHandler {
             }
             rspns.flush();
         } catch (Throwable e) {
-            LOG.error("", e);
+            LOG.error(e.getMessage());
             String message = e.getMessage();
             rspns.setContentType("text/plain");
             rspns.setErrorPageGenerator(new ErrorPageGenerator() {
@@ -299,6 +299,9 @@ public class LocalHttpHandler extends HttpHandler {
     }
 
     private static boolean checkIp(String ip) {
+        if(HttpServerBoot.ipList==null||HttpServerBoot.ipList.length==0){
+            return true;
+        }
         for (String mask : HttpServerBoot.ipList) {
             if (mask.trim().isEmpty()) {
                 continue;
