@@ -48,7 +48,7 @@ public class LocalHttpHandler extends HttpHandler {
     static final String REQ_TOTAL_PATH = "/total";//可验证
     static final String REQ_USER_TOTAL_PATH = "/usertotal";//可验证
     static final String REQ_USER_LIST_PATH = "/list";//可验证
-    static final String REQ_ACTIVE_NODES_PATH = "/active_nodes"; 
+    static final String REQ_ACTIVE_NODES_PATH = "/active_nodes";
     static final String REQ_STAT_PATH = "/statistics";
     static final String REQ_RELATION_SHIP_PATH = "/relationship";
     static final String REQ_NEW_NODEID = "/newnodeid";
@@ -299,7 +299,7 @@ public class LocalHttpHandler extends HttpHandler {
     }
 
     private static boolean checkIp(String ip) {
-        if(HttpServerBoot.ipList==null||HttpServerBoot.ipList.length==0){
+        if (HttpServerBoot.ipList.isEmpty()) {
             return true;
         }
         for (String mask : HttpServerBoot.ipList) {
