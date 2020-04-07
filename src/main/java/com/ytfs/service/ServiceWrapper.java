@@ -27,7 +27,7 @@ public class ServiceWrapper implements WrapperListener {
         if (spot != null && spot.trim().equalsIgnoreCase("on")) {
             SPOTCHECK = true;
         }
-        String feesum = WrapperManager.getProperties().getProperty("wrapper.ytsn.force.feesum", "on");
+        String feesum = WrapperManager.getProperties().getProperty("wrapper.ytsn.force.feesum", "off");
         if (feesum != null && feesum.trim().equalsIgnoreCase("on")) {
             FEESUM = true;
         }

@@ -44,7 +44,13 @@ public class CacheBaseAccessor {
     }
 
     public static void addDNI(List<Document> doc) {
-        CacheBaseSource.getDNICollection().insertMany(doc);
+        try {
+            CacheBaseSource.getDNICollection().insertMany(doc);
+        } catch (MongoException r) {
+            if (!(r.getMessage() != null && r.getMessage().contains("duplicate key"))) {
+                throw r;
+            }
+        }
     }
 
     public static Map<SuperNode, List<Document>> queryDNI(int count) {

@@ -32,7 +32,7 @@ public class DNISenderPool extends Thread {
 
     @Override
     public void run() {
-        int max_size = SuperNodeList.getSuperNodeCount() * 500;
+        int max_size = SuperNodeList.getSuperNodeCount() * 200;
         while (!this.isInterrupted()) {
             try {
                 int count = 0;
@@ -52,8 +52,10 @@ public class DNISenderPool extends Thread {
                         sendList.wait(15000);
                     }
                 }
-                if (count <= max_size) {
+                if (count < max_size) {
                     sleep(1000 * 60);
+                }else{
+                    sleep(1000);
                 }
             } catch (InterruptedException ie) {
                 break;
