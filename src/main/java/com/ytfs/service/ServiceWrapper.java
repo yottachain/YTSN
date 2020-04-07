@@ -14,6 +14,7 @@ public class ServiceWrapper implements WrapperListener {
     public static int REBUILDER_NODEID = 0;
     public static int REBUILDER_EXEC_NODEID = 0;
     public static boolean SPOTCHECK = false;
+    public static boolean FEESUM = false;
 
     public static void main(String[] args) {
         WrapperManager.start(new ServiceWrapper(), args);
@@ -25,6 +26,10 @@ public class ServiceWrapper implements WrapperListener {
         String spot = WrapperManager.getProperties().getProperty("wrapper.ytsn.spotcheck", "on");
         if (spot != null && spot.trim().equalsIgnoreCase("on")) {
             SPOTCHECK = true;
+        }
+        String feesum = WrapperManager.getProperties().getProperty("wrapper.ytsn.force.feesum", "off");
+        if (feesum != null && feesum.trim().equalsIgnoreCase("on")) {
+            FEESUM = true;
         }
         ServerInitor.init();
         NewObjectScanner.startUp();

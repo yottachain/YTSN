@@ -26,8 +26,14 @@ public class BlockAccessor {
     private static final Logger LOG = Logger.getLogger(BlockAccessor.class);
 
     public static void saveBlockMeta(BlockMeta meta) {
-        MongoSource.getBlockCollection().insertOne(meta.toDocument());
-        BlockAccessor.incBlockCount();
+        try {
+            MongoSource.getBlockCollection().insertOne(meta.toDocument());
+            BlockAccessor.incBlockCount();
+        } catch (MongoException r) {
+            if (!(r.getMessage() != null && r.getMessage().contains("duplicate key"))) {
+                throw r;
+            }
+        }
         if (MongoSource.getProxy() != null) {
             LogMessage log = new LogMessage(Op_Block_New, meta);
             MongoSource.getProxy().post(log);

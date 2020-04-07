@@ -23,6 +23,7 @@ public class CacheBaseSource {
 
     public static final String DNI_CACHE_NAME = "dnis";
     public static final String OBJECT_NEW_TABLE_NAME = "objects_new";
+    public static final String USERSUM_CACHE_NAME = "userfeesum";
 
     private static CacheBaseSource source = null;
 
@@ -55,13 +56,20 @@ public class CacheBaseSource {
         return source.object_new_collection;
     }
 
+    static MongoCollection<Document> getUserSumCollection() {
+        newInstance();
+        return source.userfee_sum_collection;
+    }
+
     private MongoCollection<Document> dni_collection = null;
     private MongoCollection<Document> object_new_collection = null;
+    private MongoCollection<Document> userfee_sum_collection = null;
 
     private CacheBaseSource(MongoClient client) {
         MongoDatabase database = client.getDatabase(DATABASENAME);
         this.dni_collection = database.getCollection(DNI_CACHE_NAME);
         this.object_new_collection = database.getCollection(OBJECT_NEW_TABLE_NAME);
+        this.userfee_sum_collection = database.getCollection(USERSUM_CACHE_NAME);
     }
 
 }

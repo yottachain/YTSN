@@ -87,7 +87,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReqV2> {
             }
         } catch (ServiceException r) {
             throw r;
-        }       
+        }
         LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
         sendDNI(ls, VBI);
         LOG.info("Upload block:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");
@@ -191,6 +191,10 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReqV2> {
         List<Node> nodels = NodeManager.getNode(nodeidsls);
         if (nodels.size() != nodeidsls.size()) {
             LOG.warn("Some Nodes have been cancelled.");
+            throw new ServiceException(NO_ENOUGH_NODE);
+        }
+        if (nodeidsls.size() < 20) {
+            LOG.warn("Number of nodes less than " + nodeidsls.size() + "/" + resList.size());
             throw new ServiceException(NO_ENOUGH_NODE);
         }
         Map<Integer, Node> map = new HashMap();
