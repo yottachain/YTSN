@@ -4,6 +4,8 @@ import com.mongodb.client.FindIterable;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.eos.EOSClient;
 import com.ytfs.common.node.SuperNodeList;
+import static com.ytfs.service.ServiceWrapper.FEESUM;
+import com.ytfs.service.dao.CacheBaseAccessor;
 import com.ytfs.service.dao.MongoSource;
 import com.ytfs.service.dao.UserAccessor;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
@@ -40,7 +42,7 @@ public class UserFeeStat extends Thread {
             if (sn.getId() != ServerConfig.superNodeID) {
                 continue;
             }
-            long nextCycle = doc.getLong("nextCycle") == null ? System.currentTimeMillis() : doc.getLong("nextCycle");
+            long nextCycle = CacheBaseAccessor.getUserSumTime(userid);
             if (System.currentTimeMillis() - nextCycle < ServerConfig.CostSumCycle) {
                 continue;
             }
@@ -57,6 +59,7 @@ public class UserFeeStat extends Thread {
             if (costPerCycle > 0) {
                 EOSClient.setUserFee(costPerCycle, username);
             }
+            CacheBaseAccessor.setUserSumTime(userid);
             UserAccessor.updateUser(userid, costPerCycle);
             LOG.info("User " + userid + " set cycle fee:" + costPerCycle + ", usedSpace:" + usedSpace);
         } catch (Throwable r) {
@@ -71,6 +74,10 @@ public class UserFeeStat extends Thread {
                 Thread.sleep(1000 * 60 * 30);
                 if (!SuperNodeList.isActive()) {
                     iterate();
+                } else {
+                    if (FEESUM) {
+                        iterate();
+                    }
                 }
                 Thread.sleep(1000 * 60 * 30);
             } catch (InterruptedException ex) {

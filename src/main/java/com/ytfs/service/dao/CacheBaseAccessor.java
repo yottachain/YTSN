@@ -3,6 +3,7 @@ package com.ytfs.service.dao;
 import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
 import com.ytfs.common.node.SuperNodeList;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
@@ -15,6 +16,24 @@ import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 
 public class CacheBaseAccessor {
+
+    public static long getUserSumTime(int userId) {
+        Document filter = new Document("_id", userId);
+        Document doc = CacheBaseSource.getUserSumCollection().find(filter).first();
+        if (doc == null) {
+            return 0;
+        } else {
+            return doc.getLong("statTime");
+        }
+    }
+
+    public static void setUserSumTime(int userId) {
+        Document filter = new Document("_id", userId);
+        Document update = new Document("$set", new Document("statTime", System.currentTimeMillis()));
+        UpdateOptions updateOptions = new UpdateOptions();
+        updateOptions.upsert(true);
+        CacheBaseSource.getUserSumCollection().updateOne(filter, update, updateOptions);
+    }
 
     public static void addDNI(int nid, byte[] vhf, boolean delete) {
         Document update = new Document();
