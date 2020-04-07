@@ -44,7 +44,7 @@ public class ServerInitor {
     }
 
     public static void init() {
-        System.out.println("SN is starting......");       
+        System.out.println("SN is starting......");
         try {
             String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "INFO");
             String path = WrapperManager.getProperties().getProperty("wrapper.log4j.logfile");
@@ -200,6 +200,19 @@ public class ServerInitor {
             LOG.warn("The 'selfIp' parameter is not configured.");
         } else {
             selfIp = selfIp.trim();
+        }
+
+        try {
+            String ss = p.getProperty("sendShardInterval", "1000").trim();
+            sendShardInterval = Integer.parseInt(ss);
+            if (sendShardInterval < 0) {
+                sendShardInterval = 0;
+            }
+            if (sendShardInterval > 1000 * 60 * 3) {
+                sendShardInterval = 1000 * 60 * 3;
+            }
+        } catch (Exception d) {
+            throw new IOException("The 'sendShardInterval' parameter is not configured.");
         }
         try {
             String ss = p.getProperty("rebuildSpeed", "1000").trim();

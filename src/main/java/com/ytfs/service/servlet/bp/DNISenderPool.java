@@ -1,6 +1,7 @@
 package com.ytfs.service.servlet.bp;
 
 import com.ytfs.common.GlobleThreadPool;
+import static com.ytfs.common.conf.ServerConfig.sendShardInterval;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.dao.CacheBaseAccessor;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
@@ -54,8 +55,10 @@ public class DNISenderPool extends Thread {
                 }
                 if (count < max_size) {
                     sleep(1000 * 60);
-                }else{
-                    sleep(1000);
+                } else {
+                    if (sendShardInterval > 0) {
+                        sleep(sendShardInterval);
+                    }
                 }
             } catch (InterruptedException ie) {
                 break;

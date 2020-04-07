@@ -63,7 +63,7 @@ public class UploadBlockEndSyncHandler extends Handler<UploadBlockEndSyncReqV2> 
         }
         long VBI = request.getVBI();
         BlockMeta bmeta = BlockAccessor.getBlockMeta(VBI);
-        if (bmeta == null) {
+        if (bmeta != null) {
             return new VoidResp();
         }
         List<ShardMeta> ls = verify(request, res, VBI);
