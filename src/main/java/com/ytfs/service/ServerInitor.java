@@ -214,17 +214,31 @@ public class ServerInitor {
         } catch (Exception d) {
             throw new IOException("The 'sendShardInterval' parameter is not configured.");
         }
+
         try {
-            String ss = p.getProperty("rebuildSpeed", "1000").trim();
-            rebuildSpeed = Integer.parseInt(ss);
-            if (rebuildSpeed < 1000) {
-                rebuildSpeed = 1000;
+            String ss = p.getProperty("sendShardInterval", "1000").trim();
+            sendShardInterval = Integer.parseInt(ss);
+            if (sendShardInterval < 0) {
+                sendShardInterval = 0;
             }
-            if (rebuildSpeed > 1000 * 60 * 60) {
-                rebuildSpeed = 1000 * 60 * 60;
+            if (sendShardInterval > 1000 * 60 * 3) {
+                sendShardInterval = 1000 * 60 * 3;
             }
         } catch (Exception d) {
-            throw new IOException("The 'rebuildSpeed' parameter is not configured.");
+            throw new IOException("The 'sendShardInterval' parameter is not configured.");
+        }
+
+        try {
+            String ss = p.getProperty("shardNumPerNode", "8").trim();
+            shardNumPerNode = Integer.parseInt(ss);
+            if (shardNumPerNode < 1) {
+                shardNumPerNode = 1;
+            }
+            if (shardNumPerNode > 164) {
+                shardNumPerNode = 164;
+            }
+        } catch (Exception d) {
+            throw new IOException("The 'shardNumPerNode' parameter is not configured.");
         }
         try {
             String ss = p.getProperty("rebuildTaskSize", "100").trim();
