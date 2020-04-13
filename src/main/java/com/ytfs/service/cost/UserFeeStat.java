@@ -57,6 +57,7 @@ public class UserFeeStat extends Thread {
         long costPerCycle = ServerConfig.unitCycleCost * usedSpace / ServerConfig.unitSpace;
         try {
             if (costPerCycle > 0) {
+                LOG.info("User " + userid + " usedSpace:" + usedSpace);
                 EOSClient.setUserFee(costPerCycle, username);
             }
             CacheBaseAccessor.setUserSumTime(userid);

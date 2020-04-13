@@ -18,6 +18,7 @@ import static com.ytfs.common.ServiceErrorCode.INVALID_VHP;
 import static com.ytfs.common.ServiceErrorCode.NO_ENOUGH_NODE;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.ShardEncoder;
+import static com.ytfs.common.conf.ServerConfig.shardNumPerNode;
 import static com.ytfs.common.conf.UserConfig.Default_PND;
 import static com.ytfs.common.conf.UserConfig.Max_Shard_Count;
 import com.ytfs.common.node.NodeManager;
@@ -180,6 +181,11 @@ public class UploadBlockEndSyncHandler extends Handler<UploadBlockEndSyncReq> {
         List<Node> nodels = NodeManager.getNode(nodeidsls);
         if (nodels.size() != nodeidsls.size()) {
             LOG.warn("Some Nodes have been cancelled.");
+            throw new ServiceException(NO_ENOUGH_NODE);
+        }
+        int num = resList.size() / nodeidsls.size() + (resList.size() % nodeidsls.size() > 0 ? 1 : 0);
+        if (num > shardNumPerNode) {
+            LOG.warn("Number of nodes less than " + nodeidsls.size() + "/" + resList.size());
             throw new ServiceException(NO_ENOUGH_NODE);
         }
         Map<Integer, Node> map = new HashMap();
