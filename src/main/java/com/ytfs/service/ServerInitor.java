@@ -176,7 +176,7 @@ public class ServerInitor {
             if (space_factor < 0) {
                 space_factor = 100;
             }
-            if (space_factor > 1000) {
+            if (space_factor > 100) {
                 space_factor = 100;
             }
         } catch (Exception d) {
@@ -215,18 +215,6 @@ public class ServerInitor {
             throw new IOException("The 'sendShardInterval' parameter is not configured.");
         }
 
-        try {
-            String ss = p.getProperty("sendShardInterval", "1000").trim();
-            sendShardInterval = Integer.parseInt(ss);
-            if (sendShardInterval < 0) {
-                sendShardInterval = 0;
-            }
-            if (sendShardInterval > 1000 * 60 * 3) {
-                sendShardInterval = 1000 * 60 * 3;
-            }
-        } catch (Exception d) {
-            throw new IOException("The 'sendShardInterval' parameter is not configured.");
-        }
 
         try {
             String ss = p.getProperty("shardNumPerNode", "8").trim();
