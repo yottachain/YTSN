@@ -32,6 +32,9 @@ public class DownloadFileHandler extends Handler<DownloadFileReq> {
             throw new ServiceException(INVALID_OBJECT_NAME);
         }
         ObjectMeta ometa = ObjectAccessor.getObject(user.getUserID(), fmeta.getVersionId());
+        if(ometa==null){
+            throw new ServiceException(INVALID_OBJECT_NAME);
+        }
         DownloadObjectInitResp resp = new DownloadObjectInitResp();
         resp.setRefers(ometa.getBlockList());
         resp.setLength(ometa.getLength());

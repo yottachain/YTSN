@@ -3,7 +3,6 @@ package com.ytfs.service.dao;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.ytfs.common.ServiceErrorCode;
-import static com.ytfs.common.ServiceErrorCode.INVALID_SIGNATURE;
 import com.ytfs.common.ServiceException;
 import com.ytfs.service.packet.v2.AuthReq;
 import io.yottachain.p2phost.utils.Base58;
