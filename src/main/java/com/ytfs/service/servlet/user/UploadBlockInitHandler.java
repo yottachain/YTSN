@@ -9,6 +9,7 @@ import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.servlet.Handler;
 import static com.ytfs.common.ServiceErrorCode.ILLEGAL_VHP_NODEID;
 import com.ytfs.common.ServiceException;
+import static com.ytfs.service.ServiceWrapper.DE_DUPLICATION;
 import com.ytfs.service.packet.user.UploadBlockDupResp;
 import com.ytfs.service.packet.user.UploadBlockInitReq;
 import com.ytfs.service.packet.user.UploadBlockInitResp;
@@ -17,9 +18,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
-    
+
     private static final Logger LOG = Logger.getLogger(UploadBlockInitHandler.class);
-    
+
     @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
@@ -31,14 +32,18 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
         if (n.getId() != ServerConfig.superNodeID) {//验证数据块是否对应
             throw new ServiceException(ILLEGAL_VHP_NODEID);
         }
-        List<BlockMeta> ls = BlockAccessor.getBlockMeta(request.getVHP());
-        if (ls.isEmpty()) {
-            return new UploadBlockInitResp(System.currentTimeMillis());
+        if (DE_DUPLICATION) {
+            List<BlockMeta> ls = BlockAccessor.getBlockMeta(request.getVHP());
+            if (ls.isEmpty()) {
+                return new UploadBlockInitResp(System.currentTimeMillis());
+            } else {
+                UploadBlockDupResp resp = new UploadBlockDupResp();
+                resp.setStartTime(System.currentTimeMillis());
+                setKEDANDVHB(resp, ls);
+                return resp;
+            }
         } else {
-            UploadBlockDupResp resp = new UploadBlockDupResp();
-            resp.setStartTime(System.currentTimeMillis());
-            setKEDANDVHB(resp, ls);
-            return resp;
+            return new UploadBlockInitResp(System.currentTimeMillis());
         }
     }
 
@@ -66,5 +71,5 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReq> {
         resp.setKED(KED);
         resp.setAR(ARS);
     }
-    
+
 }

@@ -15,6 +15,7 @@ public class ServiceWrapper implements WrapperListener {
     public static int REBUILDER_EXEC_NODEID = 0;
     public static boolean SPOTCHECK = false;
     public static boolean FEESUM = false;
+    public static boolean DE_DUPLICATION = true;
 
     public static void main(String[] args) {
         WrapperManager.start(new ServiceWrapper(), args);
@@ -22,6 +23,10 @@ public class ServiceWrapper implements WrapperListener {
 
     @Override
     public Integer start(String[] strings) {
+        String de_duplication = WrapperManager.getProperties().getProperty("wrapper.ytsn.de_duplication", "on");
+        if (de_duplication != null && de_duplication.trim().equalsIgnoreCase("false")) {
+            DE_DUPLICATION = false;
+        }
         String rebuild = WrapperManager.getProperties().getProperty("wrapper.ytsn.rebuild", "on");
         String spot = WrapperManager.getProperties().getProperty("wrapper.ytsn.spotcheck", "on");
         if (spot != null && spot.trim().equalsIgnoreCase("on")) {
