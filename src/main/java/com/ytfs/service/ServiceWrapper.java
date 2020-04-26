@@ -24,7 +24,7 @@ public class ServiceWrapper implements WrapperListener {
     @Override
     public Integer start(String[] strings) {
         String de_duplication = WrapperManager.getProperties().getProperty("wrapper.ytsn.de_duplication", "on");
-        if (de_duplication != null && de_duplication.trim().equalsIgnoreCase("false")) {
+        if (de_duplication != null && de_duplication.trim().equalsIgnoreCase("off")) {
             DE_DUPLICATION = false;
         }
         String rebuild = WrapperManager.getProperties().getProperty("wrapper.ytsn.rebuild", "on");
