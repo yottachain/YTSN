@@ -24,7 +24,7 @@ import org.bson.types.ObjectId;
 public class FileListCache {
 
     static final Logger LOG = Logger.getLogger(FileListCache.class);
-    private static final long MAX_SIZE = 100000;
+    private static final long MAX_SIZE = 50000;
     private static final long READ_EXPIRED_TIME = 1;
     public static final ObjectId firstVersionId = new ObjectId("000000000000000000000000");
 
