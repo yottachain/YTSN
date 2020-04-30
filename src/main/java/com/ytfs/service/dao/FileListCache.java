@@ -2,6 +2,8 @@ package com.ytfs.service.dao;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
@@ -10,7 +12,6 @@ import static com.ytfs.common.ServiceErrorCode.INVALID_NEXTVERSIONID;
 import static com.ytfs.common.ServiceErrorCode.TOO_MANY_CURSOR;
 import com.ytfs.common.ServiceException;
 import static com.ytfs.common.conf.ServerConfig.lsCacheExpireTime;
-import static com.ytfs.service.dao.FileListCache.LOG;
 import io.jafka.jeos.util.Base58;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,9 @@ public class FileListCache {
         return L1cache.getIfPresent(key);
     }
 
+    
+    
+    
     private static final Cache<String, Cache<String, FileListCache>> L2cache = CacheBuilder.newBuilder()
             .expireAfterAccess(READ_EXPIRED_TIME * 2, TimeUnit.MINUTES)
             .maximumSize(MAX_SIZE)
@@ -49,7 +53,7 @@ public class FileListCache {
         return nextFileName + "/" + prefix + "/" + (nextVersionId != null ? "1" : "");
     }
 
-    public static List<FileMetaV2> listBucket(String pubkey, int userId, ObjectId bucketId, String nextFileName,
+    public static List<FileMetaV2> listBucket1(String pubkey, int userId, ObjectId bucketId, String nextFileName,
             ObjectId nextVersionId, String prefix, int limit) throws ServiceException {
         nextFileName = nextFileName == null ? "" : nextFileName.trim();
         prefix = prefix == null ? "" : prefix.trim();
@@ -60,6 +64,14 @@ public class FileListCache {
             map = CacheBuilder.newBuilder()
                     .expireAfterAccess(READ_EXPIRED_TIME, TimeUnit.MINUTES)
                     .maximumSize(MAX_SIZE)
+                   
+                    .removalListener(new RemovalListener<String, FileListCache>() {
+                        @Override
+                        public void onRemoval(RemovalNotification<String, FileListCache> notification) {
+                            FileListCache ca=notification.getValue();
+                            ca.curposClose();
+                        }
+                    })
                     .build();
             L2cache.put(l2key, map);
         }
@@ -243,4 +255,10 @@ public class FileListCache {
     private List<FileMetaV2> res;
     private MongoCursor<Document> curpos = null;
     private Document lastDoc = null;
+
+    private void curposClose() {
+        if (curpos != null) {
+            curpos.close();
+        }
+    }
 }

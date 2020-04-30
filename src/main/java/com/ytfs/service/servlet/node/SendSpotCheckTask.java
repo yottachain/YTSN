@@ -5,6 +5,7 @@ import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.NodeInfo;
 import com.ytfs.common.node.SuperNodeList;
+import static com.ytfs.service.ServiceWrapper.SPOTCHECKNUM;
 import com.ytfs.service.packet.SpotCheckTaskList;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
@@ -18,11 +19,12 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 
 public class SendSpotCheckTask implements Runnable {
-    
+
     private static final Logger LOG = Logger.getLogger(SendSpotCheckTask.class);
-    
+
     private static ArrayBlockingQueue<SendSpotCheckTask> queue = null;
-    
+    private static final List<NodeInfo> infos = new ArrayList();
+
     private static synchronized ArrayBlockingQueue<SendSpotCheckTask> getQueue() {
         int num = SuperNodeList.getSuperNodeCount() * 2;
         if (queue == null) {
@@ -33,25 +35,27 @@ public class SendSpotCheckTask implements Runnable {
         }
         return queue;
     }
-    
+
     static void startUploadShard(NodeInfo nodeinfo) throws InterruptedException, NodeMgmtException {
-        boolean bool = YottaNodeMgmt.spotcheckSelected();
-        //LOG.info("Node " + nodeinfo.getId() + " spotcheck select return " + bool);
-        if (bool) {
-            SendSpotCheckTask task = getQueue().poll();
-            if (task == null) {
-                SendSpotCheckTask ct = new SendSpotCheckTask();
-                ct.nodeinfo = nodeinfo;
-                ct.execute();
-            } else {
-                task.nodeinfo = nodeinfo;
-                GlobleThreadPool.execute(task);
+        synchronized (infos) {
+            if (infos.size() > SPOTCHECKNUM) {
+                infos.remove(0);
             }
+            infos.add(nodeinfo);
+        }
+        SendSpotCheckTask task = getQueue().poll();
+        if (task == null) {
+            return;
+        }
+        boolean bool = YottaNodeMgmt.spotcheckSelected();
+        if (bool) {
+            task.nodeinfos = new ArrayList(infos);
+            GlobleThreadPool.execute(task);
         }
     }
-    
-    private NodeInfo nodeinfo;
-    
+
+    private List<NodeInfo> nodeinfos = new ArrayList();
+
     private void execute() {
         List<SpotCheckList> sc;
         try {
@@ -65,19 +69,21 @@ public class SendSpotCheckTask implements Runnable {
             return;
         }
         SpotCheckTaskList task = doTask(sc.get(0));
-        try {
-            P2PUtils.requestNode(task, nodeinfo.getPeerId(), nodeinfo.getId());
-            LOG.info("Send task [" + task.getTaskId() + "] to " + nodeinfo.getId() + " OK.");
-        } catch (Throwable e) {
+        nodeinfos.forEach((nodeinfo) -> {
             try {
-                P2PUtils.requestNode(task, nodeinfo.getNode());
+                P2PUtils.requestNode(task, nodeinfo.getPeerId(), nodeinfo.getId());
                 LOG.info("Send task [" + task.getTaskId() + "] to " + nodeinfo.getId() + " OK.");
-            } catch (Throwable ex1) {
-                LOG.error("Send task [" + task.getTaskId() + "] to " + nodeinfo.getId() + " ERR:" + e.getMessage());
+            } catch (Throwable e) {
+                try {
+                    P2PUtils.requestNode(task, nodeinfo.getNode());
+                    LOG.info("Send task [" + task.getTaskId() + "] to " + nodeinfo.getId() + " OK.");
+                } catch (Throwable ex1) {
+                    LOG.error("Send task [" + task.getTaskId() + "] to " + nodeinfo.getId() + " ERR:" + e.getMessage());
+                }
             }
-        }
+        });
     }
-    
+
     private SpotCheckTaskList doTask(SpotCheckList scheck) {
         SpotCheckTaskList mytask = new SpotCheckTaskList();
         mytask.setSnid(ServerConfig.superNodeID);
@@ -104,7 +110,7 @@ public class SendSpotCheckTask implements Runnable {
         });
         return mytask;
     }
-    
+
     @Override
     public void run() {
         try {
@@ -113,5 +119,5 @@ public class SendSpotCheckTask implements Runnable {
             getQueue().add(this);
         }
     }
-    
+
 }

@@ -7,6 +7,7 @@ import com.ytfs.common.node.SuperNodeList;
 import static com.ytfs.service.ServiceWrapper.FEESUM;
 import com.ytfs.service.dao.CacheBaseAccessor;
 import com.ytfs.service.dao.MongoSource;
+import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserAccessor;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import org.apache.log4j.Logger;
@@ -55,16 +56,21 @@ public class UserFeeStat extends Thread {
 
     private void setCycleFee(long usedSpace, int userid, String username) {
         long costPerCycle = ServerConfig.unitCycleCost * usedSpace / ServerConfig.unitSpace;
+        LOG.info("User " + userid + " Statistics complete! usedSpace:" + usedSpace + ",costPerCycle:" + costPerCycle);
         try {
             if (costPerCycle > 0) {
-                LOG.info("User " + userid + " usedSpace:" + usedSpace);
-                EOSClient.setUserFee(costPerCycle, username);
+                long oldCostPerCycle = UserAccessor.getUserCostPerCycle(userid);
+                if (costPerCycle == oldCostPerCycle) {
+                    LOG.info("User " + userid + " not need to set costPerCycle,old costPerCycle:" + costPerCycle);
+                } else {
+                    EOSClient.setUserFee(costPerCycle, username);
+                    UserAccessor.updateUser(userid, costPerCycle);
+                    LOG.info("User " + userid + " set costPerCycle:" + costPerCycle + ", usedSpace:" + usedSpace);
+                }
             }
             CacheBaseAccessor.setUserSumTime(userid);
-            UserAccessor.updateUser(userid, costPerCycle);
-            LOG.info("User " + userid + " set cycle fee:" + costPerCycle + ", usedSpace:" + usedSpace);
         } catch (Throwable r) {
-            LOG.error("", r);
+            LOG.error("Set costPerCycle ERR:" + r.getMessage());
         }
     }
 

@@ -1,6 +1,5 @@
 package com.ytfs.service.dao;
 
-import static io.grpc.netty.shaded.io.netty.channel.group.ChannelMatchers.is;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import java.io.BufferedReader;
