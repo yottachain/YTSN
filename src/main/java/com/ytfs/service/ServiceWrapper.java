@@ -29,11 +29,11 @@ public class ServiceWrapper implements WrapperListener {
             DE_DUPLICATION = false;
         }
         String rebuild = WrapperManager.getProperties().getProperty("wrapper.ytsn.rebuild", "on");
-        String spot = WrapperManager.getProperties().getProperty("wrapper.ytsn.spotcheck", "on");
+        String spot = WrapperManager.getProperties().getProperty("wrapper.ytsn.spotcheck", "off");
         if (spot != null && spot.trim().equalsIgnoreCase("on")) {
             SPOTCHECK = true;
         }
-        String spotnum = WrapperManager.getProperties().getProperty("wrapper.ytsn.spotcheck.num", "3");
+        String spotnum = WrapperManager.getProperties().getProperty("wrapper.ytsn.spotchecknum", "3");
         try {
             SPOTCHECKNUM = Integer.parseInt(spotnum);
             SPOTCHECKNUM = SPOTCHECKNUM < 3 ? 3 : SPOTCHECKNUM;
