@@ -112,6 +112,17 @@ public class UserAccessor {
         return ls;
     }
 
+    public static long getUserCostPerCycle(int uid) {
+        Bson bson = Filters.eq("_id", uid);
+        Document fields = new Document("costPerCycle", 1);
+        Document document = MongoSource.getUserCollection().find(bson).projection(fields).first();
+        if (document == null) {
+            return 0;
+        } else {
+            return document.getLong("costPerCycle");
+        }
+    }
+
     public static User getUser(int uid) {
         Bson bson = Filters.eq("_id", uid);
         Document document = MongoSource.getUserCollection().find(bson).first();
