@@ -215,7 +215,7 @@ public class ServerInitor {
             throw new IOException("The 'sendShardInterval' parameter is not configured.");
         }
         try {
-            String ss = p.getProperty("lsCacheExpireTime", "1000").trim();
+            String ss = p.getProperty("lsCacheExpireTime", "30").trim();
             lsCacheExpireTime = Integer.parseInt(ss);
             if (lsCacheExpireTime < 5) {
                 lsCacheExpireTime = 5;

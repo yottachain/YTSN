@@ -27,10 +27,10 @@ public class ListObjectHandler extends Handler<ListObjectReqV2> {
         String key = request.getHashCode(user.getUserID());
         Object obj = FileListCache.getL1Cache(key);
         if (obj != null) {
-            LOG.info("LIST object:" + user.getUserID() + "/" + key + ",return from L1 cache.");
+            LOG.info("LIST object:" + user.getUserID() + "/" + key + "/" + request.getPrefix() + ",return from L1 cache.");
             return obj;
         }
-        LOG.info("LIST object:" + user.getUserID());
+        LOG.info("LIST object:" + user.getUserID() + "/" + request.getPrefix());
         int limit = request.getLimit();
         String prefix = request.getPrefix();
         ObjectId nextVersionId = request.getNextVersionId();
@@ -55,12 +55,20 @@ public class ListObjectHandler extends Handler<ListObjectReqV2> {
         if (request.isCompress()) {
             ListObjectRespV2 resp = new ListObjectRespV2();
             resp.setFileMetaMsgList(fileMetaMsgs);
-            FileListCache.putL1Cache(key, resp);
+            if (!fileMetaMsgs.isEmpty()) {
+                FileListCache.putL1Cache(key, resp);
+            } else {
+                LOG.info("No result:" + user.getUserID() + "/" + request.getPrefix());
+            }
             return resp;
         } else {
             ListObjectResp resp = new ListObjectResp();
             resp.setFileMetaMsgList(fileMetaMsgs);
-            FileListCache.putL1Cache(key, resp);
+            if (!fileMetaMsgs.isEmpty()) {
+                FileListCache.putL1Cache(key, resp);
+            } else {
+                LOG.info("No result:" + user.getUserID() + "/" + request.getPrefix());
+            }
             return resp;
         }
     }

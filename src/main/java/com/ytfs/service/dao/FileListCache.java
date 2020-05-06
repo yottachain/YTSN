@@ -12,9 +12,12 @@ import static com.ytfs.common.ServiceErrorCode.INVALID_NEXTVERSIONID;
 import static com.ytfs.common.ServiceErrorCode.TOO_MANY_CURSOR;
 import com.ytfs.common.ServiceException;
 import static com.ytfs.common.conf.ServerConfig.lsCacheExpireTime;
+import static com.ytfs.service.dao.FileAccessorV2.firstVersionId;
 import io.jafka.jeos.util.Base58;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.bson.Document;
@@ -26,7 +29,6 @@ public class FileListCache {
     static final Logger LOG = Logger.getLogger(FileListCache.class);
     private static final long MAX_SIZE = 50000;
     private static final long READ_EXPIRED_TIME = 1;
-    public static final ObjectId firstVersionId = new ObjectId("000000000000000000000000");
 
     private static final Cache<String, Object> L1cache = CacheBuilder.newBuilder()
             .expireAfterWrite(lsCacheExpireTime, TimeUnit.SECONDS)
@@ -41,45 +43,35 @@ public class FileListCache {
         return L1cache.getIfPresent(key);
     }
 
-    
-    
-    
-    private static final Cache<String, Cache<String, FileListCache>> L2cache = CacheBuilder.newBuilder()
-            .expireAfterAccess(READ_EXPIRED_TIME * 2, TimeUnit.MINUTES)
-            .maximumSize(MAX_SIZE)
-            .build();
+    private static final Map<String, Cache<String, FileListCache>> L2cache = new HashMap();
 
-    private static String GetKey(String nextFileName, String prefix, ObjectId nextVersionId) {
-        return nextFileName + "/" + prefix + "/" + (nextVersionId != null ? "1" : "");
+    private static String GetKey(ObjectId nextFileId, String prefix, ObjectId nextVersionId) {
+        return nextFileId == null ? "/" : (Base58.encode(nextFileId.toByteArray()) + "/")
+                + prefix + "/" + (nextVersionId != null ? "1" : "");
     }
 
-    public static List<FileMetaV2> listBucket1(String pubkey, int userId, ObjectId bucketId, String nextFileName,
+    public static List<FileMetaV2> listBucket1(String pubkey, int userId, ObjectId bucketId, ObjectId nextFileId,
             ObjectId nextVersionId, String prefix, int limit) throws ServiceException {
-        nextFileName = nextFileName == null ? "" : nextFileName.trim();
         prefix = prefix == null ? "" : prefix.trim();
-        String logKey = Base58.encode(bucketId.toByteArray()) + "/";
         String l2key = pubkey + Base58.encode(bucketId.toByteArray());
-        Cache<String, FileListCache> map = L2cache.getIfPresent(l2key);
-        if (map == null) {
-            map = CacheBuilder.newBuilder()
-                    .expireAfterAccess(READ_EXPIRED_TIME, TimeUnit.MINUTES)
-                    .maximumSize(MAX_SIZE)
-                   
-                    .removalListener(new RemovalListener<String, FileListCache>() {
-                        @Override
-                        public void onRemoval(RemovalNotification<String, FileListCache> notification) {
-                            FileListCache ca=notification.getValue();
-                            ca.curposClose();
-                        }
-                    })
-                    .build();
-            L2cache.put(l2key, map);
+        Cache<String, FileListCache> map;
+        synchronized (L2cache) {
+            map = L2cache.get(l2key);
+            if (map == null) {
+                map = CacheBuilder.newBuilder()
+                        .expireAfterAccess(READ_EXPIRED_TIME, TimeUnit.MINUTES)
+                        .maximumSize(MAX_SIZE)
+                        .removalListener(new BucketRemovalListener(l2key))
+                        .build();
+                L2cache.put(l2key, map);
+            }
         }
-        String key = GetKey(nextFileName, prefix, nextVersionId);
+
+        String key = GetKey(nextFileId, prefix, nextVersionId);
+        
+        /*
         FileListCache cache = null;
-        if (!nextFileName.isEmpty()) {
-            cache = map.getIfPresent(key);
-        }
+      
         if (cache == null) {
             if (map.size() > 3) {
                 throw new ServiceException(TOO_MANY_CURSOR);
@@ -91,7 +83,7 @@ public class FileListCache {
                 return cache.res;
             } else {
                 key = GetKey(cache.lastDoc.getString("fileName"), prefix, nextVersionId);
-                LOG.info("List " + logKey + key + "return count:" + cache.res.size() + ",take times " + (System.currentTimeMillis() - st) + " ms.");
+                LOG.info("List " + key + "return count:" + cache.res.size() + ",take times " + (System.currentTimeMillis() - st) + " ms.");
                 map.put(key, cache);
                 List<FileMetaV2> result = cache.res;
                 cache.res = null;
@@ -107,7 +99,8 @@ public class FileListCache {
             map.put(newkey, cache);
             map.invalidate(key);
             return cache.res;
-        }
+        }*/
+        return null;
     }
 
     public static FileListCache createCache(int userId, ObjectId bucketId, String nextFileName,
@@ -259,6 +252,27 @@ public class FileListCache {
     private void curposClose() {
         if (curpos != null) {
             curpos.close();
+        }
+    }
+
+    private static class BucketRemovalListener implements RemovalListener<String, FileListCache> {
+
+        String key;
+
+        private BucketRemovalListener(String key) {
+            this.key = key;
+        }
+
+        @Override
+        public void onRemoval(RemovalNotification<String, FileListCache> rn) {
+            FileListCache ca = rn.getValue();
+            ca.curposClose();
+            synchronized (L2cache) {
+                Cache<String, FileListCache> map = L2cache.get(key);
+                if (map != null && map.size() == 0) {
+                    L2cache.remove(key);
+                }
+            }
         }
     }
 }
