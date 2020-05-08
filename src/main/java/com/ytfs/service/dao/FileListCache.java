@@ -9,7 +9,6 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import static com.ytfs.common.ServiceErrorCode.INVALID_NEXTFILENAME;
 import static com.ytfs.common.ServiceErrorCode.INVALID_NEXTVERSIONID;
-import static com.ytfs.common.ServiceErrorCode.TOO_MANY_CURSOR;
 import com.ytfs.common.ServiceException;
 import static com.ytfs.common.conf.ServerConfig.lsCacheExpireTime;
 import static com.ytfs.service.dao.FileAccessorV2.firstVersionId;
