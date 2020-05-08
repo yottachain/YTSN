@@ -37,20 +37,26 @@ public class SendSpotCheckTask implements Runnable {
     }
 
     static void startUploadShard(NodeInfo nodeinfo) throws InterruptedException, NodeMgmtException {
+        List<NodeInfo> ls;
         synchronized (infos) {
             if (infos.size() > SPOTCHECKNUM) {
                 infos.remove(0);
             }
             infos.add(nodeinfo);
+            ls = new ArrayList(infos);
         }
         SendSpotCheckTask task = getQueue().poll();
         if (task == null) {
+            LOG.error("Get spotcheck thread pool is full.");
             return;
         }
         boolean bool = YottaNodeMgmt.spotcheckSelected();
         if (bool) {
-            task.nodeinfos = new ArrayList(infos);
+            task.nodeinfos = ls;
             GlobleThreadPool.execute(task);
+        } else {
+            getQueue().add(task);
+            LOG.error("Spotcheck not Selected.");
         }
     }
 
@@ -116,7 +122,7 @@ public class SendSpotCheckTask implements Runnable {
         try {
             execute();
         } finally {
-            getQueue().add(this);
+            getQueue().add(this);         
         }
     }
 
