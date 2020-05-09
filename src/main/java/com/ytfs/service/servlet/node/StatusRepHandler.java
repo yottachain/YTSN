@@ -14,10 +14,18 @@ import com.ytfs.service.servlet.bp.NodeStatSync;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
 
 public class StatusRepHandler extends Handler<StatusRepReq> {
+
+    static final String excludeAddrPrefix;
+
+    static {
+        String ss = System.getenv("NODEMGMT_EXCLUDEADDR");
+        excludeAddrPrefix = ss == null ? "" : ss.trim();
+    }
 
     private static final Logger LOG = Logger.getLogger(StatusRepHandler.class);
 
@@ -54,7 +62,8 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
             NodeStatSync.updateNode(node);
             LOG.debug("StatusRep Node:" + request.getId() + ",take times " + (System.currentTimeMillis() - l) + " ms");
             NodeInfo nodeinfo = this.getNode();
-            nodeinfo.setAddr(addrs);
+            List<String> newaddrs = checkPublicAddrs(addrs);
+            nodeinfo.setAddr(newaddrs);
             if (SPOTCHECK) {
                 SendSpotCheckTask.startUploadShard(nodeinfo);
             }
@@ -65,4 +74,39 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
         }
     }
 
+    public static List<String> checkPublicAddrs(List<String> addrs) {
+        List<String> filteredAddrs = new ArrayList();
+        addrs.forEach((addr) -> {
+            if (addr.startsWith("/ip4/127.")
+                    || addr.startsWith("/ip4/192.168.")
+                    || addr.startsWith("/ip4/169.254.")
+                    || addr.startsWith("/ip4/10.")
+                    || addr.startsWith("/ip4/172.16.")
+                    || addr.startsWith("/ip4/172.17.")
+                    || addr.startsWith("/ip4/172.18.")
+                    || addr.startsWith("/ip4/172.19.")
+                    || addr.startsWith("/ip4/172.20.")
+                    || addr.startsWith("/ip4/172.21.")
+                    || addr.startsWith("/ip4/172.22.")
+                    || addr.startsWith("/ip4/172.23.")
+                    || addr.startsWith("/ip4/172.24.")
+                    || addr.startsWith("/ip4/172.25.")
+                    || addr.startsWith("/ip4/172.26.")
+                    || addr.startsWith("/ip4/172.27.")
+                    || addr.startsWith("/ip4/172.28.")
+                    || addr.startsWith("/ip4/172.29.")
+                    || addr.startsWith("/ip4/172.30.")
+                    || addr.startsWith("/ip4/172.31.")
+                    || addr.startsWith("/ip4/172.31.")
+                    || addr.startsWith("/ip6/")
+                    || addr.startsWith("/p2p-circuit/")) {
+                if ((!excludeAddrPrefix.isEmpty()) && addr.startsWith(excludeAddrPrefix)) {
+                    filteredAddrs.add(addr);
+                }
+            } else {
+                filteredAddrs.add(addr);
+            }
+        });
+        return filteredAddrs;
+    }
 }

@@ -38,5 +38,4 @@ public class MsgDispatcher implements Callback {
             return SerializationUtil.serialize(se);
         }
     }
-
 }
