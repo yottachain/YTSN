@@ -39,27 +39,36 @@ public class SendSpotCheckTask implements Runnable {
     static void startUploadShard(NodeInfo nodeinfo) throws InterruptedException, NodeMgmtException {
         List<NodeInfo> ls;
         synchronized (infos) {
-            if (infos.size() > SPOTCHECKNUM) {
+            if (infos.size() > SPOTCHECKNUM - 1) {
                 infos.remove(0);
             }
             infos.add(nodeinfo);
             ls = new ArrayList(infos);
         }
-        SendSpotCheckTask task = getQueue().poll();
-        if (task == null) {
-            LOG.error("Get spotcheck thread pool is full.");
-            return;
-        }
         boolean bool = YottaNodeMgmt.spotcheckSelected();
         if (bool) {
+            SendSpotCheckTask task = getQueue().poll();
+            if (task == null) {
+                LOG.error("Get spotcheck thread pool is full.");
+                return;
+            }
             task.nodeinfos = ls;
             GlobleThreadPool.execute(task);
-        } else {
-            getQueue().add(task);
-            LOG.error("Spotcheck not Selected.");
         }
     }
 
+    private static String getErrMessage(Throwable err) {
+        Throwable t = err;
+        while (t != null) {
+            if (t.getMessage() == null || t.getMessage().isEmpty()) {
+                t = t.getCause();
+                continue;
+            } else {
+                return t.getMessage();
+            }
+        }
+        return "";
+    }
     private List<NodeInfo> nodeinfos = new ArrayList();
 
     private void execute() {
@@ -67,7 +76,7 @@ public class SendSpotCheckTask implements Runnable {
         try {
             sc = YottaNodeMgmt.getSpotCheckList();
         } catch (Throwable e) {
-            LOG.error("Get spotcheck list ERR:" + e.getMessage());
+            LOG.error("Get spotcheck list ERR:" + getErrMessage(e));
             return;
         }
         if (sc == null || sc.isEmpty()) {
@@ -122,7 +131,7 @@ public class SendSpotCheckTask implements Runnable {
         try {
             execute();
         } finally {
-            getQueue().add(this);         
+            getQueue().add(this);
         }
     }
 
