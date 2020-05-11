@@ -48,9 +48,9 @@ public class FileListCache {
         public void run() {
             for (;;) {
                 try {
-                    sleep(30000);
+                    sleep(15000);
                     clear();
-                    sleep(30000);
+                    sleep(15000);
                 } catch (InterruptedException t) {
                     break;
                 }
