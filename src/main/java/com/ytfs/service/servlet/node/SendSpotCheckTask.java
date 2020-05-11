@@ -54,6 +54,8 @@ public class SendSpotCheckTask implements Runnable {
             }
             task.nodeinfos = ls;
             GlobleThreadPool.execute(task);
+        }else{
+            LOG.error("Not selected");
         }
     }
 

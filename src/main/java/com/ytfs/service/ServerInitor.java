@@ -226,6 +226,18 @@ public class ServerInitor {
         } catch (Exception d) {
             lsCacheExpireTime = 30;
         }
+        try {
+            String ss = p.getProperty("lsCursorLimit", "3").trim();
+            lsCursorLimit = Integer.parseInt(ss);
+            if (lsCursorLimit < 1) {
+                lsCursorLimit = 0;
+            }
+            if (lsCursorLimit > 10) {
+                lsCursorLimit = 10;
+            }
+        } catch (Exception d) {
+            lsCursorLimit = 3;
+        }
 
         try {
             String ss = p.getProperty("shardNumPerNode", "8").trim();

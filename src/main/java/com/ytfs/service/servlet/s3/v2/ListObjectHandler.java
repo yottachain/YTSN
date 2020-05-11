@@ -2,6 +2,7 @@ package com.ytfs.service.servlet.s3.v2;
 
 import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
+import static com.ytfs.common.conf.ServerConfig.lsCursorLimit;
 import com.ytfs.service.dao.*;
 import com.ytfs.service.packet.s3.ListObjectResp;
 import com.ytfs.service.packet.s3.ListObjectRespV2;
@@ -36,8 +37,9 @@ public class ListObjectHandler extends Handler<ListObjectReqV2> {
         ObjectId nextVersionId = request.getNextVersionId();
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(), null);
         String fileName = request.getFileName();
-        //List<FileMetaV2> fileMetaV2s = FileListCache.listBucket(this.getPublicKey(), user.getUserID(), meta.getBucketId(), fileName, nextVersionId, prefix, limit);
-        List<FileMetaV2> fileMetaV2s = FileAccessorV2.listBucket(user.getUserID(), meta.getBucketId(), fileName, nextVersionId, prefix, limit);
+        List<FileMetaV2> fileMetaV2s = lsCursorLimit == 0
+                ? FileAccessorV2.listBucket(user.getUserID(), meta.getBucketId(), fileName, nextVersionId, prefix, limit)
+                : FileListCache.listBucket(this.getPublicKey(), user.getUserID(), meta.getBucketId(), fileName, nextVersionId, prefix, limit);
         List<FileMetaMsg> fileMetaMsgs = new ArrayList<>();
         if (!fileMetaV2s.isEmpty()) {
             for (FileMetaV2 fileMetaV2 : fileMetaV2s) {
