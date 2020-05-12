@@ -48,9 +48,9 @@ public class FileListCache {
         public void run() {
             for (;;) {
                 try {
-                    sleep(15000);
+                    sleep(10000);
                     clear();
-                    sleep(15000);
+                    sleep(10000);
                 } catch (InterruptedException t) {
                     break;
                 }
@@ -171,7 +171,7 @@ public class FileListCache {
             } else {
                 lastTime = System.currentTimeMillis();
                 try {
-                    List<FileMetaV2> ls = readFromCache(lit, prefix);
+                    List<FileMetaV2> ls = readFromCache(lit, prefix, nextVersionId);
                     if (sign == 2) {
                         if (curpos != null) {
                             curpos.close();
@@ -258,8 +258,8 @@ public class FileListCache {
                     count++;
                     if (count >= limit) {
                         lastDoc.put("version", lastDoclist);
-                        LOG.info("List " + key + "return count:" + ress.size() + ",cursor closed,take times " + (System.currentTimeMillis() - st) + " ms.");
-                        key = getKey(meta.getFileName(), prefix, meta.getVersionId());
+                        LOG.info("List " + key + "return count:" + ress.size() + ",take times " + (System.currentTimeMillis() - st) + " ms.");
+                        key = getKey(meta.getFileName(), prefix, nextVersionId == null ? null : meta.getVersionId());
                         return ress;
                     }
                 } else {
@@ -275,11 +275,11 @@ public class FileListCache {
             }
         }
         sign = 2;
-        LOG.info("List " + key + "return count:" + ress.size() + ",take times " + (System.currentTimeMillis() - st) + " ms.");
+        LOG.info("List " + key + "return count:" + ress.size() + ",cursor closed,take times " + (System.currentTimeMillis() - st) + " ms.");
         return ress;
     }
 
-    private List<FileMetaV2> readFromCache(int limit, String prefix) {
+    private List<FileMetaV2> readFromCache(int limit, String prefix, ObjectId nextVersionId) {
         long st = System.currentTimeMillis();
         List<FileMetaV2> list = new ArrayList();
         int count = 0;
@@ -298,7 +298,7 @@ public class FileListCache {
                 if (count >= limit) {
                     lastDoc.put("version", lastDocList);
                     LOG.info("List " + key + "return count:" + list.size() + " from lastDoc,take times " + (System.currentTimeMillis() - st) + " ms.");
-                    key = getKey(meta.getFileName(), prefix, meta.getVersionId());
+                    key = getKey(meta.getFileName(), prefix, nextVersionId == null ? null : meta.getVersionId());
                     return list;
                 }
             }
@@ -321,7 +321,7 @@ public class FileListCache {
                 if (count >= limit) {
                     lastDoc.put("version", lastDoclist);
                     LOG.info("List " + key + " return count:" + list.size() + " from curpos,take times " + (System.currentTimeMillis() - st) + " ms.");
-                    key = getKey(meta.getFileName(), prefix, meta.getVersionId());
+                    key = getKey(meta.getFileName(), prefix, nextVersionId == null ? null : meta.getVersionId());
                     return list;
                 }
             }
