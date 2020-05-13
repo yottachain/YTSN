@@ -238,6 +238,18 @@ public class ServerInitor {
         } catch (Exception d) {
             lsCursorLimit = 3;
         }
+        try {
+            String ss = p.getProperty("lsCacheMaxSize", "20000").trim();
+            lsCacheMaxSize = Integer.parseInt(ss);
+            if (lsCacheMaxSize < 10000) {
+                lsCacheMaxSize = 10000;
+            }
+            if (lsCacheMaxSize > 200000) {
+                lsCacheMaxSize = 200000;
+            }
+        } catch (Exception d) {
+            lsCacheMaxSize = 20000;
+        }
 
         try {
             String ss = p.getProperty("shardNumPerNode", "8").trim();

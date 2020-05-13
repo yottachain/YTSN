@@ -31,7 +31,7 @@ public class ListObjectHandler extends Handler<ListObjectReqV2> {
             LOG.info("LIST object:" + user.getUserID() + "/" + key + "/" + request.getPrefix() + ",return from L1 cache.");
             return obj;
         }
-        LOG.info("LIST object:" + user.getUserID() + "/" + request.getPrefix());
+        LOG.info("LIST object:" + user.getUserID() + "/" + request.getBucketName() + "/" + request.getPrefix());
         int limit = request.getLimit();
         String prefix = request.getPrefix();
         ObjectId nextVersionId = request.getNextVersionId();
@@ -40,11 +40,13 @@ public class ListObjectHandler extends Handler<ListObjectReqV2> {
         List<FileMetaV2> fileMetaV2s;
         if (lsCursorLimit == 0) {
             fileMetaV2s = FileAccessorV2.listBucket(user.getUserID(), meta.getBucketId(), fileName, nextVersionId, prefix, limit);
+            LOG.info("LIST object:" + user.getUserID() + "/" + key + "/" + request.getPrefix() + ",by V1.");
         } else {
             try {
                 fileMetaV2s = FileListCache.listBucket(this.getPublicKey(), user.getUserID(), meta.getBucketId(), fileName, nextVersionId, prefix, limit);
             } catch (Exception r) {
                 fileMetaV2s = FileAccessorV2.listBucket(user.getUserID(), meta.getBucketId(), fileName, nextVersionId, prefix, limit);
+                LOG.info("LIST object:" + user.getUserID() + "/" + key + "/" + request.getPrefix() + "(TOO_MANY_CURSOR:"+lsCursorLimit+"),by V1.");
             }
         }
         List<FileMetaMsg> fileMetaMsgs = new ArrayList<>();
