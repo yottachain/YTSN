@@ -227,16 +227,16 @@ public class ServerInitor {
             lsCacheExpireTime = 30;
         }
         try {
-            String ss = p.getProperty("lsCursorLimit", "3").trim();
-            lsCursorLimit = Integer.parseInt(ss);
-            if (lsCursorLimit < 1) {
-                lsCursorLimit = 0;
+            String ss = p.getProperty("lsCursorLimit", "10").trim();
+            lsCachePageNum = Integer.parseInt(ss);
+            if (lsCachePageNum < 1) {
+                lsCachePageNum = 1;
             }
-            if (lsCursorLimit > 10) {
-                lsCursorLimit = 10;
+            if (lsCachePageNum > 100) {
+                lsCachePageNum = 100;
             }
         } catch (Exception d) {
-            lsCursorLimit = 3;
+            lsCachePageNum = 10;
         }
         try {
             String ss = p.getProperty("lsCacheMaxSize", "20000").trim();

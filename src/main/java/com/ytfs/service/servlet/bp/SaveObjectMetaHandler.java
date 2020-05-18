@@ -8,6 +8,7 @@ import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.servlet.Handler;
 import com.ytfs.common.ServiceException;
+import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.packet.bp.SaveObjectMetaReq;
 import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.servlet.CacheAccessor;
@@ -62,6 +63,9 @@ public class SaveObjectMetaHandler extends Handler<SaveObjectMetaReq> {
             byte[] bs = request.getRefer().toBytes();
             ObjectAccessor.updateObject(request.getUserID(), request.getVNU(), bs, request.getUsedSpace());
             cache.setBlockNum(request.getRefer().getId());
+            if(request.isMode()){
+                BlockAccessor.incBlockCount();
+            }
         }
         return resp;
     }
