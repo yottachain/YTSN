@@ -2,8 +2,6 @@ package com.ytfs.service.dao;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
@@ -11,12 +9,16 @@ import static com.ytfs.common.ServiceErrorCode.INVALID_NEXTFILENAME;
 import static com.ytfs.common.ServiceErrorCode.INVALID_NEXTVERSIONID;
 import com.ytfs.common.ServiceException;
 import static com.ytfs.common.conf.ServerConfig.lsCacheExpireTime;
+import static com.ytfs.common.conf.ServerConfig.lsCacheMaxSize;
+import static com.ytfs.common.conf.ServerConfig.lsCachePageNum;
 import static com.ytfs.service.dao.FileAccessorV2.firstVersionId;
-import io.jafka.jeos.util.Base58;
+import com.ytfs.service.packet.s3.ListObjectReq;
+import com.ytfs.service.packet.s3.ListObjectResp;
+import com.ytfs.service.packet.s3.ListObjectRespV2;
+import com.ytfs.service.packet.s3.entities.FileMetaMsg;
+import com.ytfs.service.packet.s3.v2.ListObjectReqV2;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.bson.Document;
@@ -26,91 +28,92 @@ import org.bson.types.ObjectId;
 public class FileListCache {
 
     static final Logger LOG = Logger.getLogger(FileListCache.class);
-    private static final long MAX_SIZE = 50000;
-    private static final long READ_EXPIRED_TIME = 1;
 
-    private static final Cache<String, Object> L1cache = CacheBuilder.newBuilder()
-            .expireAfterWrite(lsCacheExpireTime, TimeUnit.SECONDS)
-            .maximumSize(MAX_SIZE)
-            .build();
+    private static Cache<String, Object> L1_CACHE;
+
+    public synchronized static Cache<String, Object> getL1Cache() {
+        if (L1_CACHE == null) {
+            L1_CACHE = CacheBuilder.newBuilder()
+                    .expireAfterWrite(lsCacheExpireTime, TimeUnit.SECONDS)
+                    .maximumSize(lsCacheMaxSize)
+                    .build();
+            LOG.info("Init FileListCache,lsCacheMaxSize:" + lsCacheMaxSize);
+        }
+        return L1_CACHE;
+    }
 
     public static void putL1Cache(String key, Object obj) {
-        L1cache.put(key, obj);
+        getL1Cache().put(key, obj);
     }
 
     public static Object getL1Cache(String key) {
-        return L1cache.getIfPresent(key);
+        return getL1Cache().getIfPresent(key);
     }
 
-    private static final Map<String, Cache<String, FileListCache>> L2cache = new HashMap();
+    private final ListObjectReq req;
+    private final ListObjectReqV2 reqv2;
+    private Object res = null;
+    private final String nextFileName;
+    private final ObjectId nextVersionId;
+    private String prefix;
+    private int limit;
+    private final boolean compress;
 
-    private static String GetKey(ObjectId nextFileId, String prefix, ObjectId nextVersionId) {
-        return nextFileId == null ? "/" : (Base58.encode(nextFileId.toByteArray()) + "/")
-                + prefix + "/" + (nextVersionId != null ? "1" : "");
+    public Object getResult() {
+        return res;
     }
 
-    public static List<FileMetaV2> listBucket1(String pubkey, int userId, ObjectId bucketId, ObjectId nextFileId,
-            ObjectId nextVersionId, String prefix, int limit) throws ServiceException {
-        prefix = prefix == null ? "" : prefix.trim();
-        String l2key = pubkey + Base58.encode(bucketId.toByteArray());
-        Cache<String, FileListCache> map;
-        synchronized (L2cache) {
-            map = L2cache.get(l2key);
-            if (map == null) {
-                map = CacheBuilder.newBuilder()
-                        .expireAfterAccess(READ_EXPIRED_TIME, TimeUnit.MINUTES)
-                        .maximumSize(MAX_SIZE)
-                        .removalListener(new BucketRemovalListener(l2key))
-                        .build();
-                L2cache.put(l2key, map);
-            }
+    public FileListCache(ListObjectReqV2 reqv2) {
+        this.req = null;
+        this.reqv2 = reqv2;
+        nextFileName = reqv2.getFileName();
+        nextVersionId = reqv2.getNextVersionId();
+        prefix = reqv2.getPrefix();
+        limit = reqv2.getLimit();
+        if (limit < 10) {
+            limit = 10;
         }
+        if (limit > 1000) {
+            limit = 1000;
+        }
+        compress = reqv2.isCompress();
+    }
 
-        String key = GetKey(nextFileId, prefix, nextVersionId);
-        
-        /*
-        FileListCache cache = null;
-      
-        if (cache == null) {
-            if (map.size() > 3) {
-                throw new ServiceException(TOO_MANY_CURSOR);
-            }
-            long st = System.currentTimeMillis();
-            cache = createCache(userId, bucketId, nextFileName, nextVersionId, prefix, limit);
-            if (cache.curpos == null) {
-                LOG.info("List " + logKey + "return count:" + cache.res.size() + ",cursor closed,take times " + (System.currentTimeMillis() - st) + " ms.");
-                return cache.res;
-            } else {
-                key = GetKey(cache.lastDoc.getString("fileName"), prefix, nextVersionId);
-                LOG.info("List " + key + "return count:" + cache.res.size() + ",take times " + (System.currentTimeMillis() - st) + " ms.");
-                map.put(key, cache);
-                List<FileMetaV2> result = cache.res;
-                cache.res = null;
-                return result;
-            }
+    public FileListCache(ListObjectReq req) {
+        this.req = req;
+        this.reqv2 = null;
+        nextFileName = req.getFileName();
+        nextVersionId = req.getNextVersionId();
+        prefix = req.getPrefix();
+        limit = req.getLimit();
+        if (limit < 10) {
+            limit = 10;
         }
-        retFromCache(logKey, cache, limit);
-        if (cache.curpos == null) {
-            map.invalidate(key);
-            return cache.res;
+        if (limit > 1000) {
+            limit = 1000;
+        }
+        compress = req.isCompress();
+    }
+
+    public String getHashCode(int userId, String FileName, ObjectId VersionId) {
+        if (reqv2 != null) {
+            return reqv2.getHashCode(userId, FileName, VersionId);
         } else {
-            String newkey = GetKey(cache.lastDoc.getString("fileName"), prefix, nextVersionId);
-            map.put(newkey, cache);
-            map.invalidate(key);
-            return cache.res;
-        }*/
-        return null;
+            return req.getHashCode(userId, FileName, VersionId);
+        }
     }
 
-    public static FileListCache createCache(int userId, ObjectId bucketId, String nextFileName,
-            ObjectId nextVersionId, String prefix, int lit) throws ServiceException {
-        int limit = lit < 10 ? 10 : lit;
+    public void listBucket(ObjectId bucketId, String bucketName, int userId, String key) throws ServiceException {
+        long st = System.currentTimeMillis();
+        int maxline = limit * lsCachePageNum;
+        String lastkey = key;
         Bson filter = null;
         Bson regex = null;
-        if (!prefix.isEmpty()) {
-            regex = Filters.regex("fileName", "^" + prefix.replace("\\", "\\\\"));
+        if (!(prefix == null || prefix.isEmpty())) {
+            prefix = prefix.replace("\\", "\\\\");
+            regex = Filters.regex("fileName", "^" + prefix);
         }
-        if (nextFileName.isEmpty()) {
+        if (nextFileName == null || nextFileName.isEmpty()) {
             if (regex == null) {
                 filter = Filters.eq("bucketId", bucketId);
             } else {
@@ -147,131 +150,97 @@ public class FileListCache {
             }
         }
         int count = 0;
-        List<FileMetaV2> ress = new ArrayList();
+        int pagenum = 0;
+        List<FileMetaV2> list = new ArrayList();
         FindIterable<Document> it = fields == null
-                ? MongoSource.getFileCollection(userId).find(filter).sort(sort)
-                : MongoSource.getFileCollection(userId).find(filter).projection(fields).sort(sort);
+                ? MongoSource.getFileCollection(userId).find(filter).sort(sort).limit(maxline)
+                : MongoSource.getFileCollection(userId).find(filter).projection(fields).sort(sort).limit(maxline);
+        it.batchSize(100);
         MongoCursor<Document> cursor = it.iterator();
-        while (cursor.hasNext()) {
-            Document doc = cursor.next();
-            List lastDoc = (List) doc.get("version");
-            List ls = new ArrayList(lastDoc);
-            int vercount = 0, versize = ls.size();
-            for (Object obj : ls) {
-                vercount++;
-                Document verdoc = (Document) obj;
-                lastDoc.remove(obj);
-                if (!toFindNextVersionId) {
-                    FileMetaV2 meta = new FileMetaV2(doc, verdoc);
-                    meta.setLatest(vercount == versize);
-                    ress.add(meta);
-                    count++;
-                } else {
-                    ObjectId verId = verdoc.getObjectId("versionId");
-                    if (verId != null && verId.equals(nextVersionId)) {
-                        toFindNextVersionId = false;
+        try {
+            while (cursor.hasNext() && pagenum < lsCachePageNum) {
+                Document doc = cursor.next();
+                List ls = (List) doc.get("version");
+                int vercount = 0, versize = ls.size();
+                for (Object obj : ls) {
+                    if (pagenum >= lsCachePageNum) {
+                        break;
+                    }
+                    vercount++;
+                    Document verdoc = (Document) obj;
+                    if (!toFindNextVersionId) {
+                        FileMetaV2 meta = new FileMetaV2(doc, verdoc);
+                        meta.setLatest(vercount == versize);
+                        list.add(meta);
+                        count++;
+                        if (count >= limit) {
+                            Object obResp = toListObjectResp(list);
+                            if (res == null) {
+                                res = obResp;
+                            }
+                            FileListCache.putL1Cache(lastkey, obResp);
+                            pagenum++;
+                            list = new ArrayList();
+                            lastkey = getHashCode(userId, meta.getFileName(), meta.getVersionId());
+                            count = 0;
+                        }
+                    } else {
+                        ObjectId verId = verdoc.getObjectId("versionId");
+                        if (verId != null && verId.equals(nextVersionId)) {
+                            toFindNextVersionId = false;
+                        }
                     }
                 }
-                if (count >= limit) {
-                    FileListCache lscache = new FileListCache();
-                    lscache.res = ress;
-                    lscache.curpos = cursor;
-                    doc.put("version", lastDoc);
-                    lscache.lastDoc = doc;
-                    return lscache;
+                if (toFindNextVersionId) {
+                    throw new ServiceException(INVALID_NEXTVERSIONID);//无效的nextVersionId
                 }
             }
-            if (toFindNextVersionId) {
-                throw new ServiceException(INVALID_NEXTVERSIONID);//无效的nextVersionId
+        } finally {
+            try {
+                cursor.close();
+            } catch (Exception e) {
             }
         }
-        FileListCache lscache = new FileListCache();
-        lscache.res = ress;
-        lscache.curpos = null;
-        return lscache;
+        Object obResp = toListObjectResp(list);
+        if (res == null) {
+            res = obResp;
+        }
+        if (!list.isEmpty()) {
+            FileListCache.putL1Cache(lastkey, obResp);
+        }
+        LOG.info("LIST object:" + userId + "/" + bucketName + "/" + prefix
+                + ",return lines:" + (list.size() + pagenum * limit) + ",take times " + (System.currentTimeMillis() - st) + " ms");
     }
 
-    public static void retFromCache(String logKey, FileListCache cache, int limit) {
-        long st = System.currentTimeMillis();
-        List<FileMetaV2> list = new ArrayList();
-        int count = 0;
-        if (cache.lastDoc != null) {
-            List lastDoc = (List) cache.lastDoc.get("version");
-            List ls = new ArrayList(lastDoc);
-            int vercount = 0, versize = ls.size();
-            for (Object obj : ls) {
-                vercount++;
-                Document verdoc = (Document) obj;
-                lastDoc.remove(obj);
-                FileMetaV2 meta = new FileMetaV2(cache.lastDoc, verdoc);
-                meta.setLatest(vercount == versize);
-                list.add(meta);
-                count++;
-                if (count >= limit) {
-                    cache.res = list;
-                    cache.lastDoc.put("version", lastDoc);
-                    LOG.info("List " + logKey + "return count:" + cache.res.size() + " from lastDoc,take times " + (System.currentTimeMillis() - st) + " ms.");
-                    return;
-                }
+    private Object toListObjectResp(List<FileMetaV2> fileMetaV2s) {
+        List<FileMetaMsg> fileMetaMsgs = new ArrayList<>();
+        fileMetaV2s.stream().map((fileMetaV2) -> {
+            FileMetaMsg fileMetaMsg = new FileMetaMsg();
+            fileMetaMsg.setAcl(fileMetaV2.getAcl());
+            fileMetaMsg.setBucketId(fileMetaV2.getBucketId());
+            fileMetaMsg.setFileId(fileMetaV2.getFileId());
+            fileMetaMsg.setFileName(fileMetaV2.getFileName());
+            fileMetaMsg.setMeta(fileMetaV2.getMeta());
+            fileMetaMsg.setVersionId(fileMetaV2.getVersionId());
+            fileMetaMsg.setLatest(fileMetaV2.isLatest());
+            return fileMetaMsg;
+        }).forEachOrdered((fileMetaMsg) -> {
+            fileMetaMsgs.add(fileMetaMsg);
+        });
+        if (!fileMetaMsgs.isEmpty()) {
+            if (this.compress) {
+                ListObjectRespV2 resp = new ListObjectRespV2();
+                resp.setFileMetaMsgList(fileMetaMsgs);
+                return resp;
+            } else {
+                ListObjectResp resp = new ListObjectResp();
+                resp.setFileMetaMsgList(fileMetaMsgs);
+                return resp;
             }
-        }
-        cache.lastDoc = null;
-        MongoCursor<Document> it = cache.curpos;
-        while (it.hasNext()) {
-            Document doc = it.next();
-            List lastDoc = (List) doc.get("version");
-            List ls = new ArrayList(lastDoc);
-            int vercount = 0, versize = ls.size();
-            for (Object obj : ls) {
-                vercount++;
-                Document verdoc = (Document) obj;
-                lastDoc.remove(obj);
-                FileMetaV2 meta = new FileMetaV2(doc, verdoc);
-                meta.setLatest(vercount == versize);
-                list.add(meta);
-                count++;
-                if (count >= limit) {
-                    cache.res = list;
-                    doc.put("version", lastDoc);
-                    cache.lastDoc = doc;
-                    LOG.info("List " + logKey + "return count:" + cache.res.size() + " from curpos,take times " + (System.currentTimeMillis() - st) + " ms.");
-                    return;
-                }
-            }
-        }
-        cache.res = list;
-        cache.curpos = null;
-        LOG.info("List " + logKey + " from curpos,curpos closed,take times " + (System.currentTimeMillis() - st) + " ms.");
-    }
-
-    private List<FileMetaV2> res;
-    private MongoCursor<Document> curpos = null;
-    private Document lastDoc = null;
-
-    private void curposClose() {
-        if (curpos != null) {
-            curpos.close();
-        }
-    }
-
-    private static class BucketRemovalListener implements RemovalListener<String, FileListCache> {
-
-        String key;
-
-        private BucketRemovalListener(String key) {
-            this.key = key;
-        }
-
-        @Override
-        public void onRemoval(RemovalNotification<String, FileListCache> rn) {
-            FileListCache ca = rn.getValue();
-            ca.curposClose();
-            synchronized (L2cache) {
-                Cache<String, FileListCache> map = L2cache.get(key);
-                if (map != null && map.size() == 0) {
-                    L2cache.remove(key);
-                }
-            }
+        } else {
+            ListObjectResp resp = new ListObjectResp();
+            resp.setFileMetaMsgList(fileMetaMsgs);
+            return resp;
         }
     }
 }

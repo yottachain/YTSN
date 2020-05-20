@@ -1,6 +1,5 @@
 package com.ytfs.service.servlet;
 
-import com.ytfs.common.ServiceException;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache;
 import com.ytfs.common.node.NodeCache;

@@ -1,16 +1,24 @@
 package com.ytfs.service.dao;
 
+import static com.ytfs.common.node.SuperNodeList.stringToName;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
+import java.io.ByteArrayOutputStream;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Random;
+import java.util.zip.GZIPOutputStream;
 import org.bson.types.ObjectId;
 
 public class Test {
 
     public static void main(String[] arg) throws Exception {
- 
-        // System.out.println(s);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        GZIPOutputStream zip = new GZIPOutputStream(out);
+        zip.write(new byte[0]);
+        zip.close();
+        byte[] aa=out.toByteArray();
+        System.out.println();
         // com.fasterxml.jackson.databind.
     }
 

@@ -1,6 +1,7 @@
 package com.ytfs.service.servlet.node;
 
 import com.ytfs.common.GlobleThreadPool;
+import static com.ytfs.common.ServiceErrorCode.getErrMessage;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.NodeInfo;
@@ -45,30 +46,23 @@ public class SendSpotCheckTask implements Runnable {
             infos.add(nodeinfo);
             ls = new ArrayList(infos);
         }
-        boolean bool = YottaNodeMgmt.spotcheckSelected();
-        if (bool) {
-            SendSpotCheckTask task = getQueue().poll();
-            if (task == null) {
-                LOG.error("Get spotcheck thread pool is full.");
-                return;
+        try {
+            boolean bool = YottaNodeMgmt.spotcheckSelected();
+            if (bool) {
+                SendSpotCheckTask task = getQueue().poll();
+                if (task == null) {
+                    LOG.error("Get spotcheck thread pool is full.");
+                    return;
+                }
+                task.nodeinfos = ls;
+                GlobleThreadPool.execute(task);
+            } else {
+                //LOG.error("Not selected");
             }
-            task.nodeinfos = ls;
-            GlobleThreadPool.execute(task);
+        } catch (Throwable r) {
         }
     }
 
-    private static String getErrMessage(Throwable err) {
-        Throwable t = err;
-        while (t != null) {
-            if (t.getMessage() == null || t.getMessage().isEmpty()) {
-                t = t.getCause();
-                continue;
-            } else {
-                return t.getMessage();
-            }
-        }
-        return "";
-    }
     private List<NodeInfo> nodeinfos = new ArrayList();
 
     private void execute() {

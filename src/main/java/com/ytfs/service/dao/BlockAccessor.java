@@ -110,7 +110,7 @@ public class BlockAccessor {
         }
     }
 
-    private static void incBlockCount() {
+    public static void incBlockCount() {
         try {
             MongoCollection<Document> col = MongoSource.getCollection("block_count");
             Bson filter = Filters.eq("_id", 1);

@@ -2,6 +2,7 @@ package com.ytfs.service.servlet.node;
 
 import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.INVALID_NODE_ID;
+import static com.ytfs.common.ServiceErrorCode.getErrMessage;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.node.NodeInfo;
 import static com.ytfs.service.ServiceWrapper.REBUILDER_NODEID;
@@ -69,7 +70,7 @@ public class StatusRepHandler extends Handler<StatusRepReq> {
             }
             return resp;
         } catch (NodeMgmtException e) {
-            LOG.error("UpdateNodeStatus ERR:" + e.getMessage() + ",ID:" + request.getId() + ",take times " + (System.currentTimeMillis() - l) + " ms");
+            LOG.error("UpdateNodeStatus ERR:" + getErrMessage(e) + ",ID:" + request.getId() + ",take times " + (System.currentTimeMillis() - l) + " ms");
             return new ServiceException(INVALID_NODE_ID);
         }
     }
