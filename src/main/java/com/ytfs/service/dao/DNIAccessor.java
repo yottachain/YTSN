@@ -114,8 +114,7 @@ public class DNIAccessor {
         FindIterable<Document> it = MongoSource.getDNIMetaSource().getDNI_collection().find(filter).projection(fields).sort(sort).limit(limit);
         ListDNIResp resp = new ListDNIResp();
         ObjectId lastObjectId = null;
-        it.batchSize(limit);
- 
+        it.batchSize(100);
         for (Document doc : it) {
             if (System.currentTimeMillis() - doc.getObjectId("_id").getTimestamp() * 1000L < 1000L * 60L * 5L) {
                 break;
@@ -133,5 +132,8 @@ public class DNIAccessor {
         }
         return resp;
     }
+    
+    
+    
 
 }

@@ -201,7 +201,10 @@ public class ServerInitor {
         } else {
             selfIp = selfIp.trim();
         }
-
+        s3Version = p.getProperty("s3Version");
+        if (s3Version == null || s3Version.trim().isEmpty()) {
+            s3Version = null;
+        }
         try {
             String ss = p.getProperty("sendShardInterval", "1000").trim();
             sendShardInterval = Integer.parseInt(ss);

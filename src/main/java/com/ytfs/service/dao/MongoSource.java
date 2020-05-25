@@ -15,6 +15,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
 public class MongoSource {
 
@@ -186,12 +187,23 @@ public class MongoSource {
             init(p);
             init_user_collection();
             init_block_collection();
+            //checkShardBundary();
             dnisource = new DNIMetaSource(client);
         } catch (Exception e) {
             if (client != null) {
                 client.close();
             }
             throw e instanceof MongoException ? (MongoException) e : new MongoException(e.getMessage());
+        }
+    }
+
+    public void checkShardBundary() {
+        MongoCollection<Document> coll = database.getCollection("boundary");
+        Document doc = coll.find().first();
+        if (doc == null) {
+            doc = new Document();
+            doc.append("_id", new ObjectId());
+            coll.insertOne(doc);
         }
     }
 

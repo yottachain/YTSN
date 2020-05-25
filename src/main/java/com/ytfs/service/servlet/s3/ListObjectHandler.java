@@ -2,6 +2,7 @@ package com.ytfs.service.servlet.s3;
 
 import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
+import static com.ytfs.common.conf.ServerConfig.lsCacheExpireTime;
 import com.ytfs.service.dao.*;
 import com.ytfs.service.packet.s3.ListObjectReq;
 import com.ytfs.service.packet.s3.ListObjectResp;
@@ -10,12 +11,15 @@ import com.ytfs.service.packet.s3.entities.FileMetaMsg;
 import com.ytfs.service.servlet.Handler;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
 public class ListObjectHandler extends Handler<ListObjectReq> {
 
     private static final Logger LOG = Logger.getLogger(ListObjectHandler.class);
+    public static Map<Integer, Long> lstime = new ConcurrentHashMap();
 
     public Object handleV0() throws Throwable {
         User user = this.getUser();
@@ -28,6 +32,17 @@ public class ListObjectHandler extends Handler<ListObjectReq> {
             LOG.info("LIST object:" + user.getUserID() + "/" + key + "/" + request.getPrefix() + ",return from L1 cache.");
             return obj;
         }
+        if (lstime.containsKey(user.getUserID())) {
+            if (System.currentTimeMillis() - lstime.get(user.getUserID()) > 1000 * lsCacheExpireTime) {
+                lstime.put(user.getUserID(), System.currentTimeMillis());
+            } else {
+                LOG.info("LIST object:" + user.getUserID() + "/" + request.getPrefix() + " ERR:TOO_MANY_CURSOR");
+                return new ServiceException(ServiceErrorCode.TOO_MANY_CURSOR);
+            }
+        } else {
+            lstime.put(user.getUserID(), System.currentTimeMillis());
+        }
+
         LOG.info("LIST object:" + user.getUserID() + "/" + request.getPrefix());
         int limit = request.getLimit();
         String prefix = request.getPrefix();
@@ -51,6 +66,7 @@ public class ListObjectHandler extends Handler<ListObjectReq> {
                 fileMetaMsgs.add(fileMetaMsg);
             });
         }
+
         if (request.isCompress()) {
             ListObjectRespV2 resp = new ListObjectRespV2();
             resp.setFileMetaMsgList(fileMetaMsgs);
@@ -84,6 +100,17 @@ public class ListObjectHandler extends Handler<ListObjectReq> {
             LOG.info("LIST object:" + user.getUserID() + "/" + key + "/" + request.getPrefix() + ",return from L1 cache:" + FileListCache.getL1Cache().size());
             return obj;
         }
+        if (lstime.containsKey(user.getUserID())) {
+            if (System.currentTimeMillis() - lstime.get(user.getUserID()) > 1000 * lsCacheExpireTime) {
+                lstime.put(user.getUserID(), System.currentTimeMillis());
+            } else {
+                LOG.info("LIST object:" + user.getUserID() + "/" + request.getPrefix() + " ERR:TOO_MANY_CURSOR");
+                return new ServiceException(ServiceErrorCode.TOO_MANY_CURSOR);
+            }
+        } else {
+            lstime.put(user.getUserID(), System.currentTimeMillis());
+        }
+        LOG.info("LIST object:" + user.getUserID() + "/" + request.getPrefix());
         BucketMeta meta = BucketCache.getBucket(user.getUserID(), request.getBucketName(), null);
         try {
             FileListCache cache = new FileListCache(request);
