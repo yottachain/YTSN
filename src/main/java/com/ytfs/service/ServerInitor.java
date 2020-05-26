@@ -201,7 +201,10 @@ public class ServerInitor {
         } else {
             selfIp = selfIp.trim();
         }
-
+        s3Version = p.getProperty("s3Version");
+        if (s3Version == null || s3Version.trim().isEmpty()) {
+            s3Version = null;
+        }
         try {
             String ss = p.getProperty("sendShardInterval", "1000").trim();
             sendShardInterval = Integer.parseInt(ss);
@@ -220,14 +223,14 @@ public class ServerInitor {
             if (lsCacheExpireTime < 5) {
                 lsCacheExpireTime = 5;
             }
-            if (lsCacheExpireTime > 60) {
-                lsCacheExpireTime = 60;
+            if (lsCacheExpireTime > 60 * 5) {
+                lsCacheExpireTime = 60 * 5;
             }
         } catch (Exception d) {
             lsCacheExpireTime = 30;
         }
         try {
-            String ss = p.getProperty("lsCursorLimit", "10").trim();
+            String ss = p.getProperty("lsCachePageNum", "10").trim();
             lsCachePageNum = Integer.parseInt(ss);
             if (lsCachePageNum < 1) {
                 lsCachePageNum = 1;
@@ -237,6 +240,18 @@ public class ServerInitor {
             }
         } catch (Exception d) {
             lsCachePageNum = 10;
+        }
+        try {
+            String ss = p.getProperty("lsCursorLimit", "1").trim();
+            lsCursorLimit = Integer.parseInt(ss);
+            if (lsCursorLimit < 0) {
+                lsCursorLimit = 0;
+            }
+            if (lsCursorLimit > 5) {
+                lsCursorLimit = 5;
+            }
+        } catch (Exception d) {
+            lsCursorLimit = 1;
         }
         try {
             String ss = p.getProperty("lsCacheMaxSize", "20000").trim();

@@ -25,15 +25,18 @@ public class DNIMetaSource {
 
     public static final String DNI_TABLE_NAME = "Shards";
     public static final String SPACESUN_TABLE_NAME = "SpaceSum";
+    public static final String NODE_TABLE_NAME = "Node";
 
     private final MongoDatabase database;
     private MongoCollection<Document> dni_collection = null;
+    private MongoCollection<Document> node_collection = null;
     private MongoCollection<Document> space_sum_collection = null;
     private static final String INDEX_SNID_RELATIONSHIP = "SNID_RELATIONSHIP";   //唯一
 
     public DNIMetaSource(MongoClient client) {
         this.database = client.getDatabase(DATABASENAME);
         this.dni_collection = this.database.getCollection(DNI_TABLE_NAME);
+        this.node_collection = this.database.getCollection(NODE_TABLE_NAME);
         this.space_sum_collection = this.database.getCollection(SPACESUN_TABLE_NAME);
         boolean indexCreated = false;
         ListIndexesIterable<Document> indexs = space_sum_collection.listIndexes();
@@ -48,6 +51,13 @@ public class DNIMetaSource {
             indexOptions = indexOptions.name(INDEX_SNID_RELATIONSHIP);
             space_sum_collection.createIndex(Indexes.ascending("snid", "mowner"), indexOptions);
         }
+    }
+
+    /**
+     * @return the bucket_collection
+     */
+    public MongoCollection<Document> getNode_collection() {
+        return node_collection;
     }
 
     /**

@@ -1,8 +1,10 @@
 package com.ytfs.service.servlet.user;
 
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
+import static com.ytfs.common.ServiceErrorCode.TOO_LOW_VERSION;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.ServerConfig;
+import static com.ytfs.common.conf.ServerConfig.s3Version;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.SNSynchronizer;
@@ -23,6 +25,12 @@ public class RegUserHandler extends Handler<RegUserReq> {
     public Object handle() throws Throwable {
         String cachekey = this.getPublicKey();
         LOG.info("UserLogin:" + request.getUsername());
+        if (s3Version != null) {
+            if (request.getVersionId() == null || request.getVersionId().compareTo(s3Version) < 0) {
+                LOG.error("UserLogin:" + request.getUsername() + " ERR:TOO_LOW_VERSION");
+                return new ServiceException(TOO_LOW_VERSION);
+            }
+        }
         String userPubkey = request.getPubKey();
         SuperNode sn = SuperNodeList.getUserRegSuperNode(request.getUsername());
         QueryUserReq req = new QueryUserReq();
