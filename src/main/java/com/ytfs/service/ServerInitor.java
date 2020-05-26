@@ -244,8 +244,8 @@ public class ServerInitor {
         try {
             String ss = p.getProperty("lsCursorLimit", "1").trim();
             lsCursorLimit = Integer.parseInt(ss);
-            if (lsCursorLimit < 1) {
-                lsCursorLimit = 1;
+            if (lsCursorLimit < 0) {
+                lsCursorLimit = 0;
             }
             if (lsCursorLimit > 5) {
                 lsCursorLimit = 5;
