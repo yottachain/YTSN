@@ -2,7 +2,6 @@ package com.ytfs.service.dao;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.Filters;
@@ -98,20 +97,20 @@ public class DNIAccessor {
     }
 
     public static void UpdateShardNum(List<ShardMeta> ls) {
-        Map<Integer, Integer> map = new HashMap();
+        Map<Integer, Long> map = new HashMap();
         ls.forEach((meta) -> {
-            Integer num = map.get(meta.getNodeId());
+            Long num = map.get(meta.getNodeId());
             if (num == null) {
-                map.put(meta.getNodeId(), 1);
+                map.put(meta.getNodeId(), 1L);
             } else {
-                map.put(meta.getNodeId(), num + 1);
+                map.put(meta.getNodeId(), num + 1L);
             }
         });
-        Set<Map.Entry<Integer, Integer>> set = map.entrySet();
+        Set<Map.Entry<Integer, Long>> set = map.entrySet();
         List<WriteModel<Document>> writeModelList = new ArrayList();
         set.stream().map((ent) -> {
             Bson filter = Filters.in("_id", ent.getKey());
-            Document doc = new Document("$inc", new Document("sn" + ServerConfig.superNodeID, ent.getValue()));
+            Document doc = new Document("$inc", new Document("uspaces.sn" + ServerConfig.superNodeID, ent.getValue()));
             UpdateOneModel update = new UpdateOneModel(filter, doc);
             return update;
         }).forEachOrdered((update) -> {

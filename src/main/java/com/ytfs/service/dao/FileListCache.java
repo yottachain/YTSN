@@ -5,12 +5,14 @@ import com.google.common.cache.CacheBuilder;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
+import com.ytfs.common.ServiceErrorCode;
 import static com.ytfs.common.ServiceErrorCode.INVALID_NEXTFILENAME;
 import static com.ytfs.common.ServiceErrorCode.INVALID_NEXTVERSIONID;
 import com.ytfs.common.ServiceException;
 import static com.ytfs.common.conf.ServerConfig.lsCacheExpireTime;
 import static com.ytfs.common.conf.ServerConfig.lsCacheMaxSize;
 import static com.ytfs.common.conf.ServerConfig.lsCachePageNum;
+import static com.ytfs.common.conf.ServerConfig.lsCursorLimit;
 import static com.ytfs.service.dao.FileAccessorV2.firstVersionId;
 import com.ytfs.service.packet.s3.ListObjectReq;
 import com.ytfs.service.packet.s3.ListObjectResp;
@@ -18,7 +20,11 @@ import com.ytfs.service.packet.s3.ListObjectRespV2;
 import com.ytfs.service.packet.s3.entities.FileMetaMsg;
 import com.ytfs.service.packet.s3.v2.ListObjectReqV2;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.bson.Document;
@@ -58,12 +64,15 @@ public class FileListCache {
     private String prefix;
     private int limit;
     private final boolean compress;
+    private final int userId;
+    private final String bucketName;
+    private final String key;
 
     public Object getResult() {
         return res;
     }
 
-    public FileListCache(ListObjectReqV2 reqv2) {
+    public FileListCache(ListObjectReqV2 reqv2, int userId) {
         this.req = null;
         this.reqv2 = reqv2;
         nextFileName = reqv2.getFileName();
@@ -77,9 +86,12 @@ public class FileListCache {
             limit = 1000;
         }
         compress = reqv2.isCompress();
+        this.userId = userId;
+        this.key = reqv2.getHashCode(userId);
+        this.bucketName = reqv2.getBucketName();
     }
 
-    public FileListCache(ListObjectReq req) {
+    public FileListCache(ListObjectReq req, int userId) {
         this.req = req;
         this.reqv2 = null;
         nextFileName = req.getFileName();
@@ -93,9 +105,62 @@ public class FileListCache {
             limit = 1000;
         }
         compress = req.isCompress();
+        this.userId = userId;
+        this.key = req.getHashCode(userId);
+        this.bucketName = req.getBucketName();
     }
 
-    public String getHashCode(int userId, String FileName, ObjectId VersionId) {
+    public static final Map<Integer, ArrayBlockingQueue<Object>> locks = new HashMap();
+    public static final Map<Integer, Long> lasttimes = new HashMap();
+
+    public void list() throws Throwable {
+        try {
+            Object obj = getL1Cache().get(key, () -> {
+                if (lsCursorLimit <= 0) {
+                    synchronized (locks) {
+                        Long l = lasttimes.get(userId);
+                        if (l != null && System.currentTimeMillis() - l < lsCacheExpireTime * 1000) {
+                            throw new ServiceException(ServiceErrorCode.TOO_MANY_CURSOR);
+                        }
+                        lasttimes.put(userId, System.currentTimeMillis());
+                    }
+                    listBucket();
+                    return getResult();
+                }
+                ArrayBlockingQueue<Object> queue;
+                synchronized (locks) {
+                    queue = locks.get(userId);
+                    if (queue == null) {
+                        queue = new ArrayBlockingQueue(lsCursorLimit);
+                        for (int ii = 0; ii < lsCursorLimit; ii++) {
+                            queue.add(new Object());
+                        }
+                        locks.put(userId, queue);
+                    }
+                }
+                Object o = queue.poll();
+                if (o == null) {
+                    throw new ServiceException(ServiceErrorCode.TOO_MANY_CURSOR);
+                }
+                try {
+                    listBucket();
+                } catch (Exception t) {
+                    throw t;
+                } finally {
+                    queue.add(o);
+                }
+                return getResult();
+            });
+            if (res == null) {
+                LOG.info("LIST object:" + userId + "/" + key + "/" + prefix + ",return from L1 cache:" + getL1Cache().size());
+                res = obj;
+            }
+        } catch (ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
+    private String getHashCode(int userId, String FileName, ObjectId VersionId) {
         if (reqv2 != null) {
             return reqv2.getHashCode(userId, FileName, VersionId);
         } else {
@@ -103,8 +168,10 @@ public class FileListCache {
         }
     }
 
-    public void listBucket(ObjectId bucketId, String bucketName, int userId, String key) throws ServiceException {
+    private void listBucket() throws ServiceException {
         long st = System.currentTimeMillis();
+        BucketMeta bmeta = BucketCache.getBucket(userId, bucketName, null);
+        ObjectId bucketId = bmeta.getBucketId();
         int maxline = limit * lsCachePageNum;
         String lastkey = key;
         Bson filter = null;
@@ -155,7 +222,6 @@ public class FileListCache {
         FindIterable<Document> it = fields == null
                 ? MongoSource.getFileCollection(userId).find(filter).sort(sort).limit(maxline)
                 : MongoSource.getFileCollection(userId).find(filter).projection(fields).sort(sort).limit(maxline);
-        it.batchSize(100);
         MongoCursor<Document> cursor = it.iterator();
         try {
             while (cursor.hasNext() && pagenum < lsCachePageNum) {
