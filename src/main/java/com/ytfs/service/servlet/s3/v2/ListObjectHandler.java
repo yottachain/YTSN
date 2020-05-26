@@ -3,6 +3,7 @@ package com.ytfs.service.servlet.s3.v2;
 import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
 import static com.ytfs.common.conf.ServerConfig.lsCacheExpireTime;
+import static com.ytfs.common.conf.ServerConfig.lsIntervalLimit;
 import com.ytfs.service.dao.*;
 import com.ytfs.service.packet.s3.ListObjectResp;
 import com.ytfs.service.packet.s3.ListObjectRespV2;
@@ -30,9 +31,8 @@ public class ListObjectHandler extends Handler<ListObjectReqV2> {
             LOG.info("LIST object:" + user.getUserID() + "/" + key + "/" + request.getPrefix() + ",return from L1 cache.");
             return obj;
         }
-
         if (lstime.containsKey(user.getUserID())) {
-            if (System.currentTimeMillis() - lstime.get(user.getUserID()) > 1000 * lsCacheExpireTime) {
+            if (System.currentTimeMillis() - lstime.get(user.getUserID()) > 1000 * lsIntervalLimit) {
                 lstime.put(user.getUserID(), System.currentTimeMillis());
             } else {
                 LOG.info("LIST object:" + user.getUserID() + "/" + request.getPrefix() + " ERR:TOO_MANY_CURSOR");
@@ -99,7 +99,7 @@ public class ListObjectHandler extends Handler<ListObjectReqV2> {
             return obj;
         }
         if (lstime.containsKey(user.getUserID())) {
-            if (System.currentTimeMillis() - lstime.get(user.getUserID()) > 1000 * lsCacheExpireTime) {
+            if (System.currentTimeMillis() - lstime.get(user.getUserID()) > 1000 * lsIntervalLimit) {
                 lstime.put(user.getUserID(), System.currentTimeMillis());
             } else {
                 LOG.info("LIST object:" + user.getUserID() + "/" + request.getPrefix() + " ERR:TOO_MANY_CURSOR");

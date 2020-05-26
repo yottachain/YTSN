@@ -187,7 +187,7 @@ public class MongoSource {
             init(p);
             init_user_collection();
             init_block_collection();
-            //checkShardBundary();
+            checkShardBundary();
             dnisource = new DNIMetaSource(client);
         } catch (Exception e) {
             if (client != null) {

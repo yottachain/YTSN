@@ -2,14 +2,22 @@ package com.ytfs.service.dao;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOneModel;
+import com.mongodb.client.model.WriteModel;
 import static com.ytfs.common.ServiceErrorCode.INVALID_NEXTID;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.packet.node.ListDNIResp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.bson.Document;
@@ -23,7 +31,7 @@ public class DNIAccessor {
 
     public static class LastIterable {
 
-        private List<Document> lastList; 
+        private List<Document> lastList;
         private FindIterable<Document> iterable = null;
         private boolean exec = false;
 
@@ -46,12 +54,12 @@ public class DNIAccessor {
                         }
                     }
                     if (iterable != null) {
-                        for(Document doc:lastList){
-                            ObjectId id=doc.getObjectId("_id");
-                            if(id.equals(nid)){
+                        for (Document doc : lastList) {
+                            ObjectId id = doc.getObjectId("_id");
+                            if (id.equals(nid)) {
                                 //OK
                             }
-                        }                       
+                        }
                     }
                     return null;
                 } finally {
@@ -87,6 +95,30 @@ public class DNIAccessor {
             }
         }
         return false;
+    }
+
+    public static void UpdateShardNum(List<ShardMeta> ls) {
+        Map<Integer, Integer> map = new HashMap();
+        ls.forEach((meta) -> {
+            Integer num = map.get(meta.getNodeId());
+            if (num == null) {
+                map.put(meta.getNodeId(), 1);
+            } else {
+                map.put(meta.getNodeId(), num + 1);
+            }
+        });
+        Set<Map.Entry<Integer, Integer>> set = map.entrySet();
+        List<WriteModel<Document>> writeModelList = new ArrayList();
+        set.stream().map((ent) -> {
+            Bson filter = Filters.in("_id", ent.getKey());
+            Document doc = new Document("$inc", new Document("sn" + ServerConfig.superNodeID, ent.getValue()));
+            UpdateOneModel update = new UpdateOneModel(filter, doc);
+            return update;
+        }).forEachOrdered((update) -> {
+            writeModelList.add(update);
+        });
+        BulkWriteOptions option = new BulkWriteOptions();
+        MongoSource.getDNIMetaSource().getNode_collection().bulkWrite(writeModelList, option.ordered(false).bypassDocumentValidation(false));
     }
 
     public static ListDNIResp listDNI(int nodeId, String nextId, int limit) {
@@ -132,8 +164,5 @@ public class DNIAccessor {
         }
         return resp;
     }
-    
-    
-    
 
 }

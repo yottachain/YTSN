@@ -223,14 +223,14 @@ public class ServerInitor {
             if (lsCacheExpireTime < 5) {
                 lsCacheExpireTime = 5;
             }
-            if (lsCacheExpireTime > 60) {
-                lsCacheExpireTime = 60;
+            if (lsCacheExpireTime > 60 * 5) {
+                lsCacheExpireTime = 60 * 5;
             }
         } catch (Exception d) {
             lsCacheExpireTime = 30;
         }
         try {
-            String ss = p.getProperty("lsCursorLimit", "10").trim();
+            String ss = p.getProperty("lsCachePageNum", "10").trim();
             lsCachePageNum = Integer.parseInt(ss);
             if (lsCachePageNum < 1) {
                 lsCachePageNum = 1;
@@ -240,6 +240,18 @@ public class ServerInitor {
             }
         } catch (Exception d) {
             lsCachePageNum = 10;
+        }
+        try {
+            String ss = p.getProperty("lsIntervalLimit", "10").trim();
+            lsIntervalLimit = Integer.parseInt(ss);
+            if (lsIntervalLimit < 1) {
+                lsIntervalLimit = 1;
+            }
+            if (lsIntervalLimit > 60 * 5) {
+                lsIntervalLimit = 60 * 5;
+            }
+        } catch (Exception d) {
+            lsIntervalLimit = 10;
         }
         try {
             String ss = p.getProperty("lsCacheMaxSize", "20000").trim();

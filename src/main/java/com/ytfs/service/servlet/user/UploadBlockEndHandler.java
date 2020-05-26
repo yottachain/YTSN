@@ -23,6 +23,7 @@ import static com.ytfs.common.conf.UserConfig.Max_Shard_Count;
 import com.ytfs.common.node.NodeManager;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.dao.CacheBaseAccessor;
+import com.ytfs.service.dao.DNIAccessor;
 import com.ytfs.service.dao.Sequence;
 import com.ytfs.service.dao.User;
 import com.ytfs.service.dao.UserCache.UserEx;
@@ -92,6 +93,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             throw r;
         }
         LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
+        DNIAccessor.UpdateShardNum(ls);
         sendDNI(ls, VBI);
         LOG.info("Upload block:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");
         UploadBlockEndResp resp = new UploadBlockEndResp();
