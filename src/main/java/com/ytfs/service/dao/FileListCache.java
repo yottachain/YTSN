@@ -35,6 +35,27 @@ public class FileListCache {
 
     static final Logger LOG = Logger.getLogger(FileListCache.class);
 
+    private static Cache<String, String[]> BUCKET_CACHE;
+
+    public synchronized static Cache<String, String[]> getBucketCache() {
+        if (BUCKET_CACHE == null) {
+            BUCKET_CACHE = CacheBuilder.newBuilder()
+                    .expireAfterWrite(lsCacheExpireTime, TimeUnit.SECONDS)
+                    .maximumSize(lsCacheMaxSize)
+                    .build();
+            LOG.info("Init BUCKET_CACHE,lsCacheMaxSize:" + lsCacheMaxSize);
+        }
+        return BUCKET_CACHE;
+    }
+
+    public static String[] getBucketCache(String key) {
+        return getBucketCache().getIfPresent(key);
+    }
+
+    public static void putBucketCache(String key, String[] obj) {
+        getBucketCache().put(key, obj);
+    }
+
     private static Cache<String, Object> L1_CACHE;
 
     public synchronized static Cache<String, Object> getL1Cache() {

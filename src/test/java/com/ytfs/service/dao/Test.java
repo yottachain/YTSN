@@ -2,6 +2,8 @@ package com.ytfs.service.dao;
 
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import org.bson.types.ObjectId;
@@ -9,9 +11,14 @@ import org.bson.types.ObjectId;
 public class Test {
 
     public static void main(String[] arg) throws Exception {
-        String s1="1.0.0.1";
-        String s2="1.0.0.2";
-        System.out.println(System.currentTimeMillis());
+        InetAddress address;
+        try {
+            address = InetAddress.getByName("sn18.yottachain.net");
+            System.out.println(address.getHostAddress());
+        } catch (UnknownHostException ex) {
+    
+        }
+       
         // com.fasterxml.jackson.databind.
     }
 
