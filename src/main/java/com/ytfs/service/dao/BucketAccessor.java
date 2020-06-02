@@ -53,7 +53,8 @@ public class BucketAccessor {
 
     public static String[] listBucket(int userid) {
         List<String> ls = new ArrayList();
-        FindIterable<Document> it = MongoSource.getBucketCollection(userid).find();
+        Document fields = new Document("bucketName", 1);
+        FindIterable<Document> it = MongoSource.getBucketCollection(userid).find().projection(fields);
         for (Document doc : it) {
             ls.add(doc.getString("bucketName"));
         }

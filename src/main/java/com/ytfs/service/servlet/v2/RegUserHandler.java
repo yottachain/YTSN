@@ -26,7 +26,7 @@ public class RegUserHandler extends Handler<RegUserReqV2> {
         LOG.info("UserLogin:" + request.getUsername());
         if (s3Version != null) {
             if (request.getVersionId() == null || request.getVersionId().compareTo(s3Version) < 0) {
-                LOG.error("UserLogin:" + request.getUsername() + " ERR:TOO_LOW_VERSION");
+                LOG.error("UserLogin:" + request.getUsername() + " ERR:TOO_LOW_VERSION?" + request.getVersionId());
                 return new ServiceException(TOO_LOW_VERSION);
             }
         }

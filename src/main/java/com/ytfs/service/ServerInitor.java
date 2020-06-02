@@ -59,7 +59,7 @@ public class ServerInitor {
                 List<ServerAddress> addrs = MongoSource.getServerAddress();
                 NodeManager.start(addrs, MongoSource.getAuth(), eosURI, BPAccount, ShadowAccount, ShadowPriKey, contractAccount, contractOwnerD, superNodeID);
                 privateKey = YottaNodeMgmt.getSuperNodePrivateKey(superNodeID);
-                SNDSP = Base58.decode(privateKey);
+              //  SNDSP = Base58.decode(privateKey);
                 SuperNodeList.isServer = true;
                 YottaNodeMgmt.setMaster(SuperNodeList.isMaster());
                 Sequence.initUserID_seq();
