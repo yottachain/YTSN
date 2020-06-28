@@ -35,6 +35,7 @@ public class DownloadBlockInitHandler extends Handler<DownloadBlockInitReqV2> {
             res.setData(dat);
             return res;
         }
+        
         DownloadBlockInitResp resp = new DownloadBlockInitResp();
         resp.setVNF(meta.getVNF());
         resp.setAR(meta.getAR());

@@ -141,7 +141,7 @@ public class ServerInitor {
     }
 
     private static void load() throws IOException {
-        String path = System.getProperty("server.conf", "../conf/server.properties");
+        String path = System.getProperty("server.conf", "conf/server.properties");
         LOG.info("Read conf:" + path);
         InputStream is = new FileInputStream(path);
         if (is == null) {

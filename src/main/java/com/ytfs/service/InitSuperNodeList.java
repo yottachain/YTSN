@@ -58,7 +58,7 @@ public class InitSuperNodeList {
         MongoClient client = MongoSource.getMongoClient();
         database = client.getDatabase(DATABASENAME);
         init_collection();
-        String path = System.getProperty("snlist.conf", "../conf/snlist.properties");
+        String path = System.getProperty("snlist.conf", "conf/snlist.properties");
         ObjectMapper mapper = new ObjectMapper();
         List ls = mapper.readValue(new File(path), List.class);
         try {

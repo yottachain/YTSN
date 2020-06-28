@@ -35,7 +35,7 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReqV2> {
             throw new ServiceException(NO_SUCH_BLOCK);
         }
         verify();
-        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(userid, meta.getVBI(), request.getKeyNumber());
+        SaveObjectMetaReq saveObjectMetaReq = makeSaveObjectMetaReq(userid, meta.getVBI(), request.getKeyNumber());       
         long usedSpace = meta.getAR() == ShardEncoder.AR_DB_MODE ? ServerConfig.PCM : ServerConfig.PFL * meta.getVNF() * ServerConfig.space_factor / 100;
         saveObjectMetaReq.setUsedSpace(usedSpace);
         try {
