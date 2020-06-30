@@ -1,5 +1,7 @@
 package com.ytfs.service.servlet.v2;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.ServerConfig;
@@ -15,11 +17,24 @@ import io.yottachain.ytcrypto.YTCrypto;
 import io.yottachain.ytcrypto.core.exception.YTCryptoException;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 public class PreAllocNodeHandler extends Handler<PreAllocNodeReqV2> {
 
     private static final Logger LOG = Logger.getLogger(PreAllocNodeHandler.class);
+    private static Cache<Integer, PreAllocNodeResp> PreAlloc_CACHE;
+
+    public synchronized static Cache<Integer, PreAllocNodeResp> getPreAllocCache() {
+        if (PreAlloc_CACHE == null) {
+            PreAlloc_CACHE = CacheBuilder.newBuilder()
+                    .expireAfterWrite(60, TimeUnit.SECONDS)
+                    .maximumSize(10000)
+                    .build();
+            LOG.info("Init PreAlloc_CACHE,MaxSize:10000");
+        }
+        return PreAlloc_CACHE;
+    } 
 
     @Override
     public Object handle() throws Throwable {
@@ -29,7 +44,12 @@ public class PreAllocNodeHandler extends Handler<PreAllocNodeReqV2> {
         }
         int count = request.getCount() > 1000 ? 1000 : request.getCount();
         count = count < 100 ? 100 : count;
-        PreAllocNodeResp resp = new PreAllocNodeResp();
+        PreAllocNodeResp resp =getPreAllocCache().getIfPresent(user.getUserID());
+        if (resp!=null){
+            LOG.info("User " + user.getUserID() + " AllocNodes OK,from cache." );
+            return resp;  
+        }
+        resp = new PreAllocNodeResp();
         try {
             LOG.info("User " + user.getUserID() + " AllocNodes,count:" + count);
             List<Node> nodes = NodeManager.getNode(1000, request.getExcludes());
@@ -44,6 +64,7 @@ public class PreAllocNodeHandler extends Handler<PreAllocNodeReqV2> {
                 }
             }
             LOG.info("User " + user.getUserID() + " AllocNodes OK,return " + resp.getList().size());
+            getPreAllocCache().put(user.getUserID(), resp);
             return resp;
         } catch (NodeMgmtException ex) {
             LOG.error("AllocNodes ERR:" + ex.getMessage());

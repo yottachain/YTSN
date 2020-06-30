@@ -95,7 +95,7 @@ public class FileListCache {
 
     public FileListCache(ListObjectReqV2 reqv2, int userId) {
         this.req = null;
-        this.reqv2 = reqv2;
+        this.reqv2 = reqv2;       
         nextFileName = reqv2.getFileName();
         nextVersionId = reqv2.getNextVersionId();
         prefix = reqv2.getPrefix();
@@ -193,8 +193,10 @@ public class FileListCache {
         long st = System.currentTimeMillis();
         BucketMeta bmeta = BucketCache.getBucket(userId, bucketName, null);
         ObjectId bucketId = bmeta.getBucketId();
+        
         int maxline = limit * lsCachePageNum;
         String lastkey = key;
+        
         Bson filter = null;
         Bson regex = null;
         if (!(prefix == null || prefix.isEmpty())) {

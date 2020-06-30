@@ -29,7 +29,12 @@ public class PreAllocNodeHandler extends Handler<PreAllocNodeReq> {
         }
         int count = request.getCount() > 1000 ? 1000 : request.getCount();
         count = count < 100 ? 100 : count;
-        PreAllocNodeResp resp = new PreAllocNodeResp();
+        PreAllocNodeResp resp = com.ytfs.service.servlet.v2.PreAllocNodeHandler.getPreAllocCache().getIfPresent(user.getUserID());
+        if (resp != null) {
+            LOG.info("User " + user.getUserID() + " AllocNodes OK,from cache.");
+            return resp;
+        }
+        resp = new PreAllocNodeResp();
         try {
             LOG.info("User " + user.getUserID() + " AllocNodes,count:" + count);
             List<Node> nodes = NodeManager.getNode(1000, request.getExcludes());
@@ -44,6 +49,7 @@ public class PreAllocNodeHandler extends Handler<PreAllocNodeReq> {
                 }
             }
             LOG.info("User " + user.getUserID() + " AllocNodes OK,return " + resp.getList().size());
+            com.ytfs.service.servlet.v2.PreAllocNodeHandler.getPreAllocCache().put(user.getUserID(), resp);
             return resp;
         } catch (NodeMgmtException ex) {
             LOG.error("AllocNodes ERR:" + ex.getMessage());

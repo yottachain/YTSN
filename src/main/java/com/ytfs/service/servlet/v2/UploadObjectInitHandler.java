@@ -70,6 +70,8 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReqV2> {
             meta.setVNU(new ObjectId());
             resp.setVNU(meta.getVNU());
         }
+        
+        
         boolean has = EOSClient.hasSpace(request.getLength(), user.getUsername());
         if (has) {
             meta.setLength(request.getLength());

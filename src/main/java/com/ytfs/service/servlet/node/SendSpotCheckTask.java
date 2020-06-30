@@ -60,6 +60,7 @@ public class SendSpotCheckTask implements Runnable {
                 //LOG.error("Not selected");
             }
         } catch (Throwable r) {
+            LOG.error("YottaNodeMgmt.spotcheckSelected() err:"+r.getMessage());
         }
     }
 

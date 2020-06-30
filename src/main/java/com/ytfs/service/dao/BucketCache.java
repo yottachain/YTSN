@@ -23,6 +23,8 @@ public class BucketCache {
             if (meta != null) {
                 buckets.put(key, meta.getBucketId());
                 return meta;
+            }else{
+                return null;
             }
         }
         return new BucketMeta(userid, id, bucketname,byte_meta);

@@ -24,6 +24,7 @@ public class ServiceWrapper implements WrapperListener {
 
     @Override
     public Integer start(String[] strings) {
+        //System.setProperty("NODEMGMT_CONFIGDIR", "D:/YOTTA3.0/YTSN/conf");
         String de_duplication = WrapperManager.getProperties().getProperty("wrapper.ytsn.de_duplication", "on");
         if (de_duplication != null && de_duplication.trim().equalsIgnoreCase("off")) {
             DE_DUPLICATION = false;
