@@ -19,6 +19,7 @@ public class QueryRebuildNode extends Thread {
     private static QueryRebuildTaskQueue queryRebuildTaskQueue;
 
     public static synchronized void startUp() {
+        /*
         if (instance == null) {
             instance = new QueryRebuildNode();
             instance.start();
@@ -27,6 +28,7 @@ public class QueryRebuildNode extends Thread {
             queryRebuildTaskQueue = new QueryRebuildTaskQueue();
             queryRebuildTaskQueue.start();
         }
+        */
     }
 
     public static synchronized void shutdown() {
@@ -47,6 +49,7 @@ public class QueryRebuildNode extends Thread {
     public void run() {
         LOG.info("SendRebuildTask distributor startup...");
         List<ShardCount> sc = null;
+        /*
         while (!exit) {
             try {
                 long time = System.currentTimeMillis();
@@ -85,6 +88,7 @@ public class QueryRebuildNode extends Thread {
                 }
             }
         }
+*/
     }
 
 }

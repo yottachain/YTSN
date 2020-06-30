@@ -42,6 +42,7 @@ public class QueryRebuildTask implements Runnable {
         long index = 0;
         List<RebuildItem> items = new ArrayList();
         int snum = SuperNodeList.getSuperNodeCount();
+        /*
         while (true) {
             try {
                 long count = (index + 1) * Max_Shard_Count > shardCount.getCnt() ? shardCount.getCnt() % Max_Shard_Count : Max_Shard_Count;
@@ -71,6 +72,7 @@ public class QueryRebuildTask implements Runnable {
         pushTask(items);
         taskMap.remove(shardCount.getId());
         LOG.info("Node " + shardCount.getId() + " has been reconstructed.");
+*/
     }
 
     private void pushTask(List<RebuildItem> itemlist) {

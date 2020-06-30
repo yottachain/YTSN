@@ -18,6 +18,7 @@ public class UpdateDNIHandler extends Handler<UpdateDNIMutiReq> {
 
     @Override
     public Object handle() throws Throwable {
+        /*
         try {
             getSuperNodeId();
         } catch (NodeMgmtException e) {
@@ -46,6 +47,7 @@ public class UpdateDNIHandler extends Handler<UpdateDNIMutiReq> {
             }
         }
         LOG.info("Update DNI OK,count:" + ls.size() + ",take times " + (System.currentTimeMillis() - starttime) + " ms");
+        */
         return new VoidResp();
     }
 

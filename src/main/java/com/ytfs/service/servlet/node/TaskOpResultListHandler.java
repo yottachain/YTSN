@@ -26,6 +26,7 @@ public class TaskOpResultListHandler extends Handler<TaskOpResultList> {
 
     @Override
     public Object handle() throws Throwable {
+        /*
         int nodeid;
         try {
             nodeid = this.getNodeId();
@@ -101,6 +102,7 @@ public class TaskOpResultListHandler extends Handler<TaskOpResultList> {
         if (!docs.isEmpty()) {
             CacheBaseAccessor.addDNI(docs);
         }
+*/
         return new VoidResp();
     }
 

@@ -22,6 +22,7 @@ public class TaskOpResultHandler extends Handler<TaskOpResult> {
 
     @Override
     public Object handle() throws Throwable {
+        /*
         int nodeid;
         try {
             nodeid = this.getNodeId();
@@ -75,6 +76,7 @@ public class TaskOpResultHandler extends Handler<TaskOpResult> {
             CacheBaseAccessor.addDNI(rebuildNodeId, DNI, true);
         }
         LOG.debug("Rebuild OK: " + Base58.encode(id) + ",take times " + (System.currentTimeMillis() - l) + " ms");
+*/
         return new VoidResp();
     }
 
