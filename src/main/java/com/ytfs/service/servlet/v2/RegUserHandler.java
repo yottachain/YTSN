@@ -13,6 +13,7 @@ import com.ytfs.service.packet.user.RegUserResp;
 import com.ytfs.service.packet.v2.QueryUserReqV2;
 import com.ytfs.service.packet.v2.RegUserReqV2;
 import com.ytfs.service.servlet.Handler;
+import static com.ytfs.service.servlet.user.RegUserHandler.REG_CACHE;
 import static com.ytfs.service.servlet.v2.QueryUserHandler.queryAndReg;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import org.apache.log4j.Logger;
@@ -31,6 +32,12 @@ public class RegUserHandler extends Handler<RegUserReqV2> {
             }
         }
         String userPubkey = request.getPubKey();
+        if (REG_CACHE.getIfPresent(userPubkey)!=null){
+            LOG.error("UserLogin:" + request.getUsername() + " ERR:too frequently");
+            return new ServiceException(SERVER_ERROR);
+        }else{
+            REG_CACHE.put(userPubkey, System.currentTimeMillis());
+        }
         SuperNode sn = SuperNodeList.getUserRegSuperNode(request.getUsername());
         QueryUserReqV2 req = new QueryUserReqV2();
         req.setUsername(request.getUsername());
