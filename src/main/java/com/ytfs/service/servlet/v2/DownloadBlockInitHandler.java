@@ -1,5 +1,7 @@
 package com.ytfs.service.servlet.v2;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.node.NodeManager;
@@ -15,11 +17,17 @@ import com.ytfs.service.servlet.Handler;
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 public class DownloadBlockInitHandler extends Handler<DownloadBlockInitReqV2> {
 
     private static final Logger LOG = Logger.getLogger(DownloadBlockInitHandler.class);
+
+    public static Cache<Integer, Node> Node_CACHE = CacheBuilder.newBuilder()
+            .expireAfterWrite(30, TimeUnit.MINUTES)
+            .maximumSize(20000)
+            .build();
 
     @Override
     public Object handle() throws Throwable {
@@ -35,7 +43,7 @@ public class DownloadBlockInitHandler extends Handler<DownloadBlockInitReqV2> {
             res.setData(dat);
             return res;
         }
-        
+
         DownloadBlockInitResp resp = new DownloadBlockInitResp();
         resp.setVNF(meta.getVNF());
         resp.setAR(meta.getAR());
@@ -51,12 +59,25 @@ public class DownloadBlockInitHandler extends Handler<DownloadBlockInitReqV2> {
             VHF[ii] = metas[ii].getVHF();
         }
         resp.setVHF(VHF);
-        List<Node> ls = NodeManager.getNode(nodeidsls);
-        if (ls.size() != nodeidsls.size()) {
-            LOG.warn("Some Nodes have been cancelled.");
+        List<Node> lss = new ArrayList();
+        List<Integer> newnodeidsls = new ArrayList();
+        for (int id : nodeidsls) {
+            Node n=Node_CACHE.getIfPresent(id);
+            if (n==null){
+                newnodeidsls.add(id);
+            }else{
+                lss.add(n);
+            }
         }
-        Node[] ns = new Node[ls.size()];
-        resp.setNodes(ls.toArray(ns));
+        if (!newnodeidsls.isEmpty()){
+            List<Node> ls = NodeManager.getNode(newnodeidsls);
+            for(Node n:ls){
+                Node_CACHE.put(n.getId(), n);
+                lss.add(n);
+            }
+        }
+        Node[] ns = new Node[lss.size()];
+        resp.setNodes(lss.toArray(ns));
         resp.setNodeids(nodeids);
         return resp;
     }
