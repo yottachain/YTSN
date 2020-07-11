@@ -20,6 +20,11 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReqV2> {
     private static final Logger LOG = Logger.getLogger(UploadObjectEndHandler.class);
 
     @Override
+    public int GetDoType() {
+        return 1;
+    }
+
+    @Override
     public Object handle() throws Throwable {
         User user = this.getUser(request);
         if (user == null) {
@@ -32,7 +37,7 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReqV2> {
         int userid = user.getUserID();
         ObjectMeta meta = new ObjectMeta(userid, request.getVHW());
         ObjectAccessor.getObjectAndUpdateNLINK(meta);
-        
+
         long usedspace = meta.getUsedspace();
         long ll = 1024L * 16L;
         long addusedspace = usedspace % ll > 0 ? (usedspace / ll + 1) : (usedspace / ll);

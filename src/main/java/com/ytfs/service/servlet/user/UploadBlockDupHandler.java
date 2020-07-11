@@ -24,6 +24,11 @@ public class UploadBlockDupHandler extends Handler<UploadBlockDupReq> {
     private static final Logger LOG = Logger.getLogger(UploadBlockDupHandler.class);
 
     @Override
+    public int GetDoType() {
+        return 1;
+    }
+
+    @Override
     public Object handle() throws Throwable {
         UserCache.UserEx userex = this.getUserEx();
         if (userex == null) {

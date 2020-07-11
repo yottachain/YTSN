@@ -20,6 +20,11 @@ public class UploadObjectEndHandler extends Handler<UploadObjectEndReq> {
     private static final Logger LOG = Logger.getLogger(UploadObjectEndHandler.class);
 
     @Override
+    public int GetDoType() {
+        return 1;
+    }
+
+    @Override
     public Object handle() throws Throwable {
         User user = this.getUser();
         if (user == null) {

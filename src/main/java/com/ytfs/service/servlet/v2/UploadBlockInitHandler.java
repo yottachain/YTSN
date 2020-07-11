@@ -22,6 +22,11 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReqV2> {
     private static final Logger LOG = Logger.getLogger(UploadBlockInitHandler.class);
 
     @Override
+    public int GetDoType() {
+        return 1;
+    }
+
+    @Override
     public Object handle() throws Throwable {
         User user = this.getUser(request);
         if (user == null) {

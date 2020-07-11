@@ -50,6 +50,11 @@ public class UploadBlockEndSyncHandler extends Handler<UploadBlockEndSyncReqV2> 
     private static final Logger LOG = Logger.getLogger(UploadBlockEndSyncHandler.class);
 
     @Override
+    public int GetDoType() {
+        return 1;
+    }
+
+    @Override
     public Object handle() throws Throwable {
         User user = this.getUser(request);
         if (user == null) {
