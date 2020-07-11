@@ -96,7 +96,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReqV2> {
             throw r;
         }
         LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
-        //DNIAccessor.UpdateShardNum(ls);
+        DNIAccessor.UpdateShardNum(ls);
         //sendDNI(ls, VBI);
         LOG.info("Upload block:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");
         UploadBlockEndResp resp = new UploadBlockEndResp();
