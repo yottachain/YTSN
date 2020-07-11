@@ -6,8 +6,6 @@ import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import static com.ytfs.common.ServiceErrorCode.TOO_LOW_VERSION;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.ServerConfig;
-import static com.ytfs.common.conf.ServerConfig.lsCacheExpireTime;
-import static com.ytfs.common.conf.ServerConfig.lsCacheMaxSize;
 import static com.ytfs.common.conf.ServerConfig.s3Version;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;

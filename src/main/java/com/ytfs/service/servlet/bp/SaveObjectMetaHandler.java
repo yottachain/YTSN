@@ -18,7 +18,7 @@ import io.yottachain.nodemgmt.core.vo.SuperNode;
 import org.apache.log4j.Logger;
 
 public class SaveObjectMetaHandler extends Handler<SaveObjectMetaReq> {
-    
+
     private static final Logger LOG = Logger.getLogger(SaveObjectMetaHandler.class);
 
     /**
@@ -36,7 +36,12 @@ public class SaveObjectMetaHandler extends Handler<SaveObjectMetaReq> {
             return (SaveObjectMetaResp) P2PUtils.requestBP(req, node);
         }
     }
-    
+
+    @Override
+    public int GetDoType() {
+        return 2;
+    }
+
     @Override
     public Object handle() throws Throwable {
         try {
@@ -47,7 +52,7 @@ public class SaveObjectMetaHandler extends Handler<SaveObjectMetaReq> {
         }
         return saveObjectMeta(request);
     }
-    
+
     private static SaveObjectMetaResp saveObjectMeta(SaveObjectMetaReq request) throws ServiceException {
         LOG.info("Save object meta:" + request.getUserID() + "/" + request.getVNU()
                 + "/" + request.getRefer().getId() + "/" + request.getRefer().getVBI());
@@ -63,11 +68,11 @@ public class SaveObjectMetaHandler extends Handler<SaveObjectMetaReq> {
             byte[] bs = request.getRefer().toBytes();
             ObjectAccessor.updateObject(request.getUserID(), request.getVNU(), bs, request.getUsedSpace());
             cache.setBlockNum(request.getRefer().getId());
-            if(request.isMode()){
+            if (request.isMode()) {
                 BlockAccessor.incBlockCount();
             }
         }
         return resp;
     }
-    
+
 }

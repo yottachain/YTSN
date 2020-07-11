@@ -32,6 +32,11 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReqV2> {
     private static final Logger LOG = Logger.getLogger(UploadBlockDBHandler.class);
 
     @Override
+    public int GetDoType() {
+        return 1;
+    }
+
+    @Override
     public Object handle() throws Throwable {
         User user = this.getUser(request);
         if (user == null) {

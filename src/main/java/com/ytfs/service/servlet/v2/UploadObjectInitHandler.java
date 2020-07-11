@@ -27,6 +27,11 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReqV2> {
     private static final Logger LOG = Logger.getLogger(UploadObjectInitHandler.class);
 
     @Override
+    public int GetDoType() {
+        return 1;
+    }
+
+    @Override
     public Object handle() throws Throwable {
         User user = this.getUser(request);
         if (user == null) {
@@ -70,8 +75,7 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReqV2> {
             meta.setVNU(new ObjectId());
             resp.setVNU(meta.getVNU());
         }
-        
-        
+
         boolean has = EOSClient.hasSpace(request.getLength(), user.getUsername());
         if (has) {
             meta.setLength(request.getLength());

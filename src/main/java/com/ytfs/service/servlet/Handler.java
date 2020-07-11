@@ -24,6 +24,10 @@ public abstract class Handler<T> {
     public final String getPublicKey() {
         return pubkey;
     }
+    
+    public int GetDoType(){
+        return 0;
+    } 
 
     protected final UserEx getUserEx() {
         return UserCache.getUserEx(pubkey);

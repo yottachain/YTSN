@@ -51,6 +51,11 @@ public class UploadBlockEndSyncHandler extends Handler<UploadBlockEndSyncReq> {
     private static final Logger LOG = Logger.getLogger(UploadBlockEndSyncHandler.class);
 
     @Override
+    public int GetDoType() {
+        return 1;
+    }
+
+    @Override
     public Object handle() throws Throwable {
         UserCache.UserEx userex = this.getUserEx();
         if (userex == null) {
@@ -85,7 +90,7 @@ public class UploadBlockEndSyncHandler extends Handler<UploadBlockEndSyncReq> {
             throw r;
         }
         LOG.info("Save object refer:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - starttime) + " ms");
-       // sendDNI(ls, VBI);
+        // sendDNI(ls, VBI);
         LOG.info("Upload block:/" + request.getVNU() + "/" + request.getId() + " OK,take times " + (System.currentTimeMillis() - l) + " ms");
         return new VoidResp();
     }

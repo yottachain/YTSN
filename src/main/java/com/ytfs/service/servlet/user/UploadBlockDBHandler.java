@@ -33,6 +33,11 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
     private static final Logger LOG = Logger.getLogger(UploadBlockDBHandler.class);
 
     @Override
+    public int GetDoType() {
+        return 1;
+    }
+
+    @Override
     public Object handle() throws Throwable {
         UserCache.UserEx userex = this.getUserEx();
         if (userex == null) {
@@ -106,7 +111,7 @@ public class UploadBlockDBHandler extends Handler<UploadBlockDBReq> {
         return meta;
     }
 
-    private SaveObjectMetaReq makeSaveObjectMetaReq(int userid, long vbi,int keyNumber) {
+    private SaveObjectMetaReq makeSaveObjectMetaReq(int userid, long vbi, int keyNumber) {
         SaveObjectMetaReq saveObjectMetaReq = new SaveObjectMetaReq();
         saveObjectMetaReq.setUserID(userid);
         saveObjectMetaReq.setVNU(request.getVNU());
