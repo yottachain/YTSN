@@ -2,6 +2,7 @@ package com.ytfs.service.servlet.user;
 
 import com.ytfs.common.Function;
 import com.ytfs.common.ServiceErrorCode;
+import static com.ytfs.common.ServiceErrorCode.DN_IN_BLACKLIST;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.dao.BlockMeta;
@@ -33,6 +34,8 @@ import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.packet.user.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.user.UploadBlockEndResp;
+import com.ytfs.service.servlet.BlackList;
+import static com.ytfs.service.servlet.BlackList.getBlackList;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
@@ -50,14 +53,14 @@ import org.bson.Document;
 import org.bson.types.Binary;
 
 public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
-
+    
     private static final Logger LOG = Logger.getLogger(UploadBlockEndHandler.class);
-
+    
     @Override
     public int GetDoType() {
         return 1;
     }
-
+    
     @Override
     public Object handle() throws Throwable {
         UserEx userex = this.getUserEx();
@@ -71,6 +74,13 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         List<UploadShardRes> res = request.getOkList();
         if (res.size() > Max_Shard_Count + Default_PND) {
             return new ServiceException(ServiceErrorCode.TOO_MANY_SHARDS);
+        }
+        List<Integer> list = BlackList.getBlackList();
+        for (UploadShardRes r : res) {
+            if (list.contains(r.getNODEID())) {
+                LOG.warn("Block okList contains blocklist id " + r.getNODEID() + ",UserID:" + userid);
+                throw new ServiceException(DN_IN_BLACKLIST);
+            }
         }
         long VBI = Sequence.generateBlockID(res.size());
         BlockMeta bmeta = BlockAccessor.getBlockMeta(request.getVHP(), request.getVHB());
@@ -106,7 +116,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         resp.setVBI(VBI);
         return resp;
     }
-
+    
     private void sendDNI(List<ShardMeta> ls, long VBI) throws Throwable {
         int AR = request.getAR();
         List<Document> docs = new ArrayList();
@@ -144,7 +154,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
             CacheBaseAccessor.addDNI(docs);
         }
     }
-
+    
     private SaveObjectMetaReq makeSaveObjectMetaReq(int userid, long vbi, int keyNumber) {
         SaveObjectMetaReq saveObjectMetaReq = new SaveObjectMetaReq();
         saveObjectMetaReq.setUserID(userid);
@@ -160,7 +170,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         saveObjectMetaReq.setRefer(refer);
         return saveObjectMetaReq;
     }
-
+    
     private BlockMeta makeBlockMeta(long VBI, int shardCount) {
         BlockMeta meta = new BlockMeta();
         meta.setVBI(VBI);
@@ -172,7 +182,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         meta.setVHP(request.getVHP());
         return meta;
     }
-
+    
     private boolean verifySign(UploadShardRes res, Node node) {
         return true;
         /*
@@ -186,7 +196,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
          }
          */
     }
-
+    
     private List<ShardMeta> verify(UploadBlockEndReq req, List<UploadShardRes> resList, long VBI) throws ServiceException, NoSuchAlgorithmException, NodeMgmtException {
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         List<ShardMeta> ls = new ArrayList();

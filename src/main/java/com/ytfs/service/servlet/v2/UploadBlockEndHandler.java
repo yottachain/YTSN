@@ -2,6 +2,7 @@ package com.ytfs.service.servlet.v2;
 
 import com.ytfs.common.Function;
 import com.ytfs.common.ServiceErrorCode;
+import static com.ytfs.common.ServiceErrorCode.DN_IN_BLACKLIST;
 import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.dao.BlockMeta;
@@ -32,6 +33,7 @@ import com.ytfs.service.packet.bp.SaveObjectMetaResp;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.user.UploadBlockEndResp;
 import com.ytfs.service.packet.v2.UploadBlockEndReqV2;
+import com.ytfs.service.servlet.BlackList;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
@@ -69,6 +71,13 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReqV2> {
         List<UploadShardRes> res = request.getOkList();
         if (res.size() > Max_Shard_Count + Default_PND) {
             return new ServiceException(ServiceErrorCode.TOO_MANY_SHARDS);
+        }
+        List<Integer> list = BlackList.getBlackList();
+        for (UploadShardRes r : res) {
+            if (list.contains(r.getNODEID())) {
+                LOG.warn("Block okList contains blocklist id " + r.getNODEID() + ",UserID:" + userid);
+                throw new ServiceException(DN_IN_BLACKLIST);
+            }
         }
         long VBI = Sequence.generateBlockID(res.size());
         BlockMeta bmeta = BlockAccessor.getBlockMeta(request.getVHP(), request.getVHB());
