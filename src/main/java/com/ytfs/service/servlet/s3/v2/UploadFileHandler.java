@@ -15,6 +15,11 @@ public class UploadFileHandler extends Handler<UploadFileReqV2> {
     private static final Logger LOG = Logger.getLogger(UploadFileHandler.class);
 
     @Override
+    public int GetDoType() {
+        return 1;
+    }
+
+    @Override
     public Object handle() throws Throwable {
         User user = this.getUser(request);
         if (user == null) {

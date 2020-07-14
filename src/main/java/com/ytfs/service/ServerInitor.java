@@ -13,6 +13,7 @@ import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.NodeManager;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.dao.Sequence;
+import com.ytfs.service.servlet.BlackList;
 import com.ytfs.service.servlet.MsgDispatcher;
 import io.yottachain.nodemgmt.YottaNodeMgmt;
 import io.yottachain.p2phost.interfaces.Callback;
@@ -59,11 +60,12 @@ public class ServerInitor {
                 List<ServerAddress> addrs = MongoSource.getServerAddress();
                 NodeManager.start(addrs, MongoSource.getAuth(), eosURI, BPAccount, ShadowAccount, ShadowPriKey, contractAccount, contractOwnerD, superNodeID);
                 privateKey = YottaNodeMgmt.getSuperNodePrivateKey(superNodeID);
-              //  SNDSP = Base58.decode(privateKey);
+                //SNDSP = Base58.decode(privateKey);
                 SuperNodeList.isServer = true;
                 YottaNodeMgmt.setMaster(SuperNodeList.isMaster());
                 Sequence.initUserID_seq();
                 BpList.init(loadbplist());
+                BlackList.init();
                 break;
             } catch (Throwable r) {
                 LOG.error("Mongo client initialization failed:", r);
