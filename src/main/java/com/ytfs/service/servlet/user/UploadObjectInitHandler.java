@@ -7,6 +7,7 @@ import com.ytfs.service.dao.User;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.servlet.Handler;
 import com.ytfs.common.ServiceErrorCode;
+import static com.ytfs.common.ServiceErrorCode.TOO_LOW_VERSION;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.eos.EOSClient;
 import com.ytfs.service.packet.ObjectRefer;
@@ -33,6 +34,9 @@ public class UploadObjectInitHandler extends Handler<UploadObjectInitReq> {
 
     @Override
     public Object handle() throws Throwable {
+        if (true) {
+            return new ServiceException(TOO_LOW_VERSION);
+        }
         User user = this.getUser();
         if (user == null) {
             return new ServiceException(ServiceErrorCode.NEED_LOGIN);

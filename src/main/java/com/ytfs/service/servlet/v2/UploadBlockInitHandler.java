@@ -8,7 +8,9 @@ import com.ytfs.service.dao.User;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.servlet.Handler;
 import static com.ytfs.common.ServiceErrorCode.ILLEGAL_VHP_NODEID;
+import static com.ytfs.common.ServiceErrorCode.TOO_LOW_VERSION;
 import com.ytfs.common.ServiceException;
+import static com.ytfs.common.conf.ServerConfig.s3Version;
 import static com.ytfs.service.ServiceWrapper.DE_DUPLICATION;
 import com.ytfs.service.packet.user.UploadBlockDupResp;
 import com.ytfs.service.packet.user.UploadBlockInitResp;
@@ -31,6 +33,12 @@ public class UploadBlockInitHandler extends Handler<UploadBlockInitReqV2> {
         User user = this.getUser(request);
         if (user == null) {
             return new ServiceException(ServiceErrorCode.INVALID_SIGNATURE);
+        }
+        if (s3Version != null) {
+            if (request.getVersion() == null || request.getVersion().compareTo(s3Version) < 0) {
+                LOG.error("["+user.getUserID()+"]Upload block init ERR:TOO_LOW_VERSION?" + request.getVersion());
+                return new ServiceException(TOO_LOW_VERSION);
+            }
         }
         LOG.info("Upload block init " + user.getUserID() + "/" + request.getVNU() + "/" + request.getId());
         SuperNode n = SuperNodeList.getBlockSuperNode(request.getVHP());

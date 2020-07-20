@@ -14,6 +14,7 @@ import com.ytfs.service.packet.user.DownloadBlockDBResp;
 import com.ytfs.service.packet.user.DownloadBlockInitResp;
 import com.ytfs.service.packet.v2.DownloadBlockInitReqV2;
 import com.ytfs.service.servlet.Handler;
+import io.yottachain.nodemgmt.core.exception.NodeMgmtException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,27 @@ public class DownloadBlockInitHandler extends Handler<DownloadBlockInitReqV2> {
             .expireAfterWrite(30, TimeUnit.MINUTES)
             .maximumSize(20000)
             .build();
+
+    public static List<Node> getNodes(List<Integer> nodeidsls) throws NodeMgmtException {
+        List<Node> lss = new ArrayList();
+        List<Integer> newnodeidsls = new ArrayList();
+        for (int id : nodeidsls) {
+            Node n = Node_CACHE.getIfPresent(id);
+            if (n == null) {
+                newnodeidsls.add(id);
+            } else {
+                lss.add(n);
+            }
+        }
+        if (!newnodeidsls.isEmpty()) {
+            List<Node> ls = NodeManager.getNode(newnodeidsls);
+            for (Node n : ls) {
+                Node_CACHE.put(n.getId(), n);
+                lss.add(n);
+            }
+        }
+        return lss;
+    }
 
     @Override
     public Object handle() throws Throwable {
@@ -62,16 +84,16 @@ public class DownloadBlockInitHandler extends Handler<DownloadBlockInitReqV2> {
         List<Node> lss = new ArrayList();
         List<Integer> newnodeidsls = new ArrayList();
         for (int id : nodeidsls) {
-            Node n=Node_CACHE.getIfPresent(id);
-            if (n==null){
+            Node n = Node_CACHE.getIfPresent(id);
+            if (n == null) {
                 newnodeidsls.add(id);
-            }else{
+            } else {
                 lss.add(n);
             }
         }
-        if (!newnodeidsls.isEmpty()){
+        if (!newnodeidsls.isEmpty()) {
             List<Node> ls = NodeManager.getNode(newnodeidsls);
-            for(Node n:ls){
+            for (Node n : ls) {
                 Node_CACHE.put(n.getId(), n);
                 lss.add(n);
             }

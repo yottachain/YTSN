@@ -181,7 +181,7 @@ public class UploadBlockEndSyncHandler extends Handler<UploadBlockEndSyncReqV2> 
                 nodeidsls.add(res.getNODEID());
             }
         });
-        List<Node> nodels = NodeManager.getNode(nodeidsls);
+        List<Node> nodels  = com.ytfs.service.servlet.v2.DownloadBlockInitHandler.getNodes(nodeidsls);
         if (nodels.size() != nodeidsls.size()) {
             LOG.warn("Some Nodes have been cancelled.");
             throw new ServiceException(NO_ENOUGH_NODE);

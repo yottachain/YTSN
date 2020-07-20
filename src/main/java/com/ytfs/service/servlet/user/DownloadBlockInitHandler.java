@@ -2,7 +2,6 @@ package com.ytfs.service.servlet.user;
 
 import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
-import com.ytfs.common.node.NodeManager;
 import com.ytfs.service.dao.BlockAccessor;
 import com.ytfs.service.dao.BlockMeta;
 import com.ytfs.service.dao.ShardAccessor;
@@ -50,7 +49,7 @@ public class DownloadBlockInitHandler extends Handler<DownloadBlockInitReq> {
             VHF[ii] = metas[ii].getVHF();
         }
         resp.setVHF(VHF);
-        List<Node> ls = NodeManager.getNode(nodeidsls);
+        List<Node> ls = com.ytfs.service.servlet.v2.DownloadBlockInitHandler.getNodes(nodeidsls);
         if (ls.size() != nodeidsls.size()) {
             LOG.warn("Some Nodes have been cancelled.");
         }

@@ -79,7 +79,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
         for (UploadShardRes r : res) {
             if (list.contains(r.getNODEID())) {
                 LOG.warn("Block okList contains blocklist id " + r.getNODEID() + ",UserID:" + userid);
-                throw new ServiceException(DN_IN_BLACKLIST);
+                return new ServiceException(DN_IN_BLACKLIST);
             }
         }
         long VBI = Sequence.generateBlockID(res.size());
@@ -208,7 +208,7 @@ public class UploadBlockEndHandler extends Handler<UploadBlockEndReq> {
                 nodeidsls.add(res.getNODEID());
             }
         });
-        List<Node> nodels = NodeManager.getNode(nodeidsls);
+        List<Node> nodels   = com.ytfs.service.servlet.v2.DownloadBlockInitHandler.getNodes(nodeidsls);
         if (nodels.size() != nodeidsls.size()) {
             LOG.warn("Some Nodes have been cancelled.");
             throw new ServiceException(NO_ENOUGH_NODE);

@@ -32,6 +32,7 @@ public class RegUserHandler extends Handler<RegUserReq> {
 
     @Override
     public Object handle() throws Throwable {
+        
         String cachekey = this.getPublicKey();
         if (REG_CACHE.getIfPresent(cachekey) != null) {
             LOG.error("UserLogin:" + request.getUsername() + " ERR:too frequently");
